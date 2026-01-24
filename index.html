@@ -96,8 +96,8 @@
                 <span>Zap</span>
             </button>
             
-            <!-- Botão Imagem -->
-            <button onclick="downloadImage()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 active:bg-indigo-700 whitespace-nowrap">
+            <!-- Botão Imagem (ALTERADO PARA LARANJA) -->
+            <button onclick="downloadImage()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-orange-500/20 transition-all active:scale-95 active:bg-orange-700 whitespace-nowrap">
                 <i data-lucide="image" class="w-4 h-4"></i>
                 <span>Imagem</span>
             </button>
@@ -116,68 +116,76 @@
         <div class="w-full lg:w-2/5 space-y-4">
             
             <!-- 1. DADOS GERAIS E OPERACIONAIS (INDEPENDENTE) -->
-            <div class="bg-blue-50 p-5 rounded-2xl shadow-sm border border-blue-100 transition-colors">
+            <div id="generalDataCard" class="bg-blue-50 p-5 rounded-2xl shadow-sm border border-blue-100 transition-colors">
                 <h2 class="text-sm font-bold text-blue-800 mb-3 flex items-center gap-2">
                     <i data-lucide="clipboard-check" class="text-blue-600"></i> Dados Gerais da Aplicação
                 </h2>
                 
                 <!-- GERAL -->
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <div>
-                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-1 block">Local</label>
-                        <select id="partner" required onchange="updateGlobalState()" class="w-full p-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                <div class="grid grid-cols-2 gap-3 mb-5">
+                    <div class="relative">
+                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-1 block">Local <span class="text-red-500">*</span></label>
+                        <select id="partner" required onchange="clearError('partner'); updateGlobalState()" class="w-full p-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                             <option value="">Selecione...</option>
                             <option value="SPG Oásis">SPG Oásis</option>
                             <option value="SPG Sede">SPG Sede</option>
                         </select>
+                        <span id="error-partner" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                     </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-1 block">Data</label>
-                        <input type="date" id="appDate" required onchange="updateGlobalState()" class="w-full p-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white text-slate-600">
+                    <div class="relative">
+                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-1 block">Data <span class="text-red-500">*</span></label>
+                        <input type="date" id="appDate" required onchange="clearError('appDate'); updateGlobalState()" class="w-full p-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white text-slate-600">
+                        <span id="error-appDate" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                     </div>
                 </div>
 
                 <!-- OPERACIONAL -->
-                <div class="grid grid-cols-2 gap-3 mb-3">
+                <div class="grid grid-cols-2 gap-3 mb-5">
                     <div class="relative">
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Solicitante</label>
-                        <select id="requestor" onchange="toggleOtherRequestorInput(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <select id="requestor" onchange="toggleOtherRequestorInput(); clearError('requestor'); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="">Selecione...</option>
                             <option value="Marcio">Marcio</option>
                             <option value="Outro">Outro (Digitar)</option>
                         </select>
                         <div id="requestor-custom-div" class="hidden relative w-full fade-in">
-                            <input type="text" id="otherRequestorInput" oninput="updateGlobalState()" class="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nome do Solicitante">
+                            <input type="text" id="otherRequestorInput" oninput="clearError('otherRequestorInput'); updateGlobalState();" class="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nome do Solicitante">
                             <button type="button" onclick="resetRequestorField(); updateGlobalState();" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500">
                                 <i data-lucide="x-circle" width="14"></i>
                             </button>
                         </div>
+                        <span id="error-requestor" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                         <span id="error-otherRequestorInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                     </div>
 
                     <div class="relative">
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Aplicador</label>
-                        <select id="applicator" onchange="toggleOtherApplicatorInput(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <select id="applicator" onchange="toggleOtherApplicatorInput(); clearError('applicator'); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="">Selecione...</option>
                             <option value="Equipe Erisvaldo">Equipe Erisvaldo</option>
                             <option value="Outro">Outro (Digitar)</option>
                         </select>
                         <div id="applicator-custom-div" class="hidden relative w-full fade-in">
-                            <input type="text" id="otherApplicatorInput" oninput="updateGlobalState()" class="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nome do Aplicador">
+                            <input type="text" id="otherApplicatorInput" oninput="clearError('otherApplicatorInput'); updateGlobalState();" class="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nome do Aplicador">
                             <button type="button" onclick="resetApplicatorField(); updateGlobalState();" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500">
                                 <i data-lucide="x-circle" width="14"></i>
                             </button>
                         </div>
+                        <span id="error-applicator" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                        <span id="error-otherApplicatorInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-3 gap-2 mb-3">
-                    <div>
+                    <div class="relative">
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Início</label>
-                        <input type="time" id="startTime" onchange="calculateDuration(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="time" id="startTime" onchange="clearError('startTime'); calculateDuration(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <span id="error-startTime" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                     </div>
-                    <div>
+                    <div class="relative">
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Fim</label>
-                        <input type="time" id="endTime" onchange="calculateDuration(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <input type="time" id="endTime" onchange="clearError('endTime'); calculateDuration(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <span id="error-endTime" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                     </div>
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Total</label>
@@ -197,30 +205,35 @@
                     </button>
                 </div>
                 
-                <form id="appForm" onsubmit="addItem(event)" class="space-y-4">
+                <!-- Adicionado novalidate para controle JS -->
+                <form id="appForm" onsubmit="addItem(event)" class="space-y-4" novalidate>
                     
                     <!-- LINHA 3: CULTURA E BLOCO -->
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="relative">
                             <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Cultura</label>
-                            <select id="crop" onchange="handleCropChange()" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                            <select id="crop" onchange="clearError('crop'); handleCropChange();" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                                 <option value="Brócolis">Brócolis</option>
                                 <option value="Couve-Flor">Couve-Flor</option>
                                 <option value="Pepino">Pepino</option>
                                 <option value="Outros">Outros</option>
                             </select>
-                            <input type="text" id="otherCropInput" class="hidden w-full p-2 mt-2 border border-blue-200 bg-blue-50 text-blue-800 font-semibold rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Qual cultura?">
+                            <input type="text" id="otherCropInput" oninput="clearError('otherCropInput')" class="hidden w-full p-2 mt-2 border border-blue-200 bg-blue-50 text-blue-800 font-semibold rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Qual cultura?">
+                            <span id="error-crop" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                            <span id="error-otherCropInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                         </div>
-                        <div>
+                        <div class="relative">
                             <label id="blockLabel" class="text-xs font-bold text-slate-500 uppercase mb-1 block">Nº Bloco/Talhão</label>
-                            <input type="text" id="blockId" required placeholder="Ex: 1 - A" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                            <input type="text" id="blockId" required oninput="clearError('blockId')" placeholder="Ex: 1 - A" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                            <span id="error-blockId" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                         </div>
                     </div>
 
                     <!-- ALVO BIOLÓGICO -->
-                    <div>
+                    <div class="mb-5 relative">
                         <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Alvo Biológico (Praga/Doença)</label>
-                        <input type="text" id="targetPest" required placeholder="Ex: Traça, Pulgão, Alternaria..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <input type="text" id="targetPest" required oninput="clearError('targetPest')" placeholder="Ex: Traça, Pulgão, Alternaria..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                        <span id="error-targetPest" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                     </div>
 
                     <!-- LISTA DE PRODUTOS DINÂMICA -->
@@ -239,9 +252,10 @@
 
                     <!-- DADOS DA CALDA (VOLUME E PH) -->
                     <div class="grid grid-cols-2 gap-3">
-                         <div class="col-span-1">
+                         <div class="col-span-1 relative">
                             <label class="text-[10px] font-bold text-blue-600 mb-1 block">Vol. Calda (L)</label>
-                            <input type="number" id="syrupVolume" required placeholder="200" class="w-full p-2 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <input type="number" id="syrupVolume" required oninput="clearError('syrupVolume')" placeholder="200" class="w-full p-2 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <span id="error-syrupVolume" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
                         </div>
                          <div class="col-span-1">
                             <label class="text-[10px] font-bold text-purple-600 mb-1 block">P.H.</label>
@@ -407,8 +421,107 @@
         calculateDuration();
         updateGlobalState();
 
+        // --- VALIDAÇÃO DE CAMPO ---
+        function toggleError(id, show) {
+            const el = document.getElementById(id);
+            const err = document.getElementById('error-' + id);
+            
+            if (!el) return; 
+
+            if(show) {
+                el.classList.add('border-red-500', 'ring-1', 'ring-red-500');
+                if(err) err.classList.remove('hidden');
+            } else {
+                el.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+                if(err) err.classList.add('hidden');
+            }
+        }
+        
+        function clearError(id) {
+            toggleError(id, false);
+        }
+
+        // --- VALIDAÇÃO DE CABEÇALHO ---
+        function validateHeader() {
+            let isValid = true;
+            
+            // Helper to check standard vs custom input
+            const checkField = (selectId, customInputId) => {
+                const select = document.getElementById(selectId);
+                const customInput = document.getElementById(customInputId);
+                
+                if (select.classList.contains('hidden') || select.value === 'Outro') {
+                     if (!customInput.value.trim()) {
+                         toggleError(customInputId, true);
+                         return false;
+                     } else {
+                         toggleError(customInputId, false);
+                         return true;
+                     }
+                } else {
+                    if (!select.value) {
+                        toggleError(selectId, true);
+                        return false;
+                    } else {
+                        toggleError(selectId, false);
+                        return true;
+                    }
+                }
+            };
+
+            // 1. Local
+            if(!document.getElementById('partner').value) { 
+                toggleError('partner', true); 
+                isValid = false; 
+            } else { 
+                toggleError('partner', false); 
+            }
+
+            // 2. Data
+            if(!document.getElementById('appDate').value) { 
+                toggleError('appDate', true); 
+                isValid = false; 
+            } else { 
+                toggleError('appDate', false); 
+            }
+
+            // 3. Solicitante
+            if (!checkField('requestor', 'otherRequestorInput')) isValid = false;
+
+            // 4. Aplicador
+            if (!checkField('applicator', 'otherApplicatorInput')) isValid = false;
+
+            // 5. Início
+            if(!document.getElementById('startTime').value) { 
+                toggleError('startTime', true); 
+                isValid = false; 
+            } else { 
+                toggleError('startTime', false); 
+            }
+
+            // 6. Fim
+            if(!document.getElementById('endTime').value) { 
+                toggleError('endTime', true); 
+                isValid = false; 
+            } else { 
+                toggleError('endTime', false); 
+            }
+
+            return isValid;
+        }
+
         // --- ATUALIZAÇÃO EM TEMPO REAL (DADOS GERAIS) ---
         function updateGlobalState() {
+            // Limpa erros visuais ao editar
+            const fields = ['partner', 'appDate', 'requestor', 'otherRequestorInput', 'applicator', 'otherApplicatorInput', 'startTime', 'endTime'];
+            fields.forEach(id => {
+                const el = document.getElementById(id);
+                // Reset manual simples:
+                 if(el) el.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+            });
+            // Oculta spans de erro específicos
+            document.querySelectorAll('[id^="error-"]').forEach(el => el.classList.add('hidden'));
+
             // Coleta dados dos campos globais
             globalInfo.partner = document.getElementById('partner').value;
             globalInfo.date = document.getElementById('appDate').value;
@@ -459,15 +572,18 @@
             div.className = "flex gap-2 items-start product-row animate-fade-in flex-wrap sm:flex-nowrap"; 
             div.id = rowId;
             
+            // Options for select
             const units = ['ml', 'L', 'g', 'Kg'];
             const optionsHtml = units.map(u => `<option value="${u}" ${u === unit ? 'selected' : ''}>${u}</option>`).join('');
 
+            // Tipos de Produto - ORDENADOS A-Z
             const standardTypes = [
                 'Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Desfolhantes',
                 'Fungicidas', 'Herbicidas', 'Inseticidas', 'Natural', 'Nematicidas',
                 'Nutricional', 'Repelente', 'Rodenticidas'
             ];
 
+            // List of Products SORTED ALPHABETICALLY
             const standardProducts = [
                 "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", 
                 "Carbon N-10", "Coda Sul PH", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Evidence", "Full Grow", 
@@ -475,6 +591,7 @@
                 "Mukussan", "Óleo Vegetal", "Shenzi", "Speed Dil", "Timorex", "Trichoderma", "Vinagre", "Xixi"
             ];
             
+            // Determine initial state for TYPE
             let isCustom = false;
             let displayType = type;
             let customTypeValue = '';
@@ -492,6 +609,7 @@
                 `<option value="${t}" ${t === displayType ? 'selected' : ''}>${t}</option>`
             ).join('');
 
+            // Determine initial state for PRODUCT NAME
             let isCustomProduct = false;
             let displayProduct = name;
             let customProductValue = '';
@@ -506,11 +624,13 @@
                 `<option value="${p}" ${p === displayProduct ? 'selected' : ''}>${p}</option>`
             ).join('');
             
+            // Classes e Atributos para TIPO
             const selectClass = isCustom ? "prod-type-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-type-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!type ? 'text-slate-400' : 'text-slate-800'}`;
             const customInputDivClass = isCustom ? "prod-type-custom-div w-full relative" : "prod-type-custom-div hidden w-full relative";
             const selectRequired = !isCustom ? 'required' : '';
             const inputRequired = isCustom ? 'required' : '';
 
+            // Classes e Atributos para PRODUTO
             const prodSelectClass = isCustomProduct ? "prod-name-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-name-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!name ? 'text-slate-400' : 'text-slate-800'}`;
             const prodCustomInputDivClass = isCustomProduct ? "prod-name-custom-div w-full relative" : "prod-name-custom-div hidden w-full relative";
             const prodSelectRequired = !isCustomProduct ? 'required' : '';
@@ -518,31 +638,37 @@
 
             div.innerHTML = `
                 <div class="w-full sm:w-auto sm:flex-grow relative">
-                    <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); toggleRowCustomProduct(this)" class="${prodSelectClass}" ${prodSelectRequired}>
+                    <!-- PRODUCT SELECT -->
+                    <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); this.classList.remove('border-red-500'); toggleRowCustomProduct(this)" class="${prodSelectClass}" ${prodSelectRequired}>
                         <option value="" disabled ${!name ? 'selected' : ''}>Selecione o Produto...</option>
                         ${productsOptionsHtml}
                     </select>
+
+                    <!-- PRODUCT INPUT OVERLAY -->
                     <div class="${prodCustomInputDivClass}">
-                        <input type="text" placeholder="Nome do Produto" class="prod-name-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customProductValue}" ${prodInputRequired}>
+                        <input type="text" placeholder="Nome do Produto" oninput="this.classList.remove('border-red-500')" class="prod-name-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customProductValue}" ${prodInputRequired}>
                         <button type="button" onclick="resetRowProduct(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
                             <i data-lucide="x-circle" width="14"></i>
                         </button>
                     </div>
                 </div>
                 <div class="w-1/2 sm:w-28 relative">
-                     <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); toggleRowCustomType(this)" class="${selectClass}" ${selectRequired}>
+                     <!-- TYPE SELECT -->
+                     <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); this.classList.remove('border-red-500'); toggleRowCustomType(this)" class="${selectClass}" ${selectRequired}>
                         <option value="" disabled ${!type ? 'selected' : ''}>Selecione...</option>
                         ${typesOptionsHtml}
                     </select>
+
+                    <!-- TYPE INPUT OVERLAY -->
                     <div class="${customInputDivClass}">
-                        <input type="text" placeholder="Qual?" class="prod-type-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customTypeValue}" ${inputRequired}>
+                        <input type="text" placeholder="Qual?" oninput="this.classList.remove('border-red-500')" class="prod-type-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customTypeValue}" ${inputRequired}>
                         <button type="button" onclick="resetRowType(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
                             <i data-lucide="x-circle" width="14"></i>
                         </button>
                     </div>
                 </div>
                 <div class="w-1/4 sm:w-20">
-                    <input type="text" inputmode="decimal" oninput="formatDecimalInput(this)" placeholder="Dose" class="prod-dose-input w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" value="${dose}" required>
+                    <input type="text" inputmode="decimal" oninput="formatDecimalInput(this); this.classList.remove('border-red-500')" placeholder="Dose" class="prod-dose-input w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" value="${dose}" required>
                 </div>
                 <div class="w-1/4 sm:w-20">
                     <select class="prod-unit-input w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
@@ -557,58 +683,72 @@
             lucide.createIcons();
         }
 
-        // --- TOGGLE FUNCTIONS ---
+        // --- NEW PRODUCT TOGGLE FUNCTIONS (COM LÓGICA DE REQUIRED) ---
         function toggleRowCustomProduct(selectElement) {
             if(selectElement.value === 'Outros') {
                 const parent = selectElement.parentElement;
                 const customDiv = parent.querySelector('.prod-name-custom-div');
                 const customInput = customDiv.querySelector('input');
+                
                 selectElement.classList.add('hidden');
                 selectElement.required = false; 
+
                 customDiv.classList.remove('hidden');
                 customInput.required = true; 
                 customInput.focus();
             }
         }
+
         function resetRowProduct(btnElement) {
             const customDiv = btnElement.parentElement;
             const parent = customDiv.parentElement;
             const select = parent.querySelector('.prod-name-select');
             const input = customDiv.querySelector('input');
+            
             input.value = ''; 
             input.required = false; 
+            
             select.selectedIndex = 0; 
             select.classList.remove('hidden');
             select.classList.add('text-slate-400'); 
             select.required = true; 
+
             customDiv.classList.add('hidden');
         }
+
         function toggleRowCustomType(selectElement) {
             if(selectElement.value === 'Outros') {
                 const parent = selectElement.parentElement;
                 const customDiv = parent.querySelector('.prod-type-custom-div');
                 const customInput = customDiv.querySelector('input');
+                
                 selectElement.classList.add('hidden');
                 selectElement.required = false;
+
                 customDiv.classList.remove('hidden');
                 customInput.required = true;
                 customInput.focus();
             }
         }
+
         function resetRowType(btnElement) {
             const customDiv = btnElement.parentElement;
             const parent = customDiv.parentElement;
             const select = parent.querySelector('.prod-type-select');
             const input = customDiv.querySelector('input');
+            
             input.value = ''; 
             input.required = false;
+
             select.value = ''; 
             select.selectedIndex = 0; 
             select.classList.remove('hidden');
             select.classList.add('text-slate-400');
             select.required = true;
+
             customDiv.classList.add('hidden');
         }
+
         function removeProductRow(id) {
             const container = document.getElementById('productsContainer');
             if (container.children.length > 1) {
@@ -621,6 +761,32 @@
                 if(typeResetBtn) resetRowType(typeResetBtn);
                 row.querySelector('.prod-dose-input').value = '';
             }
+        }
+
+        function getProductsFromForm() {
+            const rows = document.querySelectorAll('.product-row');
+            const products = [];
+            rows.forEach(row => {
+                const prodSelect = row.querySelector('.prod-name-select');
+                let name = prodSelect.value;
+                if (prodSelect.classList.contains('hidden')) {
+                    name = row.querySelector('.prod-name-custom-input').value.trim();
+                }
+
+                const select = row.querySelector('.prod-type-select');
+                let type = select.value;
+                if (select.classList.contains('hidden')) {
+                    type = row.querySelector('.prod-type-custom-input').value.trim();
+                }
+
+                const dose = row.querySelector('.prod-dose-input').value.trim();
+                const unit = row.querySelector('.prod-unit-input').value;
+                
+                if (name && dose) {
+                    products.push({ name, type, dose, unit });
+                }
+            });
+            return products;
         }
 
         // --- CÁLCULO DE TEMPO ---
@@ -643,7 +809,6 @@
             } else {
                 totalInput.value = "";
             }
-            // Trigger update of global state when calc finishes
             updateGlobalState();
         }
 
@@ -703,7 +868,7 @@
         }
         
         function getFilteredData() {
-            const currentPartner = globalInfo.partner || document.getElementById('partner').value; // Use global state
+            const currentPartner = globalInfo.partner || document.getElementById('partner').value; 
             if(!currentPartner) return [];
             return appData.filter(item => item.partner === currentPartner);
         }
@@ -792,16 +957,7 @@
         }
 
         function clearBlockForm(clearAll = false) {
-            // Este botão agora limpa apenas o formulário de blocos, a menos que especificado
-            // Se o usuário clicar em "Limpar" no card do bloco, limpa só o bloco.
-            // Se quiser limpar tudo (incluindo cabeçalho), precisaria de outro botão ou lógica.
-            // O botão "Limpar" atual chama clearBlockForm(true) o que reseta tudo, mas o usuário pediu "independência".
-            // Então vamos alterar o comportamento do botão "Limpar" no card do formulário para false.
-            
-            // Mas o botão no HTML chama clearBlockForm(true). Vou alterar para false no HTML.
-            
             if (clearAll) {
-                // Mantemos a opção de limpar tudo se necessário, mas o botão principal agora deve ser parcial
                 document.getElementById('partner').selectedIndex = 0;
                 resetRequestorField();
                 resetApplicatorField();
@@ -820,6 +976,12 @@
             document.getElementById('syrupVolume').value = '';
             document.getElementById('phValue').value = ''; 
             document.getElementById('notes').value = '';
+            
+            // Limpa erros visuais de bloco
+            const blockFields = ['crop', 'otherCropInput', 'blockId', 'targetPest', 'syrupVolume'];
+            blockFields.forEach(id => {
+                toggleError(id, false);
+            });
 
             editingIndex = -1;
             const submitBtn = document.getElementById('submitBtn');
@@ -839,36 +1001,90 @@
         // --- ADD ITEM ---
         function addItem(e) {
             e.preventDefault();
-            
-            const selectValue = document.getElementById('crop').value;
-            let finalCropName = selectValue;
-            if (selectValue === 'Outros') {
-                finalCropName = document.getElementById('otherCropInput').value;
-                if (!finalCropName.trim()) { alert("Digite o nome da cultura."); return; }
+
+            let isValid = true;
+
+            // 1. Validação Header
+            if (!validateHeader()) {
+                 isValid = false;
+                 // Scroll to header error
+                 document.getElementById('generalDataCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 return;
             }
 
+            // 2. Validação Bloco
+            const crop = document.getElementById('crop');
+            if (crop.value === 'Outros') {
+                 if (!document.getElementById('otherCropInput').value) { toggleError('otherCropInput', true); isValid = false; }
+                 else toggleError('otherCropInput', false);
+            } else {
+                 if (!crop.value) { toggleError('crop', true); isValid = false; }
+                 else toggleError('crop', false);
+            }
+
+            const blockId = document.getElementById('blockId');
+            if (!blockId.value) { toggleError('blockId', true); isValid = false; }
+            else toggleError('blockId', false);
+
+            const targetPest = document.getElementById('targetPest');
+            if (!targetPest.value) { toggleError('targetPest', true); isValid = false; }
+            else toggleError('targetPest', false);
+
+            const syrupVolume = document.getElementById('syrupVolume');
+            if (!syrupVolume.value) { toggleError('syrupVolume', true); isValid = false; }
+            else toggleError('syrupVolume', false);
+
+            // 3. Validação Produtos
             const productsList = [];
-            let hasError = false;
             const rows = document.querySelectorAll('.product-row');
             if (rows.length === 0) { alert("Adicione pelo menos um produto."); return; }
 
             for (const row of rows) {
                 const prodSelect = row.querySelector('.prod-name-select');
-                let name = prodSelect.value;
-                if (prodSelect.classList.contains('hidden')) name = row.querySelector('.prod-name-custom-input').value.trim();
-
+                const prodCustom = row.querySelector('.prod-name-custom-input');
                 const typeSelect = row.querySelector('.prod-type-select');
+                const typeCustom = row.querySelector('.prod-type-custom-input');
+                const doseInput = row.querySelector('.prod-dose-input');
+                const unitInput = row.querySelector('.prod-unit-input');
+
+                let name = prodSelect.value;
+                if (prodSelect.classList.contains('hidden')) name = prodCustom.value.trim();
+                
                 let type = typeSelect.value;
-                if (typeSelect.classList.contains('hidden')) type = row.querySelector('.prod-type-custom-input').value.trim();
+                if (typeSelect.classList.contains('hidden')) type = typeCustom.value.trim();
 
-                const dose = row.querySelector('.prod-dose-input').value.trim();
-                const unit = row.querySelector('.prod-unit-input').value;
+                const dose = doseInput.value.trim();
+                const unit = unitInput.value;
 
-                if (!name || name === "" || !type || type === "" || !dose) { hasError = true; break; }
-                productsList.push({ name, type, dose, unit });
+                // Valida Linha
+                if (!name || name === "") {
+                    if (prodSelect.classList.contains('hidden')) prodCustom.classList.add('border-red-500');
+                    else { prodSelect.classList.add('border-red-500'); }
+                    isValid = false;
+                }
+                if (!type || type === "") {
+                    if (typeSelect.classList.contains('hidden')) typeCustom.classList.add('border-red-500');
+                    else { typeSelect.classList.add('border-red-500'); }
+                    isValid = false;
+                }
+                if (!dose) {
+                    doseInput.classList.add('border-red-500');
+                    isValid = false;
+                }
+
+                if (name && type && dose) {
+                     productsList.push({ name, type, dose, unit });
+                }
             }
 
-            if (hasError) { alert("⚠️ Atenção: Por favor, selecione o Produto, o Tipo e informe a Dose."); return; }
+            if (!isValid) {
+                return; // Stop here, visual errors shown
+            }
+
+            // Coleta dados finais
+            const selectValue = document.getElementById('crop').value;
+            let finalCropName = selectValue;
+            if (selectValue === 'Outros') finalCropName = document.getElementById('otherCropInput').value;
 
             // Usa GLOBAL INFO para o cabeçalho do item
             const newItem = {
@@ -897,7 +1113,7 @@
             }
             
             saveToStorage();
-            clearBlockForm(false); // Limpa APENAS os campos do bloco
+            clearBlockForm(false); 
             renderReport(); 
             renderList();
         }
@@ -906,13 +1122,9 @@
             const item = appData[index];
             editingIndex = index; 
 
-            // Dados Gerais (Header) - Opcional: Atualizar o global com o do item editado?
-            // Para manter a independência, ao editar um item, carregamos seus dados NO FORMULÁRIO GLOBAL também
-            // para que o usuário veja o contexto daquele item.
             document.getElementById('partner').value = item.partner;
             document.getElementById('appDate').value = item.date;
             
-            // Solicitante
             const reqSelect = document.getElementById('requestor');
             const reqOptions = Array.from(reqSelect.options).map(o => o.value);
             if (reqOptions.includes(item.requestor)) {
@@ -925,7 +1137,6 @@
                 document.getElementById('otherRequestorInput').value = item.requestor;
             }
 
-            // Aplicador
             const appSelect = document.getElementById('applicator');
             const appOptions = Array.from(appSelect.options).map(o => o.value);
             if (appOptions.includes(item.applicator)) {
@@ -941,11 +1152,8 @@
             document.getElementById('startTime').value = item.startTime || '';
             document.getElementById('endTime').value = item.endTime || '';
             calculateDuration(); 
-            
-            // Atualiza estado global para refletir o item sendo editado
             updateGlobalState();
 
-            // Dados do Bloco
             const cropSelect = document.getElementById('crop');
             const otherInput = document.getElementById('otherCropInput');
             const options = Array.from(cropSelect.options).map(o => o.value);
@@ -1032,6 +1240,64 @@
             `;
         }
 
+        function renderList() {
+            const list = document.getElementById('itemsList');
+            list.innerHTML = '';
+            
+            const displayData = getFilteredData();
+
+            if (appData.length === 0) {
+                list.innerHTML = '<li class="text-center text-slate-400 italic py-2">Nenhum registro adicionado.</li>';
+                return;
+            } else if (displayData.length === 0) {
+                 list.innerHTML = '<li class="text-center text-slate-400 italic py-2">Nenhum registro para este parceiro.</li>';
+                 return;
+            }
+
+            displayData.forEach((item) => {
+                const originalIndex = appData.indexOf(item);
+                const activeClass = (originalIndex === editingIndex) ? 'border-blue-400 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-100 bg-slate-50';
+                
+                const dateParts = item.date.split('-');
+                const shortDate = `${dateParts[2]}/${dateParts[1]}`;
+                
+                let prodSummary = "";
+                if (item.products && item.products.length > 0) {
+                    prodSummary = item.products[0].name;
+                    if (item.products.length > 1) {
+                        prodSummary += ` + ${item.products.length - 1} outros`;
+                    }
+                } else {
+                    prodSummary = item.product || "Sem produto";
+                }
+
+                let locationLabel = "Bloco";
+                if (item.crop && item.crop.toLowerCase().includes('pepino')) {
+                    locationLabel = "Setor";
+                }
+
+                const li = document.createElement('li');
+                li.className = `flex justify-between items-center p-2 rounded border ${activeClass} transition-all`;
+                li.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">${shortDate} • ${locationLabel} ${item.block}</span>
+                        <span class="font-bold text-slate-700">${prodSummary}</span>
+                        <span class="text-xs text-slate-500">${item.target}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <button onclick="editItem(${originalIndex})" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded-md mr-1 transition-colors">
+                            <i data-lucide="pencil" width="14"></i>
+                        </button>
+                        <button onclick="removeItem(${originalIndex})" class="text-red-500 hover:bg-red-100 p-1.5 rounded-md transition-colors">
+                            <i data-lucide="trash-2" width="14"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+            lucide.createIcons();
+        }
+
         function renderReport() {
             const container = document.getElementById('reportContent');
             const footerContainer = document.getElementById('operationalFooter');
@@ -1072,7 +1338,7 @@
                         });
                         productsHtml += `</div>`;
                     }
-                    // ... (resto do render igual)
+                    
                     const html = `
                     <div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
                         <div class="flex flex-col mb-2">
@@ -1112,7 +1378,256 @@
             renderHeaderAndSummary(); // Atualiza header com dados globais
         }
 
-        // ... (Export functions maintained)
+        function copyToWhatsApp() {
+            // Usa globalInfo para o cabeçalho
+            const displayData = getFilteredData();
+            if (displayData.length === 0) {
+                alert("Adicione registros primeiro.");
+                return;
+            }
+
+            const dateObj = globalInfo.date ? new Date(globalInfo.date) : new Date();
+            const dateStr = dateObj.toLocaleDateString('pt-BR');
+            const partnerName = globalInfo.partner || "SPG";
+            
+            const req = globalInfo.requestor || '-';
+            const app = globalInfo.applicator || '-';
+            
+            let timeRange = "";
+            if(globalInfo.startTime && globalInfo.endTime) {
+                timeRange = `${globalInfo.startTime} às ${globalInfo.endTime}`;
+            }
+
+            let text = `🌱 *Registro Fitossanitário - ${partnerName}*\n`;
+            text += `📅 Data: ${dateStr}\n`;
+            text += `👨‍🌾 Solic: ${req}\n`;
+            text += `🚜 Aplic: ${app}\n`;
+            if (timeRange) text += `⏰ Horário: ${timeRange}\n`;
+            
+            text += `\n*APLICAÇÕES:*\n\n`;
+
+            displayData.forEach(item => {
+                let locationLabel = "Bloco";
+                if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+
+                text += `📍 *${locationLabel} ${item.block}* (${item.crop})\n`;
+                text += `🎯 Alvo: ${item.target}\n`;
+                
+                if (item.products && item.products.length > 0) {
+                    item.products.forEach(p => {
+                        const unitDisplay = p.unit ? p.unit : ''; 
+                        text += `🛡️ [${p.type || '?'}] ${p.name} (${p.dose} ${unitDisplay})\n`;
+                    });
+                }
+
+                text += `💧 Vol: ${item.volume}L`;
+                if(item.ph) text += ` | PH: ${item.ph}`;
+                text += `\n`;
+                if(item.notes) text += `📝 Obs: ${item.notes}\n`;
+                text += `----------------\n`;
+            });
+
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert("Resumo copiado!");
+            } catch (err) {
+                alert("Erro ao copiar.");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // --- FUNÇÃO PARA GERAR IMAGEM HD (ATUALIZADA IGUAL AO ANEXO) ---
+        async function downloadImage() {
+            const element = document.getElementById('report-card');
+            // Busca correta do texto do botão
+            const btnSpan = document.querySelector('button[onclick="downloadImage()"] span');
+            const originalText = btnSpan.innerText;
+            btnSpan.innerText = "Gerando Imagem...";
+
+            try {
+                // Check for data first
+                const data = getFilteredData();
+                if (data.length === 0) {
+                    alert("Adicione registros primeiro.");
+                    return;
+                }
+
+                // Configurações idênticas ao código de referência
+                const options = {
+                    scale: 5, // Alta resolução
+                    useCORS: true, 
+                    allowTaint: true,
+                    scrollY: -window.scrollY,
+                    backgroundColor: '#ffffff', 
+                    windowWidth: 480, // Força layout mobile
+                    onclone: (doc) => {
+                        const el = doc.getElementById('report-card');
+                        const content = doc.getElementById('reportContent');
+                        
+                        if (el) { 
+                            el.style.width = '450px'; 
+                            el.style.maxWidth = '450px';
+                            el.style.margin = '0'; 
+                            el.style.boxShadow = 'none';
+                            el.style.borderRadius = '0';
+                            el.style.border = 'none';
+                        }
+                        if (content) { 
+                            content.style.height = 'auto'; 
+                            content.style.overflow = 'visible'; 
+                            content.style.maxHeight = 'none';
+                        }
+                    }
+                };
+
+                const canvas = await html2canvas(element, options);
+                
+                // Gera Link de Download
+                const imgData = canvas.toDataURL('image/png');
+                
+                // --- GERAR NOME DO ARQUIVO PERSONALIZADO ---
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
+                const weekNum = getWeekNumber(now);
+                let weekday = now.toLocaleDateString('pt-BR', { weekday: 'long' });
+                weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+
+                const partnerInput = document.getElementById('partner');
+                let partnerName = "Geral"; 
+                if (partnerInput && partnerInput.value) {
+                    partnerName = partnerInput.value;
+                } else if (appData.length > 0 && appData[0].partner) {
+                    partnerName = appData[0].partner;
+                }
+
+                // LÓGICA DE PREFIXO DO NOME DO ARQUIVO
+                let filePrefix = "Resumo de Aplicações Fitossanitárias";
+
+                const fileName = `${filePrefix} - ${weekday} ${dateStr} Semana ${weekNum} - ${partnerName}.png`;
+
+                // Cria elemento temporário para download
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (err) {
+                console.error("Erro ao gerar imagem:", err);
+                alert("Erro ao gerar imagem: " + err.message);
+            } finally {
+                btnSpan.innerText = originalText;
+            }
+        }
+
+        async function downloadPDF() {
+             const { jsPDF } = window.jspdf;
+            
+            // --- ATUALIZAR DADOS NO TEMPLATE PDF ---
+            const data = getFilteredData();
+            if (data.length === 0) {
+                alert("Adicione registros primeiro.");
+                return;
+            }
+
+            // Dados Gerais
+            document.getElementById('pdf-partner').innerText = data[0].partner || '-';
+            
+            const dateParts = data[0].date.split('-');
+            document.getElementById('pdf-date').innerText = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            
+            // Dados Operacionais
+            const uniqueRequestors = new Set();
+            const uniqueApplicators = new Set();
+            let startTimes = [];
+            let endTimes = [];
+            
+            data.forEach(item => {
+                if(item.requestor) uniqueRequestors.add(item.requestor);
+                if(item.applicator) uniqueApplicators.add(item.applicator);
+                if(item.startTime) startTimes.push(item.startTime);
+                if(item.endTime) endTimes.push(item.endTime);
+            });
+            
+            document.getElementById('pdf-requestor').innerText = Array.from(uniqueRequestors).join(', ') || '-';
+            document.getElementById('pdf-applicator').innerText = Array.from(uniqueApplicators).join(', ') || '-';
+            document.getElementById('pdf-total-blocks').innerText = data.length;
+
+            startTimes.sort();
+            endTimes.sort();
+            let timeStr = "-";
+            if(startTimes.length > 0 && endTimes.length > 0) {
+                timeStr = `${startTimes[0]} às ${endTimes[endTimes.length - 1]}`;
+            }
+            document.getElementById('pdf-time').innerText = timeStr;
+
+            // Preencher Tabela
+            const tbody = document.getElementById('pdf-table-body');
+            tbody.innerHTML = '';
+            
+            data.forEach(item => {
+                let locationLabel = "Bloco";
+                if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                
+                let productsStr = "";
+                if (item.products && item.products.length > 0) {
+                    productsStr = item.products.map(p => `<div>• [${p.type}] ${p.name} (${p.dose}${p.unit ? ' ' + p.unit : ''})</div>`).join('');
+                } 
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${locationLabel} ${item.block}</td>
+                    <td>${item.crop}</td>
+                    <td>${item.target}</td>
+                    <td>${productsStr}</td>
+                    <td>${item.volume}</td>
+                    <td>${item.ph || '-'}</td>
+                    <td>${item.notes || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // --- GERAÇÃO PDF ---
+            const element = document.getElementById('technical-report-template');
+            const btnText = document.querySelector('button[onclick="downloadPDF()"] span');
+            const originalText = btnText.innerText;
+            btnText.innerText = "Gerando...";
+
+            try {
+                // Torna visível temporariamente para captura correta
+                element.style.top = "0";
+                element.style.left = "0";
+                element.style.zIndex = "9999";
+
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                element.style.top = "-9999px";
+                element.style.left = "-9999px";
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Relatorio_Tecnico_${new Date().toISOString().slice(0,10)}.pdf`);
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao gerar PDF.");
+                element.style.top = "-9999px";
+                element.style.left = "-9999px";
+            } finally {
+                btnText.innerText = originalText;
+            }
+        }
     </script>
 </body>
 </html>
