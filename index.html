@@ -421,12 +421,12 @@
         }
 
         // --- LÓGICA DE PRODUTOS DINÂMICOS ---
-        function addProductRow(name = '', dose = '', unit = 'ml', type = 'Biológico') { // Added type param
+        function addProductRow(name = '', dose = '', unit = 'ml', type = '') { 
             const container = document.getElementById('productsContainer');
             const rowId = 'prod-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
             
             const div = document.createElement('div');
-            div.className = "flex gap-2 items-start product-row animate-fade-in flex-wrap sm:flex-nowrap"; // Allow wrap on tiny screens
+            div.className = "flex gap-2 items-start product-row animate-fade-in flex-wrap sm:flex-nowrap"; 
             div.id = rowId;
             
             // Options for select
@@ -435,22 +435,12 @@
 
             // Tipos de Produto - ORDENADOS A-Z
             const standardTypes = [
-                'Acaricidas',
-                'Adjuvantes',
-                'Bactericidas',
-                'Biológico',
-                'Desfolhantes',
-                'Fungicidas',
-                'Herbicidas',
-                'Inseticidas',
-                'Natural',
-                'Nematicidas',
-                'Nutricional',
-                'Repelente',
-                'Rodenticidas'
+                'Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Desfolhantes',
+                'Fungicidas', 'Herbicidas', 'Inseticidas', 'Natural', 'Nematicidas',
+                'Nutricional', 'Repelente', 'Rodenticidas'
             ];
 
-            // List of Products SORTED ALPHABETICALLY - ATUALIZADO COM OS NOVOS ITENS
+            // List of Products SORTED ALPHABETICALLY
             const standardProducts = [
                 "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", 
                 "Carbon N-10", "Coda Sul PH", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Evidence", "Full Grow", 
@@ -481,7 +471,6 @@
             let displayProduct = name;
             let customProductValue = '';
 
-            // Check if name is custom (not in list and not empty) or if it was saved as 'Outros' (unlikely for name but safe)
             if (name && !standardProducts.includes(name)) {
                 isCustomProduct = true;
                 customProductValue = name;
@@ -492,26 +481,30 @@
                 `<option value="${p}" ${p === displayProduct ? 'selected' : ''}>${p}</option>`
             ).join('');
             
-            // Layout classes for TYPE
-            const selectClass = isCustom ? "prod-type-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : "prod-type-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none";
+            // Classes e Atributos para TIPO
+            const selectClass = isCustom ? "prod-type-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-type-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!type ? 'text-slate-400' : 'text-slate-800'}`;
             const customInputDivClass = isCustom ? "prod-type-custom-div w-full relative" : "prod-type-custom-div hidden w-full relative";
+            // Lógica de Required: Se é custom, o input é required. Se é select, o select é required.
+            const selectRequired = !isCustom ? 'required' : '';
+            const inputRequired = isCustom ? 'required' : '';
 
-            // Layout classes for PRODUCT NAME
-            const prodSelectClass = isCustomProduct ? "prod-name-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : "prod-name-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none";
+            // Classes e Atributos para PRODUTO
+            const prodSelectClass = isCustomProduct ? "prod-name-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-name-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!name ? 'text-slate-400' : 'text-slate-800'}`;
             const prodCustomInputDivClass = isCustomProduct ? "prod-name-custom-div w-full relative" : "prod-name-custom-div hidden w-full relative";
-
+            const prodSelectRequired = !isCustomProduct ? 'required' : '';
+            const prodInputRequired = isCustomProduct ? 'required' : '';
 
             div.innerHTML = `
                 <div class="w-full sm:w-auto sm:flex-grow relative">
                     <!-- PRODUCT SELECT -->
-                    <select onchange="toggleRowCustomProduct(this)" class="${prodSelectClass}">
-                        <option value="" disabled ${!name ? 'selected' : ''}>Produto</option>
+                    <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); toggleRowCustomProduct(this)" class="${prodSelectClass}" ${prodSelectRequired}>
+                        <option value="" disabled ${!name ? 'selected' : ''}>Selecione o Produto...</option>
                         ${productsOptionsHtml}
                     </select>
 
                     <!-- PRODUCT INPUT OVERLAY -->
                     <div class="${prodCustomInputDivClass}">
-                        <input type="text" placeholder="Nome do Produto" class="prod-name-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customProductValue}">
+                        <input type="text" placeholder="Nome do Produto" class="prod-name-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customProductValue}" ${prodInputRequired}>
                         <button type="button" onclick="resetRowProduct(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
                             <i data-lucide="x-circle" width="14"></i>
                         </button>
@@ -519,14 +512,14 @@
                 </div>
                 <div class="w-1/2 sm:w-28 relative">
                      <!-- TYPE SELECT -->
-                     <select onchange="toggleRowCustomType(this)" class="${selectClass}">
-                        <option value="" disabled ${!type ? 'selected' : ''}>Tipo</option>
+                     <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); toggleRowCustomType(this)" class="${selectClass}" ${selectRequired}>
+                        <option value="" disabled ${!type ? 'selected' : ''}>Selecione...</option>
                         ${typesOptionsHtml}
                     </select>
 
                     <!-- TYPE INPUT OVERLAY -->
                     <div class="${customInputDivClass}">
-                        <input type="text" placeholder="Qual?" class="prod-type-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customTypeValue}">
+                        <input type="text" placeholder="Qual?" class="prod-type-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customTypeValue}" ${inputRequired}>
                         <button type="button" onclick="resetRowType(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
                             <i data-lucide="x-circle" width="14"></i>
                         </button>
@@ -548,7 +541,7 @@
             lucide.createIcons();
         }
 
-        // --- NEW PRODUCT TOGGLE FUNCTIONS ---
+        // --- NEW PRODUCT TOGGLE FUNCTIONS (COM LÓGICA DE REQUIRED) ---
         function toggleRowCustomProduct(selectElement) {
             if(selectElement.value === 'Outros') {
                 const parent = selectElement.parentElement;
@@ -556,7 +549,10 @@
                 const customInput = customDiv.querySelector('input');
                 
                 selectElement.classList.add('hidden');
+                selectElement.required = false; // Remove required do select oculto
+
                 customDiv.classList.remove('hidden');
+                customInput.required = true; // Adiciona required ao input visível
                 customInput.focus();
             }
         }
@@ -568,8 +564,48 @@
             const input = customDiv.querySelector('input');
             
             input.value = ''; 
-            select.selectedIndex = 0; // Back to 'Produto'
+            input.required = false; // Remove required do input
+            
+            select.selectedIndex = 0; 
             select.classList.remove('hidden');
+            select.classList.add('text-slate-400'); // Volta cor placeholder
+            select.required = true; // Devolve required ao select
+
+            customDiv.classList.add('hidden');
+        }
+
+        // Função para alternar para o input customizado (TIPO)
+        function toggleRowCustomType(selectElement) {
+            if(selectElement.value === 'Outros') {
+                const parent = selectElement.parentElement;
+                const customDiv = parent.querySelector('.prod-type-custom-div');
+                const customInput = customDiv.querySelector('input');
+                
+                selectElement.classList.add('hidden');
+                selectElement.required = false;
+
+                customDiv.classList.remove('hidden');
+                customInput.required = true;
+                customInput.focus();
+            }
+        }
+
+        // Função para resetar e voltar ao select (TIPO)
+        function resetRowType(btnElement) {
+            const customDiv = btnElement.parentElement;
+            const parent = customDiv.parentElement;
+            const select = parent.querySelector('.prod-type-select');
+            const input = customDiv.querySelector('input');
+            
+            input.value = ''; 
+            input.required = false;
+
+            select.value = ''; // Reset
+            select.selectedIndex = 0; 
+            select.classList.remove('hidden');
+            select.classList.add('text-slate-400');
+            select.required = true;
+
             customDiv.classList.add('hidden');
         }
 
@@ -1011,12 +1047,50 @@
                 finalApplicator = document.getElementById('otherApplicatorInput').value;
             }
 
-            // Coleta lista de produtos
-            const productsList = getProductsFromForm();
-            if (productsList.length === 0) {
-                alert("Adicione pelo menos um produto.");
+            // --- VALIDAÇÃO DE PRODUTOS (ATUALIZADO) ---
+            const rows = document.querySelectorAll('.product-row');
+            if (rows.length === 0) {
+                alert("Adicione pelo menos um produto na lista.");
                 return;
             }
+
+            const productsList = [];
+            let hasError = false;
+
+            // Itera sobre as linhas visíveis para validar e coletar dados
+            for (const row of rows) {
+                // Lógica do Nome do Produto
+                const prodSelect = row.querySelector('.prod-name-select');
+                let name = prodSelect.value;
+                if (prodSelect.classList.contains('hidden')) {
+                    name = row.querySelector('.prod-name-custom-input').value.trim();
+                }
+
+                // Lógica do Tipo
+                const typeSelect = row.querySelector('.prod-type-select');
+                let type = typeSelect.value;
+                if (typeSelect.classList.contains('hidden')) {
+                    type = row.querySelector('.prod-type-custom-input').value.trim();
+                }
+
+                // Lógica da Dose
+                const dose = row.querySelector('.prod-dose-input').value.trim();
+                const unit = row.querySelector('.prod-unit-input').value;
+
+                // VERIFICAÇÃO DE CAMPOS VAZIOS
+                if (!name || name === "" || !type || type === "" || !dose) {
+                    hasError = true;
+                    break; // Para o loop ao encontrar o primeiro erro
+                }
+
+                productsList.push({ name, type, dose, unit });
+            }
+
+            if (hasError) {
+                alert("⚠️ Atenção: Por favor, selecione o Produto, o Tipo e informe a Dose para todos os itens da lista antes de registrar.");
+                return;
+            }
+            // -------------------------------------------
 
             const newItem = {
                 partner: document.getElementById('partner').value,
@@ -1194,22 +1268,23 @@
                         item.products.forEach(p => {
                             const unitDisplay = p.unit ? p.unit : '';
                             
-                            // Define cores para o badge de tipo
-                            let typeClass = "bg-slate-100 text-slate-600";
-                            if(p.type === 'Biológico') typeClass = "bg-green-100 text-green-700";
-                            if(p.type === 'Químico') typeClass = "bg-red-100 text-red-700";
-                            if(p.type === 'Nutricional') typeClass = "bg-blue-100 text-blue-700";
-                            if(p.type === 'Natural' || p.type === 'Repelente') typeClass = "bg-emerald-100 text-emerald-700";
-                            if(p.type === 'Adjuvantes') typeClass = "bg-amber-100 text-amber-700";
+                            // Define cores para o TEXTO do tipo (SEM FUNDO)
+                            let typeClass = "text-slate-400";
+                            if(p.type === 'Biológico') typeClass = "text-green-600";
+                            if(p.type === 'Químico') typeClass = "text-red-600";
+                            if(p.type === 'Nutricional') typeClass = "text-blue-600";
+                            if(p.type === 'Natural' || p.type === 'Repelente') typeClass = "text-emerald-600";
+                            if(p.type === 'Adjuvantes') typeClass = "text-amber-600";
                             if(['Inseticidas', 'Fungicidas', 'Herbicidas', 'Acaricidas', 'Nematicidas', 'Bactericidas', 'Rodenticidas', 'Desfolhantes', 'Químico'].includes(p.type)) {
-                                typeClass = "bg-red-100 text-red-700";
+                                typeClass = "text-red-600";
                             }
 
                             productsHtml += `
                                 <div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1 last:border-0">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex items-center gap-1">
                                         <span class="font-bold text-slate-700">• ${p.name}</span>
-                                        <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${typeClass}">${p.type || 'Geral'}</span>
+                                        <!-- REMOVIDO FUNDO E BORDAS, MANTIDO APENAS COR DO TEXTO -->
+                                        <span class="text-[9px] uppercase font-bold ${typeClass}">[${p.type || 'Geral'}]</span>
                                     </div>
                                     <span class="font-medium text-slate-600">${p.dose} ${unitDisplay}</span>
                                 </div>`;
