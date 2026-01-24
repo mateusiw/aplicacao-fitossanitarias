@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Registro Fitossanitário - SPG Oásis</title>
+    
+    <!-- Configurações PWA -->
+    <link rel="icon" type="image/png" href="https://i.imgur.com/f7UnnL0.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/f7UnnL0.png">
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SPG Fito">
+    
+    <!-- Bibliotecas Externas -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- HTML2Canvas + jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        input, select { line-height: 1.5; }
+        
+        /* Estilos para o Relatório Técnico (PDF) */
+        #technical-report-template {
+            width: 794px; /* A4 Width at 96dpi approx */
+            min-height: 1123px; /* A4 Height */
+            background: white;
+            padding: 40px;
+            box-sizing: border-box;
+            position: absolute;
+            top: -9999px;
+            left: -9999px;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #333;
+        }
+        .tech-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 11px;
+        }
+        .tech-table th {
+            background-color: #f1f5f9;
+            color: #475569;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            text-align: left;
+        }
+        .tech-table td {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+        .tech-header {
+            border-bottom: 2px solid #0f172a;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* Animação suave para troca de inputs */
+        .fade-in {
+            animation: fadeIn 0.2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-20 select-none">
+
+    <!-- Navbar -->
+    <div class="bg-white border-b border-slate-200 px-4 py-3 flex flex-col md:flex-row justify-between items-center shadow-sm sticky top-0 z-40 gap-3">
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <img src="https://i.imgur.com/f7UnnL0.png" alt="Logo SPG" class="w-8 h-8 rounded-lg shadow-sm border border-slate-100">
+            <div>
+                <h1 class="text-sm font-bold text-slate-800 leading-tight">SPG FITOSSANITÁRIO</h1>
+                <p class="text-[10px] text-slate-500 font-medium">Registro de Aplicações de Defensivos</p>
+            </div>
+        </div>
+        <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <!-- Botão WhatsApp -->
+            <button id="btnZap" onclick="copyToWhatsApp()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 active:bg-emerald-700 whitespace-nowrap">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+                <span>Zap</span>
+            </button>
+            
+            <!-- Botão Imagem -->
+            <button onclick="downloadImage()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-indigo-500/20 transition-all active:scale-95 active:bg-indigo-700 whitespace-nowrap">
+                <i data-lucide="image" class="w-4 h-4"></i>
+                <span>Imagem</span>
+            </button>
+
+            <!-- Botão PDF -->
+            <button id="pdfBtn" type="button" onclick="downloadPDF()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-red-600/20 transition-all active:scale-95 active:bg-red-800 whitespace-nowrap">
+                <i data-lucide="file-down" class="w-4 h-4"></i>
+                <span>PDF Técnico</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-8 mt-4">
+        
+        <!-- COLUNA DA ESQUERDA: CONTROLES -->
+        <div class="w-full lg:w-2/5 space-y-4">
+            
+            <!-- FORMULÁRIO -->
+            <div id="formContainer" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 transition-colors duration-300">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="formTitle" class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                        <i data-lucide="spray-can" class="text-blue-600"></i> Nova Aplicação
+                    </h2>
+                    <button type="button" onclick="clearBlockForm(true)" class="text-xs font-semibold text-slate-400 hover:text-red-500 transition-colors flex items-center gap-1">
+                        <i data-lucide="eraser" class="w-3 h-3"></i> Limpar Tudo
+                    </button>
+                </div>
+                
+                <form id="appForm" onsubmit="addItem(event)" class="space-y-4">
+                    
+                    <!-- LINHA 1: GERAL (PARCEIRO E DATA) -->
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-2 block">1. Dados Gerais</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Local</label>
+                                <select id="partner" required onchange="updateDynamicTitle(); renderList(); renderReport();" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                                    <option value="">Selecione...</option>
+                                    <option value="SPG Oásis">SPG Oásis</option>
+                                    <option value="SPG Sede">SPG Sede</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Data</label>
+                                <input type="date" id="appDate" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white text-slate-600">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LINHA 2: DADOS OPERACIONAIS -->
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-2 block">2. Dados Operacionais (Preencher 1x)</label>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <div class="relative">
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block">Solicitante</label>
+                                <!-- Select -->
+                                <select id="requestor" onchange="toggleOtherRequestorInput()" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="">Selecione...</option>
+                                    <option value="Marcio">Marcio</option>
+                                    <option value="Outro">Outro (Digitar)</option>
+                                </select>
+                                <!-- Input Overlay -->
+                                <div id="requestor-custom-div" class="hidden relative w-full fade-in">
+                                    <input type="text" id="otherRequestorInput" class="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nome do Solicitante">
+                                    <button type="button" onclick="resetRequestorField()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500">
+                                        <i data-lucide="x-circle" width="14"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="relative">
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block">Aplicador</label>
+                                <!-- Select -->
+                                <select id="applicator" onchange="toggleOtherApplicatorInput()" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                                    <option value="">Selecione...</option>
+                                    <option value="Equipe Erisvaldo">Equipe Erisvaldo</option>
+                                    <option value="Outro">Outro (Digitar)</option>
+                                </select>
+                                <!-- Input Overlay -->
+                                <div id="applicator-custom-div" class="hidden relative w-full fade-in">
+                                    <input type="text" id="otherApplicatorInput" class="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nome do Aplicador">
+                                    <button type="button" onclick="resetApplicatorField()" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500">
+                                        <i data-lucide="x-circle" width="14"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block">Início</label>
+                                <input type="time" id="startTime" onchange="calculateDuration()" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block">Fim</label>
+                                <input type="time" id="endTime" onchange="calculateDuration()" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 mb-1 block">Total</label>
+                                <input type="text" id="totalDuration" readonly placeholder="--:--" class="w-full p-2 border border-slate-200 bg-slate-100 rounded-lg text-sm text-slate-600 focus:outline-none font-semibold">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SEPARADOR VISUAL -->
+                    <div class="relative flex py-1 items-center">
+                        <div class="flex-grow border-t border-slate-200"></div>
+                        <span class="flex-shrink-0 mx-2 text-[10px] text-slate-400 font-bold uppercase">Lançamento de Blocos</span>
+                        <div class="flex-grow border-t border-slate-200"></div>
+                    </div>
+
+                    <!-- LINHA 3: CULTURA E BLOCO -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Cultura</label>
+                            <select id="crop" onchange="handleCropChange()" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                                <option value="Brócolis">Brócolis</option>
+                                <option value="Couve-Flor">Couve-Flor</option>
+                                <option value="Pepino">Pepino</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                            <input type="text" id="otherCropInput" class="hidden w-full p-2 mt-2 border border-blue-200 bg-blue-50 text-blue-800 font-semibold rounded-lg text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Qual cultura?">
+                        </div>
+                        <div>
+                            <label id="blockLabel" class="text-xs font-bold text-slate-500 uppercase mb-1 block">Nº Bloco/Talhão</label>
+                            <input type="text" id="blockId" required placeholder="Ex: 1 - A" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                        </div>
+                    </div>
+
+                    <!-- ALVO BIOLÓGICO -->
+                    <div>
+                        <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Alvo Biológico (Praga/Doença)</label>
+                        <input type="text" id="targetPest" required placeholder="Ex: Traça, Pulgão, Alternaria..." class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm">
+                    </div>
+
+                    <!-- LISTA DE PRODUTOS DINÂMICA -->
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-2 flex justify-between items-center">
+                            <span>Produtos & Dosagens</span>
+                            <button type="button" onclick="addProductRow()" class="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-[9px] bg-blue-50 px-2 py-1 rounded border border-blue-200 shadow-sm transition-all active:scale-95">
+                                <i data-lucide="plus" width="10"></i> Add Produto
+                            </button>
+                        </label>
+                        
+                        <div id="productsContainer" class="space-y-2">
+                            <!-- JS vai injetar linhas aqui -->
+                        </div>
+                    </div>
+
+                    <!-- DADOS DA CALDA (VOLUME E PH) -->
+                    <div class="grid grid-cols-2 gap-3">
+                         <div class="col-span-1">
+                            <label class="text-[10px] font-bold text-blue-600 mb-1 block">Vol. Calda (L)</label>
+                            <input type="number" id="syrupVolume" required placeholder="200" class="w-full p-2 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                         <div class="col-span-1">
+                            <label class="text-[10px] font-bold text-purple-600 mb-1 block">P.H.</label>
+                            <input type="text" id="phValue" placeholder="Ex: 6.0" inputmode="decimal" class="w-full p-2 border border-purple-200 bg-purple-50 rounded-lg text-sm text-purple-800 font-bold focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <label class="text-[10px] font-bold text-slate-500 mb-1 block">Observações (Opcional)</label>
+                        <input type="text" id="notes" placeholder="Ex: Vento calmo..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                   </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 mt-4 active:scale-95">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i> <span>Registrar Aplicação</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Lista de Itens -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-slate-700">Aplicações Registradas</h3>
+                    <button onclick="clearAll()" class="text-xs text-red-500 hover:text-red-700 font-bold underline">Limpar Tudo</button>
+                </div>
+                <ul id="itemsList" class="space-y-2 text-sm text-slate-600">
+                    <!-- JS -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- PREVIEW -->
+        <div class="w-full lg:w-3/5 flex flex-col bg-slate-200/50 p-4 rounded-3xl border border-slate-300/50 min-h-[calc(100vh-6rem)]">
+            
+            <div id="report-card" class="w-full flex-1 flex flex-col bg-white shadow-2xl overflow-hidden border border-slate-100 relative">
+                
+                <!-- Cabeçalho (Cinza/Slate) -->
+                <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 text-white relative overflow-hidden flex flex-col justify-start shrink-0 gap-3 antialiased">
+                    <!-- AUMENTADO para w-24 h-24 para melhorar nitidez -->
+                    <img src="https://i.imgur.com/f7UnnL0.png" alt="Logo SPG" class="absolute top-4 right-4 w-24 h-24 z-0" style="image-rendering: -webkit-optimize-contrast;">
+                    <div class="relative z-10 w-full pr-24"> 
+                        <h2 id="reportTitle" class="text-sm font-bold leading-snug tracking-normal">
+                            <!-- Injetado via JS -->
+                        </h2>
+                        <div class="mt-3 pt-3 border-t border-white/20">
+                             <span id="headerDateTime" class="text-xs font-medium text-slate-300 block opacity-90 tracking-wide">
+                                <!-- Injetado via JS -->
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Painel de DADOS OPERACIONAIS -->
+                <div id="operationalSummary" class="hidden bg-slate-50 border-b border-slate-200 p-4">
+                    <!-- Preenchido via JS -->
+                </div>
+
+                <!-- Painel de Totais -->
+                <div id="operationalFooter" class="bg-white border-b border-slate-200 p-4 shrink-0">
+                     <!-- Conteúdo injetado via JS -->
+                </div>
+
+                <!-- Conteúdo -->
+                <div id="reportContent" class="divide-y divide-slate-50 flex-1 overflow-y-auto">
+                    <div class="p-8 text-center text-slate-400 text-xs italic leading-relaxed h-full flex items-center justify-center">Utilize o formulário para registrar as aplicações.</div>
+                </div>
+
+                <!-- Rodapé da Marca -->
+                <div class="bg-slate-100 p-3 text-center border-t border-slate-200 shrink-0">
+                    <div class="flex justify-center items-center gap-2 text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-relaxed">
+                        SPG • Controle Fitossanitário
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ELEMENTO OCULTO PARA O RELATÓRIO TÉCNICO PDF -->
+    <div id="technical-report-template">
+        <div class="tech-header">
+            <div>
+                <h1 style="font-size: 24px; font-weight: bold; color: #1e293b; margin: 0;">RELATÓRIO DE APLICAÇÃO</h1>
+                <p style="font-size: 14px; color: #64748b; margin: 5px 0 0 0;">Controle Fitossanitário • SPG</p>
+            </div>
+            <img src="https://i.imgur.com/f7UnnL0.png" style="height: 80px; width: auto;">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; margin-bottom: 20px; font-size: 12px; border: 1px solid #e2e8f0; padding: 15px; background-color: #f8fafc;">
+            <div style="line-height: 1.8;">
+                <div><strong>Local:</strong> <span id="pdf-partner"></span></div>
+                <div><strong>Data:</strong> <span id="pdf-date"></span></div>
+            </div>
+            <div style="line-height: 1.8;">
+                <div><strong>Solicitante:</strong> <span id="pdf-requestor"></span></div>
+                <div><strong>Aplicador:</strong> <span id="pdf-applicator"></span></div>
+            </div>
+            <div style="line-height: 1.8; text-align: right;">
+                <div><strong>Horário:</strong> <span id="pdf-time"></span></div>
+                <div><strong>Total Blocos:</strong> <span id="pdf-total-blocks"></span></div>
+            </div>
+        </div>
+
+        <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 10px;">DETALHAMENTO DAS APLICAÇÕES</h3>
+        
+        <table class="tech-table">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Setor/Bloco</th>
+                    <th style="width: 15%;">Cultura</th>
+                    <th style="width: 10%;">Alvo</th>
+                    <th style="width: 30%;">Produtos (Dose)</th>
+                    <th style="width: 10%;">Vol. (L)</th>
+                    <th style="width: 5%;">pH</th>
+                    <th style="width: 15%;">Obs</th>
+                </tr>
+            </thead>
+            <tbody id="pdf-table-body">
+                <!-- Linhas injetadas via JS -->
+            </tbody>
+        </table>
+
+        <div style="margin-top: 60px; display: flex; justify-content: space-between; page-break-inside: avoid;">
+            <div style="width: 40%; border-top: 1px solid #333; text-align: center; font-size: 11px; padding-top: 5px;">
+                Responsável Técnico
+            </div>
+            <div style="width: 40%; border-top: 1px solid #333; text-align: center; font-size: 11px; padding-top: 5px;">
+                Responsável Aplicação
+            </div>
+        </div>
+        
+        <div style="position: absolute; bottom: 30px; width: 100%; text-align: center; font-size: 10px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 10px;">
+            Documento gerado eletronicamente pelo sistema SPG Fitossanitário.
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        console.log("Aplicação 'Fitossanitário SPG' carregada.");
+
+        let appData = [];
+        let editingIndex = -1;
+        const STORAGE_KEY = 'spg_fitosanitario_data'; 
+
+        // INICIALIZAÇÃO
+        lucide.createIcons();
+        
+        // Seta data de hoje no input
+        document.getElementById('appDate').valueAsDate = new Date();
+        
+        // Inicializa com uma linha de produto
+        addProductRow();
+
+        updateDynamicTitle();
+        loadFromStorage();
+
+        // --- FUNÇÕES DE FORMATAÇÃO ---
+        function formatDecimalInput(input) {
+            let value = input.value;
+            value = value.replace('.', ',');
+            value = value.replace(/[^0-9,]/g, '');
+            const parts = value.split(',');
+            if (parts.length > 2) {
+                value = parts[0] + ',' + parts.slice(1).join('');
+            }
+            input.value = value;
+        }
+
+        // --- LÓGICA DE PRODUTOS DINÂMICOS ---
+        function addProductRow(name = '', dose = '', unit = 'ml', type = 'Biológico') { // Added type param
+            const container = document.getElementById('productsContainer');
+            const rowId = 'prod-row-' + Date.now() + Math.random().toString(36).substr(2, 5);
+            
+            const div = document.createElement('div');
+            div.className = "flex gap-2 items-start product-row animate-fade-in flex-wrap sm:flex-nowrap"; // Allow wrap on tiny screens
+            div.id = rowId;
+            
+            // Options for select
+            const units = ['ml', 'L', 'g', 'Kg'];
+            const optionsHtml = units.map(u => `<option value="${u}" ${u === unit ? 'selected' : ''}>${u}</option>`).join('');
+
+            // Tipos de Produto - ORDENADOS A-Z
+            const standardTypes = [
+                'Acaricidas',
+                'Adjuvantes',
+                'Bactericidas',
+                'Biológico',
+                'Desfolhantes',
+                'Fungicidas',
+                'Herbicidas',
+                'Inseticidas',
+                'Natural',
+                'Nematicidas',
+                'Nutricional',
+                'Repelente',
+                'Rodenticidas'
+            ];
+
+            // List of Products SORTED ALPHABETICALLY - ATUALIZADO COM OS NOVOS ITENS
+            const standardProducts = [
+                "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", 
+                "Carbon N-10", "Coda Sul PH", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Evidence", "Full Grow", 
+                "Joiner", "Karate", "Kasumin", "Lannate", "Mancozeb", "Manipueira", "Metarhizium", 
+                "Mukussan", "Óleo Vegetal", "Shenzi", "Speed Dil", "Timorex", "Trichoderma", "Vinagre", "Xixi"
+            ];
+            
+            // Determine initial state for TYPE
+            let isCustom = false;
+            let displayType = type;
+            let customTypeValue = '';
+
+            if (type && !standardTypes.includes(type) && type !== 'Outros') {
+                isCustom = true;
+                customTypeValue = type;
+                displayType = 'Outros';
+            } else if (type === 'Outros') {
+                 isCustom = true;
+                 displayType = 'Outros';
+            }
+
+            const typesOptionsHtml = [...standardTypes, 'Outros'].map(t => 
+                `<option value="${t}" ${t === displayType ? 'selected' : ''}>${t}</option>`
+            ).join('');
+
+            // Determine initial state for PRODUCT NAME
+            let isCustomProduct = false;
+            let displayProduct = name;
+            let customProductValue = '';
+
+            // Check if name is custom (not in list and not empty) or if it was saved as 'Outros' (unlikely for name but safe)
+            if (name && !standardProducts.includes(name)) {
+                isCustomProduct = true;
+                customProductValue = name;
+                displayProduct = 'Outros';
+            } 
+            
+            const productsOptionsHtml = [...standardProducts, 'Outros'].map(p => 
+                `<option value="${p}" ${p === displayProduct ? 'selected' : ''}>${p}</option>`
+            ).join('');
+            
+            // Layout classes for TYPE
+            const selectClass = isCustom ? "prod-type-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : "prod-type-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none";
+            const customInputDivClass = isCustom ? "prod-type-custom-div w-full relative" : "prod-type-custom-div hidden w-full relative";
+
+            // Layout classes for PRODUCT NAME
+            const prodSelectClass = isCustomProduct ? "prod-name-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : "prod-name-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none";
+            const prodCustomInputDivClass = isCustomProduct ? "prod-name-custom-div w-full relative" : "prod-name-custom-div hidden w-full relative";
+
+
+            div.innerHTML = `
+                <div class="w-full sm:w-auto sm:flex-grow relative">
+                    <!-- PRODUCT SELECT -->
+                    <select onchange="toggleRowCustomProduct(this)" class="${prodSelectClass}">
+                        <option value="" disabled ${!name ? 'selected' : ''}>Produto</option>
+                        ${productsOptionsHtml}
+                    </select>
+
+                    <!-- PRODUCT INPUT OVERLAY -->
+                    <div class="${prodCustomInputDivClass}">
+                        <input type="text" placeholder="Nome do Produto" class="prod-name-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customProductValue}">
+                        <button type="button" onclick="resetRowProduct(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
+                            <i data-lucide="x-circle" width="14"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="w-1/2 sm:w-28 relative">
+                     <!-- TYPE SELECT -->
+                     <select onchange="toggleRowCustomType(this)" class="${selectClass}">
+                        <option value="" disabled ${!type ? 'selected' : ''}>Tipo</option>
+                        ${typesOptionsHtml}
+                    </select>
+
+                    <!-- TYPE INPUT OVERLAY -->
+                    <div class="${customInputDivClass}">
+                        <input type="text" placeholder="Qual?" class="prod-type-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customTypeValue}">
+                        <button type="button" onclick="resetRowType(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
+                            <i data-lucide="x-circle" width="14"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="w-1/4 sm:w-20">
+                    <input type="text" inputmode="decimal" oninput="formatDecimalInput(this)" placeholder="Dose" class="prod-dose-input w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" value="${dose}" required>
+                </div>
+                <div class="w-1/4 sm:w-20">
+                    <select class="prod-unit-input w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        ${optionsHtml}
+                    </select>
+                </div>
+                <button type="button" onclick="removeProductRow('${rowId}')" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg transition-colors h-[38px] flex items-center justify-center" tabindex="-1">
+                    <i data-lucide="trash-2" width="16"></i>
+                </button>
+            `;
+            container.appendChild(div);
+            lucide.createIcons();
+        }
+
+        // --- NEW PRODUCT TOGGLE FUNCTIONS ---
+        function toggleRowCustomProduct(selectElement) {
+            if(selectElement.value === 'Outros') {
+                const parent = selectElement.parentElement;
+                const customDiv = parent.querySelector('.prod-name-custom-div');
+                const customInput = customDiv.querySelector('input');
+                
+                selectElement.classList.add('hidden');
+                customDiv.classList.remove('hidden');
+                customInput.focus();
+            }
+        }
+
+        function resetRowProduct(btnElement) {
+            const customDiv = btnElement.parentElement;
+            const parent = customDiv.parentElement;
+            const select = parent.querySelector('.prod-name-select');
+            const input = customDiv.querySelector('input');
+            
+            input.value = ''; 
+            select.selectedIndex = 0; // Back to 'Produto'
+            select.classList.remove('hidden');
+            customDiv.classList.add('hidden');
+        }
+
+        // Função para alternar para o input customizado (TIPO)
+        function toggleRowCustomType(selectElement) {
+            if(selectElement.value === 'Outros') {
+                const parent = selectElement.parentElement;
+                const customDiv = parent.querySelector('.prod-type-custom-div');
+                const customInput = customDiv.querySelector('input');
+                
+                selectElement.classList.add('hidden');
+                customDiv.classList.remove('hidden');
+                customInput.focus();
+            }
+        }
+
+        // Função para resetar e voltar ao select (TIPO)
+        function resetRowType(btnElement) {
+            const customDiv = btnElement.parentElement;
+            const parent = customDiv.parentElement;
+            const select = parent.querySelector('.prod-type-select');
+            const input = customDiv.querySelector('input');
+            
+            input.value = ''; // Limpa valor
+            select.value = 'Biológico'; // Volta para o padrão ou primeiro item
+            select.classList.remove('hidden');
+            customDiv.classList.add('hidden');
+        }
+
+        function removeProductRow(id) {
+            const container = document.getElementById('productsContainer');
+            // Garante que tenha pelo menos 1 linha
+            if (container.children.length > 1) {
+                document.getElementById(id).remove();
+            } else {
+                // Se for a última, apenas limpa os valores
+                const row = document.getElementById(id);
+                // Reset Product Name
+                const prodResetBtn = row.querySelector('button[onclick^="resetRowProduct"]');
+                if(prodResetBtn) resetRowProduct(prodResetBtn);
+                
+                // Reset Type
+                const typeResetBtn = row.querySelector('button[onclick^="resetRowType"]');
+                if(typeResetBtn) resetRowType(typeResetBtn);
+                
+                row.querySelector('.prod-dose-input').value = '';
+            }
+        }
+
+        function getProductsFromForm() {
+            const rows = document.querySelectorAll('.product-row');
+            const products = [];
+            rows.forEach(row => {
+                // Product Name Logic
+                const prodSelect = row.querySelector('.prod-name-select');
+                let name = prodSelect.value;
+                if (prodSelect.classList.contains('hidden')) {
+                    const customProdInput = row.querySelector('.prod-name-custom-input');
+                    name = customProdInput.value.trim();
+                }
+
+                // Type Logic
+                const select = row.querySelector('.prod-type-select');
+                let type = select.value;
+                if (select.classList.contains('hidden')) {
+                    const customInput = row.querySelector('.prod-type-custom-input');
+                    type = customInput.value.trim() || 'Outros';
+                }
+
+                const dose = row.querySelector('.prod-dose-input').value.trim();
+                const unit = row.querySelector('.prod-unit-input').value;
+                
+                if (name && dose) {
+                    products.push({ name, type, dose, unit });
+                }
+            });
+            return products;
+        }
+
+        // --- FUNÇÕES DE CÁLCULO DE TEMPO ---
+        function calculateDuration() {
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+            const totalInput = document.getElementById('totalDuration');
+
+            if (start && end) {
+                const startD = new Date(`2000-01-01T${start}`);
+                const endD = new Date(`2000-01-01T${end}`);
+                let diffMs = endD - startD;
+                if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
+                
+                const totalMinutes = Math.floor(diffMs / 60000);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                
+                let durationStr = "";
+                if (hours > 0) durationStr += `${hours}h `;
+                durationStr += `${minutes}min`;
+                totalInput.value = durationStr;
+            } else {
+                totalInput.value = "";
+            }
+        }
+
+        // --- FUNÇÕES DE PERSISTÊNCIA ---
+        function saveToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appData));
+            } catch (e) {
+                console.error("Erro ao salvar", e);
+            }
+        }
+
+        function loadFromStorage() {
+            try {
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                if (storedData) {
+                    appData = JSON.parse(storedData);
+                    
+                    // Conversão de dados legados (se houver registros antigos com 1 produto só)
+                    appData.forEach(item => {
+                        if (item.product && (!item.products || item.products.length === 0)) {
+                            // Tenta extrair unidade da dose antiga se possível, senão assume ml e biológico padrão
+                            item.products = [{ name: item.product, dose: item.dosage, unit: 'ml', type: 'Biológico' }]; 
+                        }
+                    });
+
+                    if (appData.length > 0) {
+                        const lastItem = appData[appData.length - 1];
+                        if(lastItem) {
+                             if(lastItem.partner) document.getElementById('partner').value = lastItem.partner;
+                             
+                             // Carrega Solicitante
+                             if(lastItem.requestor) {
+                                 const reqSelect = document.getElementById('requestor');
+                                 const reqOptions = Array.from(reqSelect.options).map(o => o.value);
+                                 if (reqOptions.includes(lastItem.requestor)) {
+                                     reqSelect.value = lastItem.requestor;
+                                     toggleOtherRequestorInput();
+                                 } else {
+                                     reqSelect.value = 'Outro';
+                                     toggleOtherRequestorInput();
+                                     document.getElementById('otherRequestorInput').value = lastItem.requestor;
+                                 }
+                             }
+
+                             // Carrega Aplicador
+                             if(lastItem.applicator) {
+                                 const appSelect = document.getElementById('applicator');
+                                 const appOptions = Array.from(appSelect.options).map(o => o.value);
+                                 if (appOptions.includes(lastItem.applicator)) {
+                                     appSelect.value = lastItem.applicator;
+                                     toggleOtherApplicatorInput();
+                                 } else {
+                                     appSelect.value = 'Outro';
+                                     toggleOtherApplicatorInput();
+                                     document.getElementById('otherApplicatorInput').value = lastItem.applicator;
+                                 }
+                             }
+
+                             if(lastItem.startTime) document.getElementById('startTime').value = lastItem.startTime;
+                             if(lastItem.endTime) document.getElementById('endTime').value = lastItem.endTime;
+                             calculateDuration(); 
+                             updateDynamicTitle();
+                        }
+                    }
+                    renderList();
+                    renderReport();
+                }
+            } catch (e) {
+                console.error("Erro ao carregar", e);
+            }
+        }
+        
+        function getFilteredData() {
+            const partnerSelect = document.getElementById('partner');
+            const selectedPartner = partnerSelect ? partnerSelect.value : '';
+            if (!selectedPartner) return [];
+            return appData.filter(item => item.partner === selectedPartner);
+        }
+
+        // --- DATA E HORA ---
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+            var yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        }
+
+        function updateDynamicTitle() {
+            const now = new Date();
+            const partnerInput = document.getElementById('partner');
+            const currentPartner = (partnerInput && partnerInput.value) ? partnerInput.value : '';
+            const titleElement = document.getElementById('reportTitle');
+            const dateElement = document.getElementById('headerDateTime');
+            
+            const displayPartner = currentPartner || 'Parceiro';
+            titleElement.innerHTML = `Resumo de Aplicações Fitossanitárias<br>${displayPartner}`;
+
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const weekNumber = getWeekNumber(now);
+            
+            dateElement.innerText = `Gerado em: ${day}/${month}/${year} - Semana ${weekNumber}`;
+        }
+
+        // --- LÓGICA DE INPUTS "OUTRO" ---
+        
+        // FUNÇÃO UNIFICADA PARA GERENCIAR MUDANÇA DE CULTURA
+        function handleCropChange() {
+            const select = document.getElementById('crop');
+            const otherInput = document.getElementById('otherCropInput');
+            const blockLabel = document.getElementById('blockLabel');
+            const blockInput = document.getElementById('blockId');
+
+            // 1. Alternar input 'Outros'
+            if (select.value === 'Outros') {
+                otherInput.classList.remove('hidden');
+                otherInput.required = true;
+                otherInput.focus();
+            } else {
+                otherInput.classList.add('hidden');
+                otherInput.required = false;
+                otherInput.value = ''; 
+            }
+
+            // 2. Alterar Label (Pepino = Setor, Outros = Bloco)
+            if (select.value === 'Pepino') {
+                blockLabel.innerText = 'Nº Setor';
+                blockInput.placeholder = 'Ex: 1';
+            } else {
+                blockLabel.innerText = 'Nº Bloco/Talhão';
+                blockInput.placeholder = 'Ex: 1 - A';
+            }
+        }
+
+        function toggleOtherCropInput() {
+            // Deprecated - Use handleCropChange instead, keeping for legacy call compatibility if any
+            handleCropChange();
+        }
+
+        function toggleOtherRequestorInput() {
+            const select = document.getElementById('requestor');
+            const customDiv = document.getElementById('requestor-custom-div');
+            const customInput = document.getElementById('otherRequestorInput');
+            
+            if (select.value === 'Outro') {
+                select.classList.add('hidden');
+                customDiv.classList.remove('hidden');
+                customInput.focus();
+            }
+        }
+
+        function resetRequestorField() {
+            const select = document.getElementById('requestor');
+            const customDiv = document.getElementById('requestor-custom-div');
+            const customInput = document.getElementById('otherRequestorInput');
+
+            customInput.value = '';
+            select.value = 'Marcio'; // Padrão
+            select.selectedIndex = 0; // Volta para 'Selecione...' ou primeira opção
+            select.classList.remove('hidden');
+            customDiv.classList.add('hidden');
+        }
+
+        function toggleOtherApplicatorInput() {
+            const select = document.getElementById('applicator');
+            const customDiv = document.getElementById('applicator-custom-div');
+            const customInput = document.getElementById('otherApplicatorInput');
+            
+            if (select.value === 'Outro') {
+                select.classList.add('hidden');
+                customDiv.classList.remove('hidden');
+                customInput.focus();
+            }
+        }
+
+        function resetApplicatorField() {
+            const select = document.getElementById('applicator');
+            const customDiv = document.getElementById('applicator-custom-div');
+            const customInput = document.getElementById('otherApplicatorInput');
+
+            customInput.value = '';
+            select.selectedIndex = 0; 
+            select.classList.remove('hidden');
+            customDiv.classList.add('hidden');
+        }
+
+        function clearBlockForm(clearAll = false) {
+            
+            if (clearAll) {
+                document.getElementById('partner').selectedIndex = 0;
+                
+                resetRequestorField();
+                resetApplicatorField();
+                
+                document.getElementById('startTime').value = '';
+                document.getElementById('endTime').value = '';
+                document.getElementById('totalDuration').value = '';
+            }
+
+            // Campos de Bloco
+            document.getElementById('crop').selectedIndex = 0;
+            handleCropChange(); // Reset label and inputs
+            document.getElementById('blockId').value = '';
+            document.getElementById('targetPest').value = '';
+            
+            // Reset Produtos
+            document.getElementById('productsContainer').innerHTML = '';
+            addProductRow(); // Adiciona 1 linha vazia
+
+            document.getElementById('syrupVolume').value = '';
+            document.getElementById('phValue').value = ''; 
+            document.getElementById('notes').value = '';
+
+            editingIndex = -1;
+            const submitBtn = document.getElementById('submitBtn');
+            const formTitle = document.getElementById('formTitle');
+            const formContainer = document.getElementById('formContainer');
+
+            submitBtn.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> <span>Registrar Aplicação</span>';
+            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            submitBtn.classList.add('bg-slate-800', 'hover:bg-slate-900');
+            
+            formTitle.innerHTML = '<i data-lucide="spray-can" class="text-blue-600"></i> Nova Aplicação';
+            formContainer.classList.remove('border-blue-300', 'ring-2', 'ring-blue-100');
+            
+            lucide.createIcons();
+        }
+
+        function editItem(index) {
+            const item = appData[index];
+            editingIndex = index; 
+
+            // Dados Gerais
+            document.getElementById('partner').value = item.partner;
+            document.getElementById('appDate').value = item.date;
+            
+            // Solicitante & Aplicador
+            const reqSelect = document.getElementById('requestor');
+            const reqOptions = Array.from(reqSelect.options).map(o => o.value);
+            if (reqOptions.includes(item.requestor)) {
+                reqSelect.value = item.requestor;
+                // Garante que select está visível
+                reqSelect.classList.remove('hidden');
+                document.getElementById('requestor-custom-div').classList.add('hidden');
+            } else {
+                reqSelect.value = 'Outro';
+                toggleOtherRequestorInput();
+                document.getElementById('otherRequestorInput').value = item.requestor;
+            }
+
+            const appSelect = document.getElementById('applicator');
+            const appOptions = Array.from(appSelect.options).map(o => o.value);
+            if (appOptions.includes(item.applicator)) {
+                appSelect.value = item.applicator;
+                appSelect.classList.remove('hidden');
+                document.getElementById('applicator-custom-div').classList.add('hidden');
+            } else {
+                appSelect.value = 'Outro';
+                toggleOtherApplicatorInput();
+                document.getElementById('otherApplicatorInput').value = item.applicator;
+            }
+
+            document.getElementById('startTime').value = item.startTime || '';
+            document.getElementById('endTime').value = item.endTime || '';
+            calculateDuration(); 
+
+            // Dados do Bloco
+            const cropSelect = document.getElementById('crop');
+            const otherInput = document.getElementById('otherCropInput');
+            const options = Array.from(cropSelect.options).map(o => o.value);
+            if (options.includes(item.crop)) {
+                cropSelect.value = item.crop;
+            } else {
+                cropSelect.value = 'Outros';
+                otherInput.value = item.crop; 
+            }
+            // Trigger change logic to set correct label
+            handleCropChange();
+
+            document.getElementById('blockId').value = item.block;
+            document.getElementById('targetPest').value = item.target;
+            
+            // Carregar Produtos
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            if (item.products && item.products.length > 0) {
+                item.products.forEach(p => addProductRow(p.name, p.dose, p.unit, p.type));
+            } else {
+                // Fallback para dados antigos
+                addProductRow(item.product, item.dosage, 'ml', 'Biológico');
+            }
+
+            document.getElementById('syrupVolume').value = item.volume;
+            document.getElementById('phValue').value = item.ph || '';
+            document.getElementById('notes').value = item.notes || '';
+            
+            updateDynamicTitle(); 
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const formTitle = document.getElementById('formTitle');
+            const formContainer = document.getElementById('formContainer');
+
+            submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> <span>Salvar Alterações</span>';
+            submitBtn.classList.remove('bg-slate-800', 'hover:bg-slate-900');
+            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+
+            formTitle.innerHTML = '<i data-lucide="pencil" class="text-blue-600"></i> Editando Registro';
+            formContainer.classList.add('border-blue-300', 'ring-2', 'ring-blue-100');
+
+            formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            renderList();
+            lucide.createIcons();
+        }
+
+        function addItem(e) {
+            e.preventDefault();
+            
+            const selectValue = document.getElementById('crop').value;
+            let finalCropName = selectValue;
+            if (selectValue === 'Outros') {
+                finalCropName = document.getElementById('otherCropInput').value;
+                if (!finalCropName.trim()) { alert("Digite o nome da cultura."); return; }
+            }
+
+            // Logic to get requestor value (select or input)
+            const reqSelect = document.getElementById('requestor');
+            let finalRequestor = reqSelect.value;
+            if (reqSelect.classList.contains('hidden')) {
+                finalRequestor = document.getElementById('otherRequestorInput').value;
+            }
+
+            // Logic to get applicator value (select or input)
+            const appSelect = document.getElementById('applicator');
+            let finalApplicator = appSelect.value;
+            if (appSelect.classList.contains('hidden')) {
+                finalApplicator = document.getElementById('otherApplicatorInput').value;
+            }
+
+            // Coleta lista de produtos
+            const productsList = getProductsFromForm();
+            if (productsList.length === 0) {
+                alert("Adicione pelo menos um produto.");
+                return;
+            }
+
+            const newItem = {
+                partner: document.getElementById('partner').value,
+                date: document.getElementById('appDate').value,
+                
+                // Dados Operacionais
+                requestor: finalRequestor,
+                applicator: finalApplicator,
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                duration: document.getElementById('totalDuration').value,
+
+                // Dados do Bloco
+                crop: finalCropName,
+                block: document.getElementById('blockId').value,
+                target: document.getElementById('targetPest').value,
+                
+                // Lista de Produtos (Novo)
+                products: productsList,
+                
+                // Calda
+                volume: parseFloat(document.getElementById('syrupVolume').value) || 0,
+                ph: document.getElementById('phValue').value,
+                notes: document.getElementById('notes').value
+            };
+
+            if (editingIndex >= 0) {
+                appData[editingIndex] = newItem;
+                editingIndex = -1; 
+            } else {
+                appData.push(newItem);
+            }
+            
+            saveToStorage();
+            clearBlockForm(false); 
+            renderReport();
+            renderList();
+        }
+
+        function removeItem(index) {
+            if (editingIndex === index) {
+                clearBlockForm(true); 
+                editingIndex = -1;
+            }
+            appData.splice(index, 1);
+            saveToStorage();
+            renderReport();
+            renderList();
+        }
+
+        function clearAll() {
+            if(confirm('Tem certeza? Isso apagará todos os registros.')) {
+                appData = [];
+                saveToStorage();
+                clearBlockForm(true); 
+                renderReport();
+                renderList();
+            }
+        }
+
+        function renderList() {
+            const list = document.getElementById('itemsList');
+            list.innerHTML = '';
+            
+            const displayData = getFilteredData();
+
+            if (appData.length === 0) {
+                list.innerHTML = '<li class="text-center text-slate-400 italic py-2">Nenhum registro adicionado.</li>';
+                return;
+            } else if (displayData.length === 0) {
+                 list.innerHTML = '<li class="text-center text-slate-400 italic py-2">Nenhum registro para este parceiro.</li>';
+                 return;
+            }
+
+            displayData.forEach((item) => {
+                const originalIndex = appData.indexOf(item);
+                const activeClass = (originalIndex === editingIndex) ? 'border-blue-400 bg-blue-50 ring-1 ring-blue-200' : 'border-slate-100 bg-slate-50';
+                
+                const dateParts = item.date.split('-');
+                const shortDate = `${dateParts[2]}/${dateParts[1]}`;
+                
+                // Mostra o primeiro produto como resumo ou "X produtos"
+                let prodSummary = "";
+                if (item.products && item.products.length > 0) {
+                    prodSummary = item.products[0].name;
+                    if (item.products.length > 1) {
+                        prodSummary += ` + ${item.products.length - 1} outros`;
+                    }
+                } else {
+                    prodSummary = item.product || "Sem produto";
+                }
+
+                // Determine Location Label (Bloco vs Setor)
+                let locationLabel = "Bloco";
+                if (item.crop && item.crop.toLowerCase().includes('pepino')) {
+                    locationLabel = "Setor";
+                }
+
+                const li = document.createElement('li');
+                li.className = `flex justify-between items-center p-2 rounded border ${activeClass} transition-all`;
+                li.innerHTML = `
+                    <div class="flex flex-col">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase">${shortDate} • ${locationLabel} ${item.block}</span>
+                        <span class="font-bold text-slate-700">${prodSummary}</span>
+                        <span class="text-xs text-slate-500">${item.target}</span>
+                    </div>
+                    <div class="flex items-center">
+                        <button onclick="editItem(${originalIndex})" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded-md mr-1 transition-colors">
+                            <i data-lucide="pencil" width="14"></i>
+                        </button>
+                        <button onclick="removeItem(${originalIndex})" class="text-red-500 hover:bg-red-100 p-1.5 rounded-md transition-colors">
+                            <i data-lucide="trash-2" width="14"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+            lucide.createIcons();
+        }
+
+        function renderReport() {
+            const container = document.getElementById('reportContent');
+            const summaryContainer = document.getElementById('operationalSummary');
+            const footerContainer = document.getElementById('operationalFooter');
+
+            container.innerHTML = '';
+            let totalVolume = 0;
+            let totalApps = 0;
+            
+            const uniqueRequestors = new Set();
+            const uniqueApplicators = new Set();
+            let startTimes = [];
+            let endTimes = [];
+
+            const displayData = getFilteredData();
+
+            if (displayData.length === 0) {
+                summaryContainer.classList.add('hidden');
+                container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs italic leading-relaxed h-full min-h-[300px] flex flex-col items-center justify-center">
+                    <i data-lucide="clipboard-list" class="mb-2 w-8 h-8 opacity-20"></i>
+                    <span>Registros aparecerão aqui.</span>
+                </div>`;
+            } else {
+                summaryContainer.classList.remove('hidden');
+
+                displayData.sort((a, b) => {
+                    if (a.date !== b.date) return a.date.localeCompare(b.date);
+                    return a.block.localeCompare(b.block, undefined, {numeric: true, sensitivity: 'base'});
+                });
+
+                displayData.forEach((item) => { 
+                    totalVolume += parseFloat(item.volume) || 0;
+                    totalApps++;
+
+                    if(item.requestor) uniqueRequestors.add(item.requestor);
+                    if(item.applicator) uniqueApplicators.add(item.applicator);
+                    if(item.startTime) startTimes.push(item.startTime);
+                    if(item.endTime) endTimes.push(item.endTime);
+
+                    const dateParts = item.date.split('-');
+                    const displayDate = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+                    const phDisplay = item.ph ? `PH: <b>${item.ph}</b>` : '';
+                    
+                    // Determine Location Label (Bloco vs Setor)
+                    let locationLabel = "Bloco";
+                    if (item.crop && item.crop.toLowerCase().includes('pepino')) {
+                        locationLabel = "Setor";
+                    }
+
+                    // Renderiza lista de produtos com tipo
+                    let productsHtml = '';
+                    if (item.products && item.products.length > 0) {
+                        productsHtml = `<div class="mt-2 space-y-1">`;
+                        item.products.forEach(p => {
+                            const unitDisplay = p.unit ? p.unit : '';
+                            
+                            // Define cores para o badge de tipo
+                            let typeClass = "bg-slate-100 text-slate-600";
+                            if(p.type === 'Biológico') typeClass = "bg-green-100 text-green-700";
+                            if(p.type === 'Químico') typeClass = "bg-red-100 text-red-700";
+                            if(p.type === 'Nutricional') typeClass = "bg-blue-100 text-blue-700";
+                            if(p.type === 'Natural' || p.type === 'Repelente') typeClass = "bg-emerald-100 text-emerald-700";
+                            if(p.type === 'Adjuvantes') typeClass = "bg-amber-100 text-amber-700";
+                            if(['Inseticidas', 'Fungicidas', 'Herbicidas', 'Acaricidas', 'Nematicidas', 'Bactericidas', 'Rodenticidas', 'Desfolhantes', 'Químico'].includes(p.type)) {
+                                typeClass = "bg-red-100 text-red-700";
+                            }
+
+                            productsHtml += `
+                                <div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1 last:border-0">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-bold text-slate-700">• ${p.name}</span>
+                                        <span class="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${typeClass}">${p.type || 'Geral'}</span>
+                                    </div>
+                                    <span class="font-medium text-slate-600">${p.dose} ${unitDisplay}</span>
+                                </div>`;
+                        });
+                        productsHtml += `</div>`;
+                    } else {
+                        productsHtml = `<span class="text-base font-bold text-slate-800 leading-tight block">${item.product}</span>`;
+                    }
+
+                    const html = `
+                    <div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
+                        
+                        <div class="flex flex-col mb-2">
+                            <!-- DATA DEFINITIVAMENTE REMOVIDA DAQUI -->
+                            
+                            <div class="flex items-start justify-between mt-1">
+                                <div class="w-full">
+                                    
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-bold text-slate-700">
+                                            ${locationLabel} ${item.block} • ${item.crop}
+                                        </span>
+                                        <!-- ALVO: Apenas o rótulo em laranja -->
+                                        <div class="text-xs font-bold text-slate-600 flex items-center gap-1">
+                                            <span class="text-orange-600 text-sm font-extrabold">Alvo:</span> ${item.target}
+                                        </div>
+                                    </div>
+
+                                    <!-- Lista de Produtos -->
+                                    <div class="bg-slate-50/50 rounded-lg border border-slate-100 p-2">
+                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1 text-center">Produtos & Dosagens</span>
+                                        ${productsHtml}
+                                    </div>
+
+                                    <!-- Calda Total & PH (AGORA JUNTOS AQUI EMBAIXO) -->
+                                    <div class="mt-2 flex justify-end items-center gap-3">
+                                        ${item.ph ? `<span class="text-[10px] font-bold text-red-600">PH: ${item.ph}</span>` : ''}
+                                        <!-- REMOVIDO BG-BLUE-50 E BORDERS, MANTIDO APENAS TEXTO AZUL -->
+                                        <span class="text-[10px] font-bold text-blue-600">Volume Calda: ${item.volume} L</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                            ${item.notes ? `<div class="mt-2 text-[10px] text-slate-400 italic border-l-2 border-slate-200 pl-2">Obs: ${item.notes}</div>` : ''}
+                        </div>
+                    </div>
+                    `;
+                    container.innerHTML += html;
+                });
+
+                // --- SUMMARY CARD ---
+                const reqList = Array.from(uniqueRequestors).join(', ');
+                const appList = Array.from(uniqueApplicators).join(', ');
+                
+                startTimes.sort();
+                endTimes.sort();
+                
+                let timeRange = "Não informado";
+                
+                // Cálculo do Intervalo e Duração Total
+                if(startTimes.length > 0 && endTimes.length > 0) {
+                    const firstStart = startTimes[0];
+                    const lastEnd = endTimes[endTimes.length - 1];
+                    
+                    // Calcular duração total
+                    const startD = new Date(`2000-01-01T${firstStart}`);
+                    const endD = new Date(`2000-01-01T${lastEnd}`);
+                    let diffMs = endD - startD;
+                    if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
+                    
+                    const totalMinutes = Math.floor(diffMs / 60000);
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    
+                    let durationStr = "";
+                    if (hours > 0) durationStr += `${hours}h `;
+                    durationStr += `${minutes}min`;
+
+                    timeRange = `${firstStart} às ${lastEnd} (${durationStr})`;
+                } else if (startTimes.length > 0) {
+                     timeRange = `Início: ${startTimes[0]}`;
+                }
+
+                summaryContainer.innerHTML = `
+                    <div class="flex flex-col gap-2 text-xs">
+                        <div class="flex justify-between items-start border-b border-slate-200 pb-2">
+                            <div class="flex flex-col gap-1 w-2/3">
+                                <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Responsáveis</span>
+                                <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
+                                    <span class="text-slate-600 font-medium">Solicitante: <b class="text-slate-800">${reqList || '-'}</b></span>
+                                    <span class="text-slate-600 font-medium">Aplicador: <b class="text-slate-800">${appList || '-'}</b></span>
+                                </div>
+                            </div>
+                            <div class="text-right w-1/3">
+                                <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-1">Tempo de Aplicação</span>
+                                <span class="font-bold text-slate-700">${timeRange}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+            lucide.createIcons();
+
+            // RODAPÉ
+            footerContainer.innerHTML = `
+                <div class="bg-slate-100 rounded-xl p-4 flex justify-center items-center relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-16 h-16 bg-slate-200/50 rounded-full -mr-8 -mt-8 pointer-events-none"></div>
+                    <div class="text-center">
+                        <div class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">Total Aplicações</div>
+                        <div class="text-xl font-extrabold text-slate-800">${totalApps}</div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+        }
+
+        // Helper não usado mais no novo layout, mas mantido para compatibilidade
+        function createStatItem(iconName, value, label, theme = 'default') {
+            return '';
+        }
+
+        function copyToWhatsApp() {
+            const displayData = getFilteredData();
+            if (displayData.length === 0) {
+                alert("Adicione registros primeiro.");
+                return;
+            }
+
+            const now = new Date();
+            const partnerInput = document.getElementById('partner');
+            const partnerName = partnerInput.value || "SPG";
+            
+            const uniqueRequestors = new Set();
+            const uniqueApplicators = new Set();
+            let startTimes = [];
+            let endTimes = [];
+            
+            displayData.forEach(item => {
+                if(item.requestor) uniqueRequestors.add(item.requestor);
+                if(item.applicator) uniqueApplicators.add(item.applicator);
+                if(item.startTime) startTimes.push(item.startTime);
+                if(item.endTime) endTimes.push(item.endTime);
+            });
+            
+            startTimes.sort();
+            endTimes.sort();
+            let timeRange = "";
+            if(startTimes.length > 0 && endTimes.length > 0) {
+                timeRange = `${startTimes[0]} às ${endTimes[endTimes.length - 1]}`;
+            }
+
+            let text = `🌱 *Registro Fitossanitário - ${partnerName}*\n`;
+            text += `📅 Data: ${now.toLocaleDateString('pt-BR')}\n`;
+            
+            if (uniqueRequestors.size > 0) text += `👨‍🌾 Solic: ${Array.from(uniqueRequestors).join(', ')}\n`;
+            if (uniqueApplicators.size > 0) text += `🚜 Aplic: ${Array.from(uniqueApplicators).join(', ')}\n`;
+            if (timeRange) text += `⏰ Horário: ${timeRange}\n`;
+            
+            text += `\n*APLICAÇÕES:*\n\n`;
+
+            displayData.forEach(item => {
+                // Determine Location Label (Bloco vs Setor)
+                let locationLabel = "Bloco";
+                if (item.crop && item.crop.toLowerCase().includes('pepino')) {
+                    locationLabel = "Setor";
+                }
+
+                text += `📍 *${locationLabel} ${item.block}* (${item.crop})\n`;
+                text += `🎯 Alvo: ${item.target}\n`;
+                
+                if (item.products && item.products.length > 0) {
+                    item.products.forEach(p => {
+                        const unitDisplay = p.unit ? p.unit : ''; 
+                        // Inclui tipo no zap também
+                        text += `🛡️ [${p.type || '?'}] ${p.name} (${p.dose} ${unitDisplay})\n`;
+                    });
+                } else {
+                    text += `🛡️ ${item.product} (${item.dosage})\n`;
+                }
+
+                text += `💧 Vol: ${item.volume}L`;
+                if(item.ph) text += ` | PH: ${item.ph}`;
+                text += `\n`;
+
+                if(item.notes) text += `📝 Obs: ${item.notes}\n`;
+                text += `----------------\n`;
+            });
+
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            
+            try {
+                if(document.execCommand('copy')) alert("Resumo copiado!");
+                else alert("Erro ao copiar automaticamente.");
+            } catch (err) {
+                alert("Erro ao copiar.");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        // --- FUNÇÃO PARA GERAR IMAGEM HD (ATUALIZADA IGUAL AO ANEXO) ---
+        async function downloadImage() {
+            const element = document.getElementById('report-card');
+            // Busca correta do texto do botão
+            const btnSpan = document.querySelector('button[onclick="downloadImage()"] span');
+            const originalText = btnSpan.innerText;
+            btnSpan.innerText = "Gerando Imagem...";
+
+            try {
+                // Configurações idênticas ao código de referência
+                const options = {
+                    scale: 5, // Alta resolução
+                    useCORS: true, 
+                    allowTaint: true,
+                    scrollY: -window.scrollY,
+                    backgroundColor: '#ffffff', 
+                    windowWidth: 480, // Força layout mobile
+                    onclone: (doc) => {
+                        const el = doc.getElementById('report-card');
+                        const content = doc.getElementById('reportContent');
+                        
+                        if (el) { 
+                            el.style.width = '450px'; 
+                            el.style.maxWidth = '450px';
+                            el.style.margin = '0'; 
+                            el.style.boxShadow = 'none';
+                            el.style.borderRadius = '0';
+                            el.style.border = 'none';
+                        }
+                        if (content) { 
+                            content.style.height = 'auto'; 
+                            content.style.overflow = 'visible'; 
+                            content.style.maxHeight = 'none';
+                        }
+                    }
+                };
+
+                const canvas = await html2canvas(element, options);
+                
+                // Gera Link de Download
+                const imgData = canvas.toDataURL('image/png');
+                
+                // --- GERAR NOME DO ARQUIVO PERSONALIZADO ---
+                const now = new Date();
+                const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
+                const weekNum = getWeekNumber(now);
+                let weekday = now.toLocaleDateString('pt-BR', { weekday: 'long' });
+                weekday = weekday.charAt(0).toUpperCase() + weekday.slice(1);
+
+                const partnerInput = document.getElementById('partner');
+                let partnerName = "Geral"; 
+                if (partnerInput && partnerInput.value) {
+                    partnerName = partnerInput.value;
+                } else if (appData.length > 0 && appData[0].partner) {
+                    partnerName = appData[0].partner;
+                }
+
+                // LÓGICA DE PREFIXO DO NOME DO ARQUIVO
+                let filePrefix = "Resumo de Aplicações Fitossanitárias";
+
+                const fileName = `${filePrefix} - ${weekday} ${dateStr} Semana ${weekNum} - ${partnerName}.png`;
+
+                // Cria elemento temporário para download
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = fileName;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+            } catch (err) {
+                console.error("Erro ao gerar imagem:", err);
+                alert("Erro ao gerar imagem: " + err.message);
+            } finally {
+                btnSpan.innerText = originalText;
+            }
+        }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            
+            // --- ATUALIZAR DADOS NO TEMPLATE PDF ---
+            const data = getFilteredData();
+            if (data.length === 0) {
+                alert("Adicione registros primeiro.");
+                return;
+            }
+
+            // Dados Gerais
+            document.getElementById('pdf-partner').innerText = data[0].partner || '-';
+            
+            const dateParts = data[0].date.split('-');
+            document.getElementById('pdf-date').innerText = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+            
+            // Dados Operacionais
+            const uniqueRequestors = new Set();
+            const uniqueApplicators = new Set();
+            let startTimes = [];
+            let endTimes = [];
+            
+            data.forEach(item => {
+                if(item.requestor) uniqueRequestors.add(item.requestor);
+                if(item.applicator) uniqueApplicators.add(item.applicator);
+                if(item.startTime) startTimes.push(item.startTime);
+                if(item.endTime) endTimes.push(item.endTime);
+            });
+            
+            document.getElementById('pdf-requestor').innerText = Array.from(uniqueRequestors).join(', ') || '-';
+            document.getElementById('pdf-applicator').innerText = Array.from(uniqueApplicators).join(', ') || '-';
+            document.getElementById('pdf-total-blocks').innerText = data.length;
+
+            startTimes.sort();
+            endTimes.sort();
+            let timeStr = "-";
+            if(startTimes.length > 0 && endTimes.length > 0) {
+                timeStr = `${startTimes[0]} às ${endTimes[endTimes.length - 1]}`;
+            }
+            document.getElementById('pdf-time').innerText = timeStr;
+
+            // Preencher Tabela
+            const tbody = document.getElementById('pdf-table-body');
+            tbody.innerHTML = '';
+            
+            data.forEach(item => {
+                let locationLabel = "Bloco";
+                if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                
+                let productsStr = "";
+                if (item.products && item.products.length > 0) {
+                    productsStr = item.products.map(p => `<div>• [${p.type}] ${p.name} (${p.dose}${p.unit ? ' ' + p.unit : ''})</div>`).join('');
+                } else {
+                    productsStr = `${item.product} (${item.dosage})`;
+                }
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${locationLabel} ${item.block}</td>
+                    <td>${item.crop}</td>
+                    <td>${item.target}</td>
+                    <td>${productsStr}</td>
+                    <td>${item.volume}</td>
+                    <td>${item.ph || '-'}</td>
+                    <td>${item.notes || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            // --- GERAÇÃO PDF ---
+            const element = document.getElementById('technical-report-template');
+            const btnText = document.querySelector('button[onclick="downloadPDF()"] span');
+            const originalText = btnText.innerText;
+            btnText.innerText = "Gerando...";
+
+            try {
+                // Torna visível temporariamente para captura correta
+                element.style.top = "0";
+                element.style.left = "0";
+                element.style.zIndex = "9999";
+
+                const canvas = await html2canvas(element, {
+                    scale: 2, // Melhor qualidade
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
+
+                // Esconde novamente
+                element.style.top = "-9999px";
+                element.style.left = "-9999px";
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save(`Relatorio_Tecnico_${new Date().toISOString().slice(0,10)}.pdf`);
+
+            } catch (err) {
+                console.error(err);
+                alert("Erro ao gerar PDF Técnico.");
+                // Garante que esconde em caso de erro
+                element.style.top = "-9999px";
+                element.style.left = "-9999px";
+            } finally {
+                btnText.innerText = originalText;
+            }
+        }
+    </script>
+</body>
+</html>
