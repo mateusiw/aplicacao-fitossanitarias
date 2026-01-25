@@ -1835,14 +1835,18 @@
             btnText.innerText = "Gerando...";
 
             try {
-                // Torna visível temporariamente para captura correta
-                element.style.top = "0";
-                element.style.left = "0";
-                element.style.zIndex = "9999";
+                // REMOVIDO: O código que movia o elemento para a tela visível foi removido
+                // para evitar o "efeito fantasma". O html2canvas capturará o elemento
+                // na sua posição original (fora da tela).
 
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-                element.style.top = "-9999px";
-                element.style.left = "-9999px";
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: '#ffffff',
+                    // Garante que captura mesmo fora da viewport visual
+                    windowWidth: document.documentElement.scrollWidth,
+                    windowHeight: document.documentElement.scrollHeight
+                });
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -1854,8 +1858,6 @@
             } catch (err) {
                 console.error(err);
                 alert("Erro ao gerar PDF.");
-                element.style.top = "-9999px";
-                element.style.left = "-9999px";
             } finally {
                 btnText.innerText = originalText;
             }
