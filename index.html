@@ -451,6 +451,18 @@
         </div>
     </div>
 
+    <!-- MODAL GENÉRICO DE MENSAGEM -->
+    <div id="messageModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform transition-all scale-100 text-center">
+            <div id="msgIconContainer" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                <!-- Icon injetado via JS -->
+            </div>
+            <h3 id="msgTitle" class="text-lg font-bold text-slate-800"></h3>
+            <p id="msgText" class="text-sm text-slate-500 mt-2 mb-4"></p>
+            <button onclick="hideMessageModal()" class="w-full px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-sm transition-colors">OK</button>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT LOGIC -->
     <script>
         console.log("Aplicação 'Fitossanitário SPG' carregada.");
@@ -1125,7 +1137,7 @@
                 }
                 renderHeaderAndSummary();
                 updateDynamicTitle();
-                renderReport(); // Adicionado aqui para corrigir o problema
+                renderReport(); 
 
             } catch (e) { console.error("Erro ao carregar", e); }
         }
@@ -1181,8 +1193,36 @@
             hideClearAllModal();
         }
 
+        // --- MENSAGENS MODAL (Substitui alerts) ---
+        function showMessageModal(title, message, type) {
+            const modal = document.getElementById('messageModal');
+            const iconContainer = document.getElementById('msgIconContainer');
+            const titleEl = document.getElementById('msgTitle');
+            const textEl = document.getElementById('msgText');
+
+            titleEl.innerText = title;
+            textEl.innerText = message;
+
+            if (type === 'error') {
+                iconContainer.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4";
+                iconContainer.innerHTML = '<i data-lucide="alert-circle" class="h-6 w-6 text-red-600"></i>';
+            } else if (type === 'success') {
+                iconContainer.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4";
+                iconContainer.innerHTML = '<i data-lucide="check-circle" class="h-6 w-6 text-green-600"></i>';
+            } else {
+                iconContainer.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4";
+                iconContainer.innerHTML = '<i data-lucide="info" class="h-6 w-6 text-blue-600"></i>';
+            }
+
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function hideMessageModal() {
+            document.getElementById('messageModal').classList.add('hidden');
+        }
+
         function clearBlockForm(clearAll = false) {
-            // Se clearAll for true (chamado pelo Limpar Tudo), limpa header
             if (clearAll) {
                 document.getElementById('partner').selectedIndex = 0;
                 resetRequestorField();
@@ -1193,16 +1233,20 @@
                 updateGlobalState();
             }
 
-            // Reset CROP
+            // Reset CROP & BLOCK visibility logic
+            // Use resetCropField which handles showing select and hiding custom input
+            // But we also need to reset the select index
             const cropSelect = document.getElementById('crop');
-            const cropCustomDiv = document.getElementById('crop-custom-div');
-            // Check if we are currently in custom mode to decide what to clear
-            if(cropSelect.classList.contains('hidden')){
-               resetCropField(); // This brings back select and hides input
-            }
-            cropSelect.selectedIndex = 0;
-            document.getElementById('otherCropInput').value = ''; // Clear custom input too
+            cropSelect.selectedIndex = 0; 
+            document.getElementById('otherCropInput').value = '';
             
+            // This function handles visibility of input vs select for crop, AND updates block list
+            // However, handleCropChange relies on the current state.
+            // Let's ensure state is reset first.
+            const cropCustomDiv = document.getElementById('crop-custom-div');
+            cropSelect.classList.remove('hidden');
+            cropCustomDiv.classList.add('hidden');
+
             handleCropChange(); 
             
             // Reset Block
@@ -1211,8 +1255,13 @@
             if(bSelect) bSelect.selectedIndex = 0;
             
             // Reset Target
-            resetTargetPestField();
-            
+            const targetSelect = document.getElementById('targetPestSelect');
+            if(targetSelect.classList.contains('hidden')){
+                resetTargetPestField();
+            }
+            targetSelect.selectedIndex = 0;
+            document.getElementById('targetPestInput').value = '';
+
             document.getElementById('productsContainer').innerHTML = '';
             addProductRow(); 
             document.getElementById('syrupVolume').value = '';
@@ -1295,7 +1344,10 @@
 
             const productsList = [];
             const rows = document.querySelectorAll('.product-row');
-            if (rows.length === 0) { alert("Adicione pelo menos um produto."); return; }
+            if (rows.length === 0) { 
+                showMessageModal('Atenção', 'Adicione pelo menos um produto.', 'error');
+                return; 
+            }
 
             for (const row of rows) {
                 const prodSelect = row.querySelector('.prod-name-select');
@@ -1327,7 +1379,10 @@
                 if (name && type && dose) { productsList.push({ name, type, dose, unit }); }
             }
 
-            if (!isValid) return;
+            if (!isValid) {
+                showMessageModal('Atenção', 'Por favor, selecione o Produto, o Tipo e informe a Dose.', 'error');
+                return;
+            }
 
             const newItem = {
                 partner: globalInfo.partner, 
@@ -1394,18 +1449,22 @@
             calculateDuration(); 
             updateGlobalState();
 
-            // CORREÇÃO CULTURA: Resetar visual antes de definir valor
+            // CORREÇÃO CULTURA
             const cropSelect = document.getElementById('crop');
             const otherInput = document.getElementById('otherCropInput');
             const cropOptions = Array.from(cropSelect.options).map(o => o.value);
             
             if (cropOptions.includes(item.crop)) {
-                resetCropField(); // Prepara visual (mostra select)
-                cropSelect.value = item.crop; // Define valor
+                // IMPORTANT: RESET VISUAL FIRST
+                const cropCustomDiv = document.getElementById('crop-custom-div');
+                cropSelect.classList.remove('hidden');
+                cropCustomDiv.classList.add('hidden');
+                
+                cropSelect.value = item.crop;
             } else {
                 cropSelect.value = 'Outros';
-                toggleOtherCropInput(); // Prepara visual (mostra input)
-                otherInput.value = item.crop; // Define valor
+                toggleOtherCropInput();
+                otherInput.value = item.crop; 
             }
             
             handleCropChange(); // Popula lista de pragas baseado na cultura
@@ -1420,18 +1479,18 @@
                 blockInput.value = item.block;
             }
 
-            // CORREÇÃO ALVO BIOLÓGICO: Resetar visual antes de definir valor
+            // CORREÇÃO ALVO BIOLÓGICO
             const targetSelect = document.getElementById('targetPestSelect');
             const targetInput = document.getElementById('targetPestInput');
             const targetOptions = Array.from(targetSelect.options).map(o => o.value);
             
             if (targetOptions.includes(item.target)) {
-                resetTargetPestField(); // 1. Reseta para mostrar o Select primeiro
-                targetSelect.value = item.target; // 2. Define o valor correto
+                resetTargetPestField(); 
+                targetSelect.value = item.target; 
             } else {
                 targetSelect.value = 'Outros';
-                toggleOtherTargetPestInput(); // 1. Mostra input
-                targetInput.value = item.target; // 2. Define valor customizado
+                toggleOtherTargetPestInput(); 
+                targetInput.value = item.target; 
             }
             
             const container = document.getElementById('productsContainer');
@@ -1590,7 +1649,7 @@
                             if(p.type === 'Químico') typeClass = "text-red-600";
                             if(p.type === 'Nutricional') typeClass = "text-blue-600";
                             if(p.type === 'Natural' || p.type === 'Repelente') typeClass = "text-emerald-600";
-                            if(p.type === 'Adjuvantes' || p.type === 'Espalhante' || p.type === 'Estabilizador de PH') typeClass = "text-amber-600"; // Updated color logic
+                            if(p.type === 'Adjuvantes' || p.type === 'Espalhante' || p.type === 'Estabilizador de PH') typeClass = "text-amber-600"; 
                             if(['Inseticidas', 'Fungicidas', 'Herbicidas', 'Acaricidas', 'Nematicidas', 'Bactericidas', 'Rodenticidas', 'Desfolhantes', 'Químico'].includes(p.type)) typeClass = "text-red-600";
 
                             productsHtml += `
@@ -1649,11 +1708,11 @@
             // Usa globalInfo para o cabeçalho
             const displayData = getFilteredData();
             if (displayData.length === 0) {
-                alert("Adicione registros primeiro.");
+                showMessageModal('Atenção', 'Adicione registros primeiro para gerar o resumo.', 'error');
                 return;
             }
 
-            // CORREÇÃO DA DATA: Usa a string direta para evitar problemas de fuso horário
+            // CORREÇÃO DA DATA
             let dateStr;
             if (globalInfo.date) {
                 const parts = globalInfo.date.split('-');
@@ -1711,9 +1770,9 @@
             
             try {
                 document.execCommand('copy');
-                alert("Resumo copiado!");
+                showMessageModal('Sucesso!', 'Resumo copiado para a área de transferência.', 'success');
             } catch (err) {
-                alert("Erro ao copiar.");
+                showMessageModal('Erro', 'Não foi possível copiar o texto.', 'error');
             }
             document.body.removeChild(textArea);
         }
@@ -1730,7 +1789,7 @@
                 // Check for data first
                 const data = getFilteredData();
                 if (data.length === 0) {
-                    alert("Adicione registros primeiro.");
+                    showMessageModal('Atenção', 'Adicione registros primeiro.', 'error');
                     return;
                 }
 
@@ -1797,7 +1856,7 @@
 
             } catch (err) {
                 console.error("Erro ao gerar imagem:", err);
-                alert("Erro ao gerar imagem: " + err.message);
+                showMessageModal('Erro', 'Falha ao gerar imagem: ' + err.message, 'error');
             } finally {
                 btnSpan.innerText = originalText;
             }
@@ -1809,7 +1868,7 @@
             // --- ATUALIZAR DADOS NO TEMPLATE PDF ---
             const data = getFilteredData();
             if (data.length === 0) {
-                alert("Adicione registros primeiro.");
+                showMessageModal('Atenção', 'Adicione registros primeiro.', 'error');
                 return;
             }
 
@@ -1880,13 +1939,9 @@
                 element.style.left = "0";
                 element.style.zIndex = "9999";
 
-                const canvas = await html2canvas(element, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    backgroundColor: '#ffffff',
-                    windowWidth: document.documentElement.scrollWidth,
-                    windowHeight: document.documentElement.scrollHeight
-                });
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+                element.style.top = "-9999px";
+                element.style.left = "-9999px";
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -1897,7 +1952,9 @@
                 pdf.save(`Relatorio_Tecnico_${new Date().toISOString().slice(0,10)}.pdf`);
             } catch (err) {
                 console.error(err);
-                alert("Erro ao gerar PDF.");
+                showMessageModal('Erro', 'Falha ao gerar PDF.', 'error');
+                element.style.top = "-9999px";
+                element.style.left = "-9999px";
             } finally {
                 btnText.innerText = originalText;
             }
