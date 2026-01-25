@@ -1238,47 +1238,77 @@
             const item = appData[index];
             editingIndex = index; 
 
-            // ... (Preenchimento header mantido)
+            document.getElementById('partner').value = item.partner;
+            document.getElementById('appDate').value = item.date;
+            
+            const reqSelect = document.getElementById('requestor');
+            const reqOptions = Array.from(reqSelect.options).map(o => o.value);
+            if (reqOptions.includes(item.requestor)) {
+                reqSelect.value = item.requestor;
+                reqSelect.classList.remove('hidden');
+                document.getElementById('requestor-custom-div').classList.add('hidden');
+            } else {
+                reqSelect.value = 'Outro';
+                toggleOtherRequestorInput();
+                document.getElementById('otherRequestorInput').value = item.requestor;
+            }
 
-            // Dados do Bloco
+            const appSelect = document.getElementById('applicator');
+            const appOptions = Array.from(appSelect.options).map(o => o.value);
+            if (appOptions.includes(item.applicator)) {
+                appSelect.value = item.applicator;
+                appSelect.classList.remove('hidden');
+                document.getElementById('applicator-custom-div').classList.add('hidden');
+            } else {
+                appSelect.value = 'Outro';
+                toggleOtherApplicatorInput();
+                document.getElementById('otherApplicatorInput').value = item.applicator;
+            }
+
+            document.getElementById('startTime').value = item.startTime || '';
+            document.getElementById('endTime').value = item.endTime || '';
+            calculateDuration(); 
+            updateGlobalState();
+
+            // CORREÇÃO CULTURA: Resetar visual antes de definir valor
             const cropSelect = document.getElementById('crop');
             const otherInput = document.getElementById('otherCropInput');
             const cropOptions = Array.from(cropSelect.options).map(o => o.value);
+            
             if (cropOptions.includes(item.crop)) {
-                cropSelect.value = item.crop;
-                // Hide custom input
-                otherInput.classList.add('hidden');
+                resetCropField(); // Prepara visual (mostra select)
+                cropSelect.value = item.crop; // Define valor
             } else {
                 cropSelect.value = 'Outros';
-                toggleOtherCropInput();
-                otherInput.value = item.crop; 
+                toggleOtherCropInput(); // Prepara visual (mostra input)
+                otherInput.value = item.crop; // Define valor
             }
-            handleCropChange(); // Important: Populates pest list based on crop
+            
+            handleCropChange(); // Popula lista de pragas baseado na cultura
 
             // Bloco ID
             const blockSelect = document.getElementById('blockSelect');
             const blockInput = document.getElementById('blockId');
+            
             if (blockSelect && !blockSelect.classList.contains('hidden')) {
                 blockSelect.value = item.block;
             } else {
                 blockInput.value = item.block;
             }
 
-            // Alvo Biológico (Novo)
+            // CORREÇÃO ALVO BIOLÓGICO: Resetar visual antes de definir valor
             const targetSelect = document.getElementById('targetPestSelect');
             const targetInput = document.getElementById('targetPestInput');
             const targetOptions = Array.from(targetSelect.options).map(o => o.value);
             
             if (targetOptions.includes(item.target)) {
-                targetSelect.value = item.target;
-                resetTargetPestField();
+                resetTargetPestField(); // 1. Reseta para mostrar o Select primeiro
+                targetSelect.value = item.target; // 2. Define o valor correto
             } else {
                 targetSelect.value = 'Outros';
-                toggleOtherTargetPestInput();
-                targetInput.value = item.target;
+                toggleOtherTargetPestInput(); // 1. Mostra input
+                targetInput.value = item.target; // 2. Define valor customizado
             }
-
-            // ... (Resto da função mantido)
             
             const container = document.getElementById('productsContainer');
             container.innerHTML = '';
@@ -1287,6 +1317,7 @@
             } else {
                 addProductRow(item.product, item.dosage, 'ml', 'Biológico');
             }
+
             document.getElementById('syrupVolume').value = item.volume;
             document.getElementById('phValue').value = item.ph || '';
             document.getElementById('notes').value = item.notes || '';
@@ -1294,9 +1325,11 @@
             const submitBtn = document.getElementById('submitBtn');
             const formTitle = document.getElementById('formTitle');
             const formContainer = document.getElementById('formContainer');
+
             submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> <span>Salvar Alterações</span>';
             submitBtn.classList.remove('bg-slate-800', 'hover:bg-slate-900');
             submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+
             formTitle.innerHTML = '<i data-lucide="pencil" class="text-blue-600"></i> Editando Registro';
             formContainer.classList.add('border-blue-300', 'ring-2', 'ring-blue-100');
             formContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
