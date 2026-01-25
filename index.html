@@ -34,6 +34,7 @@
             padding: 40px;
             box-sizing: border-box;
             position: absolute;
+            /* Mantém fora da tela, mas renderizável */
             top: -9999px;
             left: -9999px;
             font-family: 'Helvetica', 'Arial', sans-serif;
@@ -1934,14 +1935,25 @@
             btnText.innerText = "Gerando...";
 
             try {
-                // Torna visível temporariamente para captura correta
-                element.style.top = "0";
-                element.style.left = "0";
-                element.style.zIndex = "9999";
-
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-                element.style.top = "-9999px";
-                element.style.left = "-9999px";
+                // ALTERAÇÃO: Não movemos mais o elemento original para a tela.
+                // Usamos o onclone do html2canvas para posicionar apenas a cópia virtual.
+                
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    useCORS: true, 
+                    backgroundColor: '#ffffff',
+                    windowWidth: 794, // Garante contexto largo suficiente
+                    onclone: (clonedDoc) => {
+                        const clone = clonedDoc.getElementById('technical-report-template');
+                        if (clone) {
+                            // Move apenas o clone para a posição visível (dentro do documento virtual)
+                            clone.style.top = '0';
+                            clone.style.left = '0';
+                            clone.style.position = 'relative'; 
+                            clone.style.zIndex = 'auto';
+                        }
+                    }
+                });
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -1953,8 +1965,6 @@
             } catch (err) {
                 console.error(err);
                 showMessageModal('Erro', 'Falha ao gerar PDF.', 'error');
-                element.style.top = "-9999px";
-                element.style.left = "-9999px";
             } finally {
                 btnText.innerText = originalText;
             }
