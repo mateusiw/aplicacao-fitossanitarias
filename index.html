@@ -407,7 +407,9 @@
                     <th style="width: 15%;">Cultura</th>
                     <th style="width: 10%;">Alvo</th>
                     <th style="width: 30%;">Produtos (Dose)</th>
+                    <!-- Ajustado tamanho da fonte para Calda (L) -->
                     <th style="width: 10%; font-size: 10px;">Calda (L)</th>
+                    <!-- Alterado de pH para P.H -->
                     <th style="width: 5%;">P.H</th>
                     <th style="width: 15%;">Obs</th>
                 </tr>
@@ -453,7 +455,7 @@
 
         // INICIALIZAÇÃO
         lucide.createIcons();
-        document.getElementById('appDate').valueAsDate = new Date();
+        // REMOVIDO: document.getElementById('appDate').valueAsDate = new Date();
         addProductRow();
         loadFromStorage();
         updateDynamicTitle();
@@ -556,13 +558,17 @@
             const fields = ['partner', 'appDate', 'requestor', 'otherRequestorInput', 'applicator', 'otherApplicatorInput', 'startTime', 'endTime'];
             fields.forEach(id => {
                 const el = document.getElementById(id);
-                if(el) el.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
+                // Reset manual simples:
+                 if(el) el.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
             });
+            // Oculta spans de erro específicos
             document.querySelectorAll('[id^="error-"]').forEach(el => el.classList.add('hidden'));
 
+            // Coleta dados dos campos globais
             globalInfo.partner = document.getElementById('partner').value;
             globalInfo.date = document.getElementById('appDate').value;
             
+            // Solicitante
             const reqSelect = document.getElementById('requestor');
             if (!reqSelect.classList.contains('hidden')) {
                  globalInfo.requestor = reqSelect.value;
@@ -570,6 +576,7 @@
                  globalInfo.requestor = document.getElementById('otherRequestorInput').value;
             }
 
+            // Aplicador
             const appSelect = document.getElementById('applicator');
             if (!appSelect.classList.contains('hidden')) {
                 globalInfo.applicator = appSelect.value;
@@ -584,10 +591,13 @@
             localStorage.setItem(GLOBAL_KEY, JSON.stringify(globalInfo));
             updateDynamicTitle();
             renderHeaderAndSummary();
+            
+            // Re-render list to filter by new partner immediately
             renderList();
             renderReport();
         }
 
+        // --- FUNÇÕES DE FORMATAÇÃO ---
         function formatDecimalInput(input) {
             let value = input.value;
             value = value.replace('.', ',');
@@ -608,15 +618,18 @@
             div.className = "flex gap-2 items-start product-row animate-fade-in flex-wrap sm:flex-nowrap"; 
             div.id = rowId;
             
+            // Options for select
             const units = ['ml', 'L', 'g', 'Kg'];
             const optionsHtml = units.map(u => `<option value="${u}" ${u === unit ? 'selected' : ''}>${u}</option>`).join('');
 
+            // Tipos de Produto - ORDENADOS A-Z
             const standardTypes = [
                 'Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Desfolhantes',
                 'Espalhante', 'Estabilizador de PH', 'Fungicidas', 'Herbicidas', 'Inseticidas',
                 'Natural', 'Nematicidas', 'Nutricional', 'Repelente', 'Rodenticidas'
             ];
 
+            // List of Products SORTED ALPHABETICALLY
             const standardProducts = [
                 "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", 
                 "Carbon N-10", "Coda Sul PH", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Evidence", "Full Grow", 
@@ -626,6 +639,7 @@
                 "YaraVita - Zintrac", "Ziel"
             ];
             
+            // Determine initial state for TYPE
             let isCustom = false;
             let displayType = type;
             let customTypeValue = '';
@@ -643,6 +657,7 @@
                 `<option value="${t}" ${t === displayType ? 'selected' : ''}>${t}</option>`
             ).join('');
 
+            // Determine initial state for PRODUCT NAME
             let isCustomProduct = false;
             let displayProduct = name;
             let customProductValue = '';
@@ -657,11 +672,13 @@
                 `<option value="${p}" ${p === displayProduct ? 'selected' : ''}>${p}</option>`
             ).join('');
             
+            // Classes e Atributos para TIPO
             const selectClass = isCustom ? "prod-type-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-type-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!type ? 'text-slate-400' : 'text-slate-800'}`;
             const customInputDivClass = isCustom ? "prod-type-custom-div w-full relative" : "prod-type-custom-div hidden w-full relative";
             const selectRequired = !isCustom ? 'required' : '';
             const inputRequired = isCustom ? 'required' : '';
 
+            // Classes e Atributos para PRODUTO
             const prodSelectClass = isCustomProduct ? "prod-name-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-name-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!name ? 'text-slate-400' : 'text-slate-800'}`;
             const prodCustomInputDivClass = isCustomProduct ? "prod-name-custom-div w-full relative" : "prod-name-custom-div hidden w-full relative";
             const prodSelectRequired = !isCustomProduct ? 'required' : '';
@@ -714,7 +731,7 @@
             lucide.createIcons();
         }
 
-        // --- NEW PRODUCT TOGGLE FUNCTIONS ---
+        // --- NEW PRODUCT TOGGLE FUNCTIONS (COM LÓGICA DE REQUIRED) ---
         function toggleRowCustomProduct(selectElement) {
             if(selectElement.value === 'Outros') {
                 const parent = selectElement.parentElement;
@@ -723,11 +740,13 @@
                 
                 selectElement.classList.add('hidden');
                 selectElement.required = false; 
+
                 customDiv.classList.remove('hidden');
                 customInput.required = true; 
                 customInput.focus();
             }
         }
+
         function resetRowProduct(btnElement) {
             const customDiv = btnElement.parentElement;
             const parent = customDiv.parentElement;
@@ -736,38 +755,48 @@
             
             input.value = ''; 
             input.required = false; 
+            
             select.selectedIndex = 0; 
             select.classList.remove('hidden');
             select.classList.add('text-slate-400'); 
             select.required = true; 
+
             customDiv.classList.add('hidden');
         }
+
         function toggleRowCustomType(selectElement) {
             if(selectElement.value === 'Outros') {
                 const parent = selectElement.parentElement;
                 const customDiv = parent.querySelector('.prod-type-custom-div');
                 const customInput = customDiv.querySelector('input');
+                
                 selectElement.classList.add('hidden');
                 selectElement.required = false;
+
                 customDiv.classList.remove('hidden');
                 customInput.required = true;
                 customInput.focus();
             }
         }
+
         function resetRowType(btnElement) {
             const customDiv = btnElement.parentElement;
             const parent = customDiv.parentElement;
             const select = parent.querySelector('.prod-type-select');
             const input = customDiv.querySelector('input');
+            
             input.value = ''; 
             input.required = false;
+
             select.value = ''; 
             select.selectedIndex = 0; 
             select.classList.remove('hidden');
             select.classList.add('text-slate-400');
             select.required = true;
+
             customDiv.classList.add('hidden');
         }
+
         function removeProductRow(id) {
             const container = document.getElementById('productsContainer');
             if (container.children.length > 1) {
@@ -780,6 +809,32 @@
                 if(typeResetBtn) resetRowType(typeResetBtn);
                 row.querySelector('.prod-dose-input').value = '';
             }
+        }
+
+        function getProductsFromForm() {
+            const rows = document.querySelectorAll('.product-row');
+            const products = [];
+            rows.forEach(row => {
+                const prodSelect = row.querySelector('.prod-name-select');
+                let name = prodSelect.value;
+                if (prodSelect.classList.contains('hidden')) {
+                    name = row.querySelector('.prod-name-custom-input').value.trim();
+                }
+
+                const select = row.querySelector('.prod-type-select');
+                let type = select.value;
+                if (select.classList.contains('hidden')) {
+                    type = row.querySelector('.prod-type-custom-input').value.trim();
+                }
+
+                const dose = row.querySelector('.prod-dose-input').value.trim();
+                const unit = row.querySelector('.prod-unit-input').value;
+                
+                if (name && dose) {
+                    products.push({ name, type, dose, unit });
+                }
+            });
+            return products;
         }
 
         // --- CÁLCULO DE TEMPO ---
@@ -809,6 +864,7 @@
         function handleCropChange() {
             const select = document.getElementById('crop');
             const otherInput = document.getElementById('otherCropInput');
+            const customDiv = document.getElementById('crop-custom-div');
             
             const blockLabel = document.getElementById('blockLabel');
             const blockInput = document.getElementById('blockId');
@@ -817,31 +873,24 @@
             // ALVO BIOLÓGICO ELEMENTS
             const targetSelect = document.getElementById('targetPestSelect');
             
-            // LISTAS DE PRAGAS/DOENÇAS (Sem 'Outros' aqui para ordenar corretamente antes)
+            // LISTAS DE PRAGAS/DOENÇAS
             const pestsBrassicas = [
-                "Adubação Foliar", "Alternaria", "Bacteriose", "Hérnia", "Lagarta", "Míldio", 
+                "Alternaria", "Bacteriose", "Hérnia", "Lagarta", "Míldio", 
                 "Podridão Negra", "Pulgão", "Traça", "Tripes", "Vaquinha"
             ];
             
             const pestsCucumber = [
-                "Ácaro", "Adubação Foliar", "Alternaria", "Antracnose", "Bacteriose", "Lagarta", 
+                "Ácaro", "Alternaria", "Antracnose", "Bacteriose", "Lagarta", 
                 "Mancha Angular", "Míldio", "Mosca Branca", "Oídio", "Pulgão", 
                 "Tripes", "Vaquinha", "Vírus"
             ];
 
-            const pestsGeneral = ["Adubação Foliar", "Ácaro", "Lagarta", "Fungo", "Bactéria", "Vírus"];
+            const pestsGeneral = ["Ácaro", "Lagarta", "Fungo", "Bactéria", "Vírus"];
 
             // 1. Alternar input 'Outros' (Cultura)
             let cropValue = select.value;
-            if (select.value === 'Outros') {
-                otherInput.classList.remove('hidden');
-                otherInput.required = true;
-                otherInput.focus();
-                cropValue = 'Outros';
-            } else {
-                otherInput.classList.add('hidden');
-                otherInput.required = false;
-                otherInput.value = ''; 
+            if (select.classList.contains('hidden')) {
+                cropValue = 'Outros'; 
             }
 
             // 2. Lógica do Dropdown/Input de Bloco
@@ -859,14 +908,21 @@
             } else if (cropValue === 'Brócolis' || cropValue === 'Couve-Flor') {
                 blockLabel.innerText = 'Nº Bloco/Talhão';
                 useSelect = true;
-                for (let i = 1; i <= 19; i++) options.push(i.toString());
+                
+                // Gera 1-19
+                for (let i = 1; i <= 19; i++) {
+                    options.push(i.toString());
+                }
+                
+                // Adiciona letras A, B, C, D, E
                 options.push('A', 'B', 'C', 'D', 'E');
                 // Ordena e adiciona Outros no final
                 pestOptions = pestsBrassicas.sort();
                 pestOptions.push("Outros");
             } else {
+                // Outros
                 blockLabel.innerText = 'Nº Bloco/Talhão';
-                useSelect = false; 
+                useSelect = false; // Use text input
                 // Ordena e adiciona Outros no final
                 pestOptions = pestsGeneral.sort();
                 pestOptions.push("Outros");
@@ -879,6 +935,7 @@
                 if(blockSelect) {
                     blockSelect.classList.remove('hidden');
                     blockSelect.required = true;
+                    // Save current selection if valid
                     const currentVal = blockSelect.value;
                     blockSelect.innerHTML = '<option value="">Selecione...</option>';
                     options.forEach(opt => {
@@ -981,18 +1038,24 @@
         
         function toggleOtherCropInput() {
             const select = document.getElementById('crop');
-            const otherInput = document.getElementById('otherCropInput');
+            const customDiv = document.getElementById('crop-custom-div');
+            const customInput = document.getElementById('otherCropInput');
+            
             if (select.value === 'Outros') {
-                otherInput.classList.remove('hidden');
-                otherInput.required = true;
-                otherInput.focus();
-            } else {
-                otherInput.classList.add('hidden');
-                otherInput.required = false;
+                select.classList.add('hidden');
+                customDiv.classList.remove('hidden');
+                customInput.focus();
             }
         }
         function resetCropField() {
-            // Not strictly needed with simple toggle but good for consistency if we used overlay
+            const select = document.getElementById('crop');
+            const customDiv = document.getElementById('crop-custom-div');
+            const customInput = document.getElementById('otherCropInput');
+            customInput.value = '';
+            select.value = 'Brócolis';
+            select.selectedIndex = 0;
+            select.classList.remove('hidden');
+            customDiv.classList.add('hidden');
         }
 
         // --- PERSISTÊNCIA ---
@@ -1045,6 +1108,8 @@
                 }
                 renderHeaderAndSummary();
                 updateDynamicTitle();
+                renderReport(); // Adicionado aqui para corrigir o problema
+
             } catch (e) { console.error("Erro ao carregar", e); }
         }
         
@@ -1063,14 +1128,22 @@
 
         function updateDynamicTitle() {
             const displayPartner = globalInfo.partner || 'Parceiro';
-            document.getElementById('reportTitle').innerHTML = `Resumo de Aplicações Fitossanitárias<br>${displayPartner}`;
+            const titleHTML = `Resumo de Aplicações Fitossanitárias<br>${displayPartner}`;
+            document.getElementById('reportTitle').innerHTML = titleHTML;
 
-            const dateObj = globalInfo.date ? new Date(globalInfo.date) : new Date();
-            const day = String(dateObj.getUTCDate()).padStart(2, '0');
-            const month = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
-            const year = dateObj.getUTCFullYear();
-            const weekNumber = getWeekNumber(dateObj);
-            document.getElementById('headerDateTime').innerText = `Gerado em: ${day}/${month}/${year} - Semana ${weekNumber}`;
+            const dateElement = document.getElementById('headerDateTime');
+            if (globalInfo.date) {
+                const parts = globalInfo.date.split('-');
+                const day = parts[2];
+                const month = parts[1];
+                const year = parts[0];
+                const dateForWeek = new Date(year, month - 1, day);
+                const weekNumber = getWeekNumber(dateForWeek);
+                dateElement.innerText = `Aplicações: ${day}/${month}/${year} - Semana ${weekNumber}`;
+                dateElement.style.opacity = "1";
+            } else {
+                dateElement.innerText = "Aplicações:";
+            }
         }
 
         function clearBlockForm(clearAll = false) {
@@ -1088,9 +1161,11 @@
             // Clear custom crop input
             document.getElementById('otherCropInput').value = '';
             
+            resetCropField();
             handleCropChange(); 
             
             document.getElementById('blockId').value = '';
+             // Clear select if visible
             const bSelect = document.getElementById('blockSelect');
             if(bSelect) bSelect.selectedIndex = 0;
             
@@ -1133,9 +1208,17 @@
             // Validação Bloco
             const crop = document.getElementById('crop');
             let finalCropName = crop.value;
-            if (crop.value === 'Outros') {
-                 if (!document.getElementById('otherCropInput').value) { toggleError('otherCropInput', true); isValid = false; }
-                 else { toggleError('otherCropInput', false); finalCropName = document.getElementById('otherCropInput').value; }
+            
+            if (crop.classList.contains('hidden') || crop.value === 'Outros') {
+                 // Custom Crop Mode
+                 const customInput = document.getElementById('otherCropInput');
+                 if (!customInput.value.trim()) { 
+                     toggleError('otherCropInput', true); 
+                     isValid = false; 
+                 } else { 
+                     toggleError('otherCropInput', false); 
+                     finalCropName = customInput.value.trim();
+                 }
             } else {
                  if (!crop.value) { toggleError('crop', true); isValid = false; }
                  else toggleError('crop', false);
