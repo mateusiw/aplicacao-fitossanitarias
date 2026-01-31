@@ -472,6 +472,7 @@
 
         let appData = [];
         let editingIndex = -1;
+        let lastFormState = null; // Variável para guardar o estado antes da edição
         const STORAGE_KEY = 'spg_fitosanitario_data'; 
         const GLOBAL_KEY = 'spg_global_info'; 
 
@@ -869,6 +870,184 @@
                 }
             });
             return products;
+        }
+
+        // --- NOVA FUNÇÃO: Captura estado bruto dos produtos (mesmo incompletos) ---
+        function getRawProductsState() {
+            const rows = document.querySelectorAll('.product-row');
+            return Array.from(rows).map(row => {
+                const prodSelect = row.querySelector('.prod-name-select');
+                const prodCustom = row.querySelector('.prod-name-custom-input');
+                const typeSelect = row.querySelector('.prod-type-select');
+                const typeCustom = row.querySelector('.prod-type-custom-input');
+                
+                let name = prodSelect.value;
+                if (prodSelect.classList.contains('hidden')) name = prodCustom.value; // Pega valor bruto
+                
+                let type = typeSelect.value;
+                if (typeSelect.classList.contains('hidden')) type = typeCustom.value;
+
+                return {
+                    name: name,
+                    type: type,
+                    dose: row.querySelector('.prod-dose-input').value,
+                    unit: row.querySelector('.prod-unit-input').value
+                };
+            });
+        }
+
+        // --- NOVA FUNÇÃO: Captura estado completo do formulário ---
+        function getFormStateObject() {
+            // Determina cultura efetiva
+            const cropSel = document.getElementById('crop');
+            const cropInp = document.getElementById('otherCropInput');
+            let crop = cropSel.value;
+            if (cropSel.classList.contains('hidden')) crop = cropInp.value;
+
+            // Determina bloco efetivo
+            const blockInp = document.getElementById('blockId');
+            const blockSel = document.getElementById('blockSelect');
+            let block = blockInp.value;
+            if (!blockSel.classList.contains('hidden')) block = blockSel.value;
+            
+            // Determina alvo efetivo
+            const targetSel = document.getElementById('targetPestSelect');
+            const targetInp = document.getElementById('targetPestInput');
+            let target = targetSel.value;
+            if (targetSel.classList.contains('hidden')) target = targetInp.value;
+
+            // Determina solicitante e aplicador efetivos
+            const reqSel = document.getElementById('requestor');
+            const reqInp = document.getElementById('otherRequestorInput');
+            let req = reqSel.value;
+            if (reqSel.classList.contains('hidden') || req === 'Outro') req = reqInp.value;
+
+            const appSel = document.getElementById('applicator');
+            const appInp = document.getElementById('otherApplicatorInput');
+            let app = appSel.value;
+            if (appSel.classList.contains('hidden') || app === 'Outro') app = appInp.value;
+
+            return {
+                // Globais
+                partner: document.getElementById('partner').value,
+                date: document.getElementById('appDate').value,
+                requestor: req,
+                applicator: app,
+                startTime: document.getElementById('startTime').value,
+                endTime: document.getElementById('endTime').value,
+                duration: document.getElementById('totalDuration').value,
+                
+                // Bloco
+                crop: crop,
+                block: block,
+                target: target,
+                products: getRawProductsState(),
+                volume: document.getElementById('syrupVolume').value,
+                ph: document.getElementById('phValue').value,
+                notes: document.getElementById('notes').value
+            };
+        }
+
+        // --- NOVA FUNÇÃO: Preenche o formulário com um objeto de dados (usado para editar e restaurar) ---
+        function populateForm(item) {
+            // 1. DADOS GERAIS
+            document.getElementById('partner').value = item.partner || '';
+            document.getElementById('appDate').value = item.date || '';
+
+            // Solicitante
+            const reqSelect = document.getElementById('requestor');
+            const reqOptions = Array.from(reqSelect.options).map(o => o.value);
+            // Reset visual
+            reqSelect.classList.remove('hidden');
+            document.getElementById('requestor-custom-div').classList.add('hidden');
+            
+            if (reqOptions.includes(item.requestor) && item.requestor !== 'Outro') {
+                reqSelect.value = item.requestor;
+            } else {
+                reqSelect.value = 'Outro';
+                toggleOtherRequestorInput();
+                document.getElementById('otherRequestorInput').value = item.requestor || '';
+            }
+
+            // Aplicador
+            const appSelect = document.getElementById('applicator');
+            const appOptions = Array.from(appSelect.options).map(o => o.value);
+            // Reset visual
+            appSelect.classList.remove('hidden');
+            document.getElementById('applicator-custom-div').classList.add('hidden');
+
+            if (appOptions.includes(item.applicator) && item.applicator !== 'Outro') {
+                appSelect.value = item.applicator;
+            } else {
+                appSelect.value = 'Outro';
+                toggleOtherApplicatorInput();
+                document.getElementById('otherApplicatorInput').value = item.applicator || '';
+            }
+
+            document.getElementById('startTime').value = item.startTime || '';
+            document.getElementById('endTime').value = item.endTime || '';
+            calculateDuration(); 
+            updateGlobalState();
+
+            // 2. CULTURA
+            const cropSelect = document.getElementById('crop');
+            const otherInput = document.getElementById('otherCropInput');
+            const cropOptions = Array.from(cropSelect.options).map(o => o.value);
+            
+            // Reset visual
+            const cropCustomDiv = document.getElementById('crop-custom-div');
+            cropSelect.classList.remove('hidden');
+            cropCustomDiv.classList.add('hidden');
+            
+            if (cropOptions.includes(item.crop) && item.crop !== 'Outros') {
+                cropSelect.value = item.crop;
+            } else {
+                cropSelect.value = 'Outros';
+                toggleOtherCropInput();
+                otherInput.value = item.crop || ''; 
+            }
+            
+            handleCropChange(); // Atualiza visibilidade de bloco e lista de pragas
+
+            // 3. BLOCO
+            const blockSelect = document.getElementById('blockSelect');
+            const blockInput = document.getElementById('blockId');
+            if (blockSelect && !blockSelect.classList.contains('hidden')) {
+                blockSelect.value = item.block || '';
+            } else {
+                blockInput.value = item.block || '';
+            }
+
+            // 4. ALVO BIOLÓGICO
+            const targetSelect = document.getElementById('targetPestSelect');
+            const targetInput = document.getElementById('targetPestInput');
+            const targetOptions = Array.from(targetSelect.options).map(o => o.value);
+            
+            resetTargetPestField(); // Reset visual
+
+            if (targetOptions.includes(item.target) && item.target !== 'Outros') {
+                targetSelect.value = item.target || '';
+            } else {
+                targetSelect.value = 'Outros';
+                toggleOtherTargetPestInput(); 
+                targetInput.value = item.target || ''; 
+            }
+
+            // 5. PRODUTOS
+            const container = document.getElementById('productsContainer');
+            container.innerHTML = '';
+            if (item.products && item.products.length > 0) {
+                item.products.forEach(p => addProductRow(p.name, p.dose, p.unit, p.type));
+            } else {
+                addProductRow(item.product, item.dosage, 'ml', 'Biológico');
+            }
+
+            // 6. OUTROS
+            document.getElementById('syrupVolume').value = item.volume || '';
+            document.getElementById('phValue').value = item.ph || '';
+            document.getElementById('notes').value = item.notes || '';
+            
+            lucide.createIcons();
         }
 
         // --- CÁLCULO DE TEMPO ---
@@ -1408,107 +1587,62 @@
             if (editingIndex >= 0) {
                 appData[editingIndex] = newItem;
                 editingIndex = -1; 
+                
+                // RESTAURA O ESTADO ANTERIOR À EDIÇÃO
+                if (lastFormState) {
+                    populateForm(lastFormState);
+                    lastFormState = null; // Limpa o estado salvo
+                    
+                    // Reseta UI do botão manualmente para "Registrar"
+                    const submitBtn = document.getElementById('submitBtn');
+                    const formTitle = document.getElementById('formTitle');
+                    const formContainer = document.getElementById('formContainer');
+
+                    submitBtn.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> <span>Registrar Aplicação</span>';
+                    submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    submitBtn.classList.add('bg-slate-800', 'hover:bg-slate-900');
+                    formTitle.innerHTML = '<i data-lucide="spray-can" class="text-blue-600"></i> Nova Aplicação';
+                    formContainer.classList.remove('border-blue-300', 'ring-2', 'ring-blue-100');
+                    
+                    // Foca no Bloco para continuar o trabalho
+                    const bSelect = document.getElementById('blockSelect');
+                    const bInput = document.getElementById('blockId');
+                    setTimeout(() => {
+                        if (bSelect && !bSelect.classList.contains('hidden')) bSelect.focus();
+                        else if (bInput) bInput.focus();
+                    }, 100);
+                } else {
+                    clearBlockForm(false); 
+                }
+
             } else {
                 appData.push(newItem);
+                // Mantém o formulário preenchido e foca no Bloco para facilitar digitação sequencial
+                const bSelect = document.getElementById('blockSelect');
+                const bInput = document.getElementById('blockId');
+                if (bSelect && !bSelect.classList.contains('hidden')) {
+                    bSelect.focus();
+                } else if (bInput && !bInput.classList.contains('hidden')) {
+                    bInput.focus();
+                    bInput.select();
+                }
             }
             saveToStorage();
-            clearBlockForm(false); 
             renderReport(); 
             renderList();
         }
 
         function editItem(index) {
+            // SALVA O ESTADO ATUAL ANTES DE CARREGAR O ITEM
+            lastFormState = getFormStateObject();
+
             const item = appData[index];
             editingIndex = index; 
-
-            document.getElementById('partner').value = item.partner;
-            document.getElementById('appDate').value = item.date;
             
-            const reqSelect = document.getElementById('requestor');
-            const reqOptions = Array.from(reqSelect.options).map(o => o.value);
-            if (reqOptions.includes(item.requestor)) {
-                reqSelect.value = item.requestor;
-                reqSelect.classList.remove('hidden');
-                document.getElementById('requestor-custom-div').classList.add('hidden');
-            } else {
-                reqSelect.value = 'Outro';
-                toggleOtherRequestorInput();
-                document.getElementById('otherRequestorInput').value = item.requestor;
-            }
-
-            const appSelect = document.getElementById('applicator');
-            const appOptions = Array.from(appSelect.options).map(o => o.value);
-            if (appOptions.includes(item.applicator)) {
-                appSelect.value = item.applicator;
-                appSelect.classList.remove('hidden');
-                document.getElementById('applicator-custom-div').classList.add('hidden');
-            } else {
-                appSelect.value = 'Outro';
-                toggleOtherApplicatorInput();
-                document.getElementById('otherApplicatorInput').value = item.applicator;
-            }
-
-            document.getElementById('startTime').value = item.startTime || '';
-            document.getElementById('endTime').value = item.endTime || '';
-            calculateDuration(); 
-            updateGlobalState();
-
-            // CORREÇÃO CULTURA
-            const cropSelect = document.getElementById('crop');
-            const otherInput = document.getElementById('otherCropInput');
-            const cropOptions = Array.from(cropSelect.options).map(o => o.value);
+            // Usa a nova função unificada para preencher
+            populateForm(item);
             
-            if (cropOptions.includes(item.crop)) {
-                // IMPORTANT: RESET VISUAL FIRST
-                const cropCustomDiv = document.getElementById('crop-custom-div');
-                cropSelect.classList.remove('hidden');
-                cropCustomDiv.classList.add('hidden');
-                
-                cropSelect.value = item.crop;
-            } else {
-                cropSelect.value = 'Outros';
-                toggleOtherCropInput();
-                otherInput.value = item.crop; 
-            }
-            
-            handleCropChange(); // Popula lista de pragas baseado na cultura
-
-            // Bloco ID
-            const blockSelect = document.getElementById('blockSelect');
-            const blockInput = document.getElementById('blockId');
-            
-            if (blockSelect && !blockSelect.classList.contains('hidden')) {
-                blockSelect.value = item.block;
-            } else {
-                blockInput.value = item.block;
-            }
-
-            // CORREÇÃO ALVO BIOLÓGICO
-            const targetSelect = document.getElementById('targetPestSelect');
-            const targetInput = document.getElementById('targetPestInput');
-            const targetOptions = Array.from(targetSelect.options).map(o => o.value);
-            
-            if (targetOptions.includes(item.target)) {
-                resetTargetPestField(); 
-                targetSelect.value = item.target; 
-            } else {
-                targetSelect.value = 'Outros';
-                toggleOtherTargetPestInput(); 
-                targetInput.value = item.target; 
-            }
-            
-            const container = document.getElementById('productsContainer');
-            container.innerHTML = '';
-            if (item.products && item.products.length > 0) {
-                item.products.forEach(p => addProductRow(p.name, p.dose, p.unit, p.type));
-            } else {
-                addProductRow(item.product, item.dosage, 'ml', 'Biológico');
-            }
-
-            document.getElementById('syrupVolume').value = item.volume;
-            document.getElementById('phValue').value = item.ph || '';
-            document.getElementById('notes').value = item.notes || '';
-            
+            // Ajusta UI para modo de edição
             const submitBtn = document.getElementById('submitBtn');
             const formTitle = document.getElementById('formTitle');
             const formContainer = document.getElementById('formContainer');
@@ -1975,6 +2109,3 @@
     </script>
 </body>
 </html>
-
-
-
