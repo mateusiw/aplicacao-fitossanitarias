@@ -306,10 +306,17 @@
                         </div>
                     </div>
                     
-                    <div class="mt-2">
-                        <label class="text-[10px] font-bold text-slate-500 mb-1 block">Observações (Opcional)</label>
-                        <input type="text" id="notes" placeholder="Ex: Vento calmo..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                   </div>
+                    <div class="grid grid-cols-3 gap-3 mt-2">
+                        <div class="col-span-1">
+                            <label class="text-[10px] font-bold text-slate-500 mb-1 block">Plantas (Opc.)</label>
+                            <!-- Alterado para type="text" com formatação via JS -->
+                            <input type="text" inputmode="numeric" id="totalPlants" oninput="formatThousands(this)" placeholder="Qtd" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="text-[10px] font-bold text-slate-500 mb-1 block">Observações (Opcional)</label>
+                            <input type="text" id="notes" placeholder="Ex: Vento calmo..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
 
                     <button type="submit" id="submitBtn" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 mt-4 active:scale-95">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i> <span>Registrar Aplicação</span>
@@ -643,6 +650,17 @@
             input.value = value;
         }
 
+        // Nova função para formatar milhares nas plantas
+        function formatThousands(input) {
+            let value = input.value.replace(/\D/g, ''); // Remove o que não é dígito
+            if (value) {
+                // Aplica formatação pt-BR (pontos como separador de milhar)
+                input.value = parseInt(value, 10).toLocaleString('pt-BR');
+            } else {
+                input.value = '';
+            }
+        }
+
         // --- LÓGICA DE PRODUTOS DINÂMICOS ---
         function addProductRow(name = '', dose = '', unit = 'ml', type = '') { 
             const container = document.getElementById('productsContainer');
@@ -940,6 +958,7 @@
                 // Bloco
                 crop: crop,
                 block: block,
+                plants: document.getElementById('totalPlants').value,
                 target: target,
                 products: getRawProductsState(),
                 volume: document.getElementById('syrupVolume').value,
@@ -1043,6 +1062,10 @@
             }
 
             // 6. OUTROS
+            const totalPlantsInput = document.getElementById('totalPlants');
+            totalPlantsInput.value = item.plants || '';
+            if (item.plants) formatThousands(totalPlantsInput); // Garante a formatação ao carregar
+            
             document.getElementById('syrupVolume').value = item.volume || '';
             document.getElementById('phValue').value = item.ph || '';
             document.getElementById('notes').value = item.notes || '';
@@ -1447,6 +1470,7 @@
 
             document.getElementById('productsContainer').innerHTML = '';
             addProductRow(); 
+            document.getElementById('totalPlants').value = '';
             document.getElementById('syrupVolume').value = '';
             document.getElementById('phValue').value = ''; 
             document.getElementById('notes').value = '';
@@ -1577,6 +1601,7 @@
                 duration: globalInfo.duration,
                 crop: finalCropName,
                 block: finalBlockValue, 
+                plants: document.getElementById('totalPlants').value,
                 target: finalTarget, // Valor corrigido
                 products: productsList,
                 volume: parseFloat(document.getElementById('syrupVolume').value) || 0,
@@ -1808,7 +1833,7 @@
                             <div class="flex items-start justify-between mt-1">
                                 <div class="w-full">
                                     <div class="flex justify-between items-center mb-2">
-                                        <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}</span>
+                                        <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
                                         <div class="text-xs font-bold text-slate-600 flex items-center gap-1"><span class="text-orange-600 text-sm font-extrabold">Alvo:</span> ${item.target}</div>
                                     </div>
                                     <div class="bg-slate-50/50 rounded-lg border border-slate-100 p-2">
@@ -1881,7 +1906,7 @@
                 let locationLabel = "Bloco";
                 if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
 
-                text += `📍 *${locationLabel} ${item.block}* (${item.crop})\n`;
+                text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
                 text += `🎯 Alvo: ${item.target}\n`;
                 
                 if (item.products && item.products.length > 0) {
@@ -2054,7 +2079,7 @@
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${locationLabel} ${item.block}</td>
+                    <td>${locationLabel} ${item.block}${item.plants ? `<br><span style="font-size: 8px; color: #64748b;">${item.plants} ptas</span>` : ''}</td>
                     <td>${item.crop}</td>
                     <td>${item.target}</td>
                     <td>${productsStr}</td>
@@ -2109,9 +2134,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
-
