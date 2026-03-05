@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Registro Fitossanitário - SPG Oásis</title>
+    <title>Controle Agrícola - SPG Oásis</title>
     
     <!-- Configurações PWA -->
     <link rel="icon" type="image/png" href="https://i.imgur.com/f7UnnL0.png">
@@ -11,7 +11,7 @@
     <meta name="theme-color" content="#ffffff">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="SPG Fito">
+    <meta name="apple-mobile-web-app-title" content="SPG Agro">
     
     <!-- Bibliotecas Externas -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -86,8 +86,8 @@
         <div class="flex items-center gap-3 w-full md:w-auto">
             <img src="https://i.imgur.com/f7UnnL0.png" alt="Logo SPG" class="w-8 h-8 rounded-lg shadow-sm border border-slate-100">
             <div>
-                <h1 class="text-sm font-bold text-slate-800 leading-tight">SPG FITOSSANITÁRIO</h1>
-                <p class="text-[10px] text-slate-500 font-medium">Registro de Aplicações de Defensivos</p>
+                <h1 class="text-sm font-bold text-slate-800 leading-tight">SPG RESUMO OPERACIONAL</h1>
+                <p class="text-[10px] text-slate-500 font-medium">Gestão de Operações Agrícolas</p>
             </div>
         </div>
         <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
@@ -117,9 +117,9 @@
         <div class="w-full lg:w-2/5 space-y-4">
             
             <!-- 1. DADOS GERAIS E OPERACIONAIS (INDEPENDENTE) -->
-            <div id="generalDataCard" class="bg-blue-50 p-5 rounded-2xl shadow-sm border border-blue-100 transition-colors">
+            <div id="generalDataCard" class="bg-blue-50 p-5 rounded-2xl shadow-sm border border-blue-100 transition-colors duration-300">
                 <h2 class="text-sm font-bold text-blue-800 mb-3 flex items-center gap-2">
-                    <i data-lucide="clipboard-check" class="text-blue-600"></i> Dados Gerais da Aplicação
+                    <i data-lucide="clipboard-check" class="text-blue-600"></i> Dados Gerais da Operação
                 </h2>
                 
                 <!-- GERAL -->
@@ -143,11 +143,11 @@
                 <!-- OPERACIONAL -->
                 <div class="grid grid-cols-2 gap-3 mb-5">
                     <div class="relative">
-                        <label class="text-[10px] font-bold text-slate-500 mb-1 block">Solicitante</label>
+                        <label id="requestorLabel" class="text-[10px] font-bold text-slate-500 mb-1 block">Solicitante</label>
                         <select id="requestor" onchange="toggleOtherRequestorInput(); clearError('requestor'); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="">Selecione...</option>
                             <option value="José Márcio">José Márcio</option> 
-                            <option value="Guilherme Ramos">Guilherme Ramos</option> <!-- ADICIONADO -->
+                            <option value="Guilherme Ramos">Guilherme Ramos</option>
                             <option value="Outro">Outro (Digitar)</option>
                         </select>
                         <div id="requestor-custom-div" class="hidden relative w-full fade-in">
@@ -161,11 +161,12 @@
                     </div>
 
                     <div class="relative">
-                        <label class="text-[10px] font-bold text-slate-500 mb-1 block">Aplicador</label>
+                        <label id="applicatorLabel" class="text-[10px] font-bold text-slate-500 mb-1 block">Aplicador</label>
                         <select id="applicator" onchange="toggleOtherApplicatorInput(); clearError('applicator'); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="">Selecione...</option>
                             <option value="Equipe Erisvaldo">Equipe Erisvaldo</option>
-                            <option value="Hugo Melo">Hugo Melo</option> <!-- ADICIONADO -->
+                            <option value="Hugo Melo">Hugo Melo</option>
+                            <option value="Silvio Brito">Silvio Brito</option>
                             <option value="Outro">Outro (Digitar)</option>
                         </select>
                         <div id="applicator-custom-div" class="hidden relative w-full fade-in">
@@ -179,16 +180,16 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-3 gap-2 mb-3">
+                <div id="timeRow" class="grid grid-cols-3 gap-2 mb-3 transition-all duration-300">
                     <div class="relative">
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Início</label>
                         <input type="time" id="startTime" onchange="clearError('startTime'); calculateDuration(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                        <span id="error-startTime" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                        <span id="error-startTime" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                     </div>
                     <div class="relative">
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Fim</label>
                         <input type="time" id="endTime" onchange="clearError('endTime'); calculateDuration(); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                        <span id="error-endTime" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                        <span id="error-endTime" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                     </div>
                     <div>
                         <label class="text-[10px] font-bold text-slate-500 mb-1 block">Total</label>
@@ -214,16 +215,41 @@
                     </button>
                 </div>
                 
+                <!-- SELETOR DE MODO DE REGISTRO (TABS) -->
+                <div class="mb-5 bg-slate-50 p-2 rounded-xl border border-slate-200 shadow-inner">
+                    <label class="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2 block text-center">Tipo de Operação</label>
+                    <div class="grid grid-cols-3 gap-1.5">
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="recordTypeRadio" value="Fito" class="peer sr-only" checked onchange="toggleFormType()">
+                            <div class="text-center py-2 text-[10px] font-bold rounded-lg border border-slate-200 bg-white text-slate-500 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-700 transition-all flex flex-col items-center gap-1 shadow-sm peer-checked:shadow-inner">
+                                <i data-lucide="spray-can" class="w-4 h-4"></i> Defensivos
+                            </div>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="recordTypeRadio" value="Multiplicacao" class="peer sr-only" onchange="toggleFormType()">
+                            <div class="text-center py-2 text-[10px] font-bold rounded-lg border border-slate-200 bg-white text-slate-500 peer-checked:bg-emerald-600 peer-checked:text-white peer-checked:border-emerald-700 transition-all flex flex-col items-center gap-1 shadow-sm peer-checked:shadow-inner">
+                                <i data-lucide="flask-conical" class="w-4 h-4"></i> Laboratório
+                            </div>
+                        </label>
+                        <label class="cursor-pointer relative">
+                            <input type="radio" name="recordTypeRadio" value="Adubacao" class="peer sr-only" onchange="toggleFormType()">
+                            <div class="text-center py-2 text-[10px] font-bold rounded-lg border border-slate-200 bg-white text-slate-500 peer-checked:bg-amber-600 peer-checked:text-white peer-checked:border-amber-700 transition-all flex flex-col items-center gap-1 shadow-sm peer-checked:shadow-inner">
+                                <i data-lucide="sprout" class="w-4 h-4"></i> Adubação
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 <!-- Adicionado novalidate para controle JS -->
                 <form id="appForm" onsubmit="addItem(event)" class="space-y-4" novalidate>
                     
-                    <!-- LINHA 3: CULTURA E BLOCO -->
-                    <div class="grid grid-cols-2 gap-3 mb-5">
+                    <!-- LINHA 1: CULTURA E BLOCO (Fito e Adubacao) -->
+                    <div id="fito-row-1" class="grid grid-cols-2 gap-3 mb-5">
                         <div class="relative">
                             <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Cultura</label>
                             
                             <!-- SELECT CULTURA -->
-                            <select id="crop" onchange="toggleOtherCropInput(); clearError('crop'); handleCropChange();" required class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                            <select id="crop" onchange="toggleOtherCropInput(); clearError('crop'); handleCropChange();" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                                 <option value="Brócolis">Brócolis</option>
                                 <option value="Couve-Flor">Couve-Flor</option>
                                 <option value="Pepino">Pepino</option>
@@ -238,27 +264,27 @@
                                 </button>
                             </div>
 
-                            <span id="error-crop" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
-                            <span id="error-otherCropInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                            <span id="error-crop" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
+                            <span id="error-otherCropInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                         </div>
 
                         <div class="relative">
                             <label id="blockLabel" class="text-xs font-bold text-slate-500 uppercase mb-1 block">Nº Bloco/Talhão</label>
                             
                             <!-- Input e Select alternáveis -->
-                            <input type="text" id="blockId" required oninput="clearError('blockId')" placeholder="Ex: 1 - A" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
+                            <input type="text" id="blockId" oninput="clearError('blockId')" placeholder="Ex: 1 - A" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                             
                             <select id="blockSelect" onchange="clearError('blockSelect')" class="hidden w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                                 <option value="">Selecione...</option>
                             </select>
 
-                            <span id="error-blockId" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
-                            <span id="error-blockSelect" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Selecione uma opção</span>
+                            <span id="error-blockId" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
+                            <span id="error-blockSelect" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Selecione</span>
                         </div>
                     </div>
 
-                    <!-- ALVO BIOLÓGICO -->
-                    <div class="mb-5 relative">
+                    <!-- ALVO BIOLÓGICO (Apenas Fito) -->
+                    <div id="fito-row-2" class="mb-5 relative">
                         <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Alvo Biológico (Praga/Doença)</label>
                         
                         <!-- SELECT ALVO -->
@@ -275,15 +301,15 @@
                             </button>
                         </div>
 
-                        <span id="error-targetPestSelect" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Selecione uma opção</span>
-                        <span id="error-targetPestInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                        <span id="error-targetPestSelect" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Selecione</span>
+                        <span id="error-targetPestInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                     </div>
 
                     <!-- LISTA DE PRODUTOS DINÂMICA -->
-                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                        <label class="text-[10px] font-bold text-blue-600 uppercase tracking-wide mb-2 flex justify-between items-center">
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-100" id="productsSection">
+                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-2 flex justify-between items-center" id="productsLabel">
                             <span>Produtos & Dosagens</span>
-                            <button type="button" onclick="addProductRow()" class="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-[9px] bg-blue-50 px-2 py-1 rounded border border-blue-200 shadow-sm transition-all active:scale-95">
+                            <button type="button" onclick="addProductRow()" class="text-blue-500 hover:text-blue-700 flex items-center gap-1 text-[9px] bg-white px-2 py-1 rounded border border-slate-200 shadow-sm transition-all active:scale-95">
                                 <i data-lucide="plus" width="10"></i> Add Produto
                             </button>
                         </label>
@@ -293,12 +319,12 @@
                         </div>
                     </div>
 
-                    <!-- DADOS DA CALDA (VOLUME E PH) -->
-                    <div class="grid grid-cols-2 gap-3">
+                    <!-- DADOS DA CALDA (VOLUME E PH) (Apenas Fito) -->
+                    <div id="fito-row-3" class="grid grid-cols-2 gap-3 mt-4">
                          <div class="col-span-1 relative">
                             <label class="text-[10px] font-bold text-blue-600 mb-1 block">Vol. Calda (L)</label>
-                            <input type="number" id="syrupVolume" required oninput="clearError('syrupVolume')" placeholder="200" class="w-full p-2 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500">
-                            <span id="error-syrupVolume" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha este campo</span>
+                            <input type="number" id="syrupVolume" oninput="clearError('syrupVolume')" placeholder="200" class="w-full p-2 border border-blue-200 bg-blue-50 rounded-lg text-sm text-blue-800 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <span id="error-syrupVolume" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                         </div>
                          <div class="col-span-1">
                             <label class="text-[10px] font-bold text-purple-600 mb-1 block">P.H.</label>
@@ -306,13 +332,59 @@
                         </div>
                     </div>
                     
+                    <!-- DADOS MULTIPLICAÇÃO (LITROS E DIAS) (Apenas Multiplicacao) -->
+                    <div id="multi-row-1" class="hidden grid grid-cols-2 gap-3 mt-4">
+                         <div class="col-span-1 relative">
+                            <label class="text-[10px] font-bold text-emerald-600 mb-1 block">Litros Multiplicados (L) <span class="text-red-500">*</span></label>
+                            <input type="number" id="multiLiters" oninput="clearError('multiLiters')" placeholder="Ex: 1000" class="w-full p-2 border border-emerald-200 bg-emerald-50 rounded-lg text-sm text-emerald-800 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <span id="error-multiLiters" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
+                        </div>
+                         <div class="col-span-1 relative">
+                            <label class="text-[10px] font-bold text-emerald-600 mb-1 block">Dias de Reator <span class="text-red-500">*</span></label>
+                            <input type="number" id="reactorDays" oninput="clearError('reactorDays')" placeholder="Ex: 5" class="w-full p-2 border border-emerald-200 bg-emerald-50 rounded-lg text-sm text-emerald-800 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            <span id="error-reactorDays" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
+                        </div>
+                    </div>
+
+                    <!-- DADOS ESPECÍFICOS DE ADUBAÇÃO (Método e Tempo) (Apenas Adubacao) -->
+                    <div id="adubacao-specific-row" class="hidden bg-amber-50 p-3 rounded-lg border border-amber-100 mt-4">
+                        <label class="text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-2 flex items-center gap-1">
+                            <i data-lucide="settings-2" class="w-3 h-3"></i> Detalhes da Adubação
+                        </label>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div class="col-span-2 md:col-span-1 relative">
+                                <label class="text-[10px] font-bold text-amber-700 mb-1 block">Método <span class="text-red-500">*</span></label>
+                                <select id="adubacaoMethod" onchange="clearError('adubacaoMethod')" class="w-full p-2 border border-amber-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                                    <option value="">Selecione...</option>
+                                    <option value="Manual">Manual</option>
+                                    <option value="Aplicador Costal">Aplicador Costal</option>
+                                </select>
+                                <span id="error-adubacaoMethod" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
+                            </div>
+                            <div class="col-span-1 relative">
+                                <label class="text-[10px] font-bold text-amber-700 mb-1 block">Início <span class="text-red-500">*</span></label>
+                                <input type="time" id="adubacaoStart" onchange="calculateAdubacaoDuration(); clearError('adubacaoStart');" class="w-full p-2 border border-amber-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                                <span id="error-adubacaoStart" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
+                            </div>
+                            <div class="col-span-1 relative">
+                                <label class="text-[10px] font-bold text-amber-700 mb-1 block">Fim <span class="text-red-500">*</span></label>
+                                <input type="time" id="adubacaoEnd" onchange="calculateAdubacaoDuration(); clearError('adubacaoEnd');" class="w-full p-2 border border-amber-200 rounded-lg text-sm bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+                                <span id="error-adubacaoEnd" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
+                            </div>
+                            <div class="col-span-2 md:col-span-1">
+                                <label class="text-[10px] font-bold text-amber-700 mb-1 block">Total</label>
+                                <input type="text" id="adubacaoDuration" readonly placeholder="--:--" class="w-full p-2 border border-amber-200 bg-amber-100/50 rounded-lg text-sm text-amber-800 focus:outline-none font-semibold">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-3 gap-3 mt-2">
-                        <div class="col-span-1">
+                        <div id="fito-row-4" class="col-span-1">
                             <label class="text-[10px] font-bold text-slate-500 mb-1 block">Plantas (Opc.)</label>
                             <!-- Alterado para type="text" com formatação via JS -->
                             <input type="text" inputmode="numeric" id="totalPlants" oninput="formatThousands(this)" placeholder="Qtd" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
-                        <div class="col-span-2">
+                        <div id="obs-container" class="col-span-2 transition-all">
                             <label class="text-[10px] font-bold text-slate-500 mb-1 block">Observações (Opcional)</label>
                             <input type="text" id="notes" placeholder="Ex: Vento calmo..." class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
@@ -327,8 +399,7 @@
             <!-- Lista de Itens -->
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-bold text-slate-700">Aplicações Registradas</h3>
-                    <!-- BOTÃO LIMPAR TUDO AGORA CHAMA O MODAL -->
+                    <h3 id="listTitle" class="text-sm font-bold text-slate-700">Aplicações Registradas</h3>
                     <button onclick="showClearAllModal()" class="text-xs text-red-500 hover:text-red-700 font-bold underline">Limpar Tudo</button>
                 </div>
                 <ul id="itemsList" class="space-y-2 text-sm text-slate-600">
@@ -340,10 +411,10 @@
         <!-- PREVIEW -->
         <div class="w-full lg:w-3/5 flex flex-col bg-slate-200/50 p-4 rounded-3xl border border-slate-300/50 min-h-[calc(100vh-6rem)]">
             
-            <div id="report-card" class="w-full flex-1 flex flex-col bg-white shadow-2xl overflow-hidden border border-slate-100 relative">
+            <div id="report-card" class="w-full flex-1 flex flex-col bg-white shadow-2xl overflow-hidden border border-slate-100 relative transition-colors duration-500">
                 
                 <!-- Cabeçalho (Cinza/Slate) -->
-                <div class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 text-white relative overflow-hidden flex flex-col justify-start shrink-0 gap-3 antialiased">
+                <div id="reportHeaderBg" class="bg-gradient-to-br from-slate-700 to-slate-900 p-6 text-white relative overflow-hidden flex flex-col justify-start shrink-0 gap-3 antialiased transition-colors duration-500">
                     <img src="https://i.imgur.com/f7UnnL0.png" alt="Logo SPG" class="absolute top-4 right-4 w-24 h-24 z-0" style="image-rendering: -webkit-optimize-contrast;">
                     <div class="relative z-10 w-full pr-24"> 
                         <h2 id="reportTitle" class="text-sm font-bold leading-snug tracking-normal">
@@ -375,7 +446,7 @@
                 <!-- Rodapé da Marca -->
                 <div class="bg-slate-100 p-3 text-center border-t border-slate-200 shrink-0">
                     <div class="flex justify-center items-center gap-2 text-[10px] text-slate-400 font-medium uppercase tracking-widest leading-relaxed">
-                        SPG • Controle Fitossanitário
+                        SPG • Controle Integrado
                     </div>
                 </div>
 
@@ -385,11 +456,10 @@
 
     <!-- ELEMENTO OCULTO PARA O RELATÓRIO TÉCNICO PDF -->
     <div id="technical-report-template">
-        <!-- Mantido igual ao anterior -->
         <div class="tech-header">
             <div>
-                <h1 style="font-size: 24px; font-weight: bold; color: #1e293b; margin: 0;">RELATÓRIO DE APLICAÇÃO</h1>
-                <p style="font-size: 14px; color: #64748b; margin: 5px 0 0 0;">Controle Fitossanitário • SPG</p>
+                <h1 id="pdf-main-title" style="font-size: 24px; font-weight: bold; color: #1e293b; margin: 0;">RELATÓRIO DE APLICAÇÃO</h1>
+                <p style="font-size: 14px; color: #64748b; margin: 5px 0 0 0;">Controle Agrícola Integrado • SPG</p>
             </div>
             <img src="https://i.imgur.com/f7UnnL0.png" style="height: 80px; width: auto;">
         </div>
@@ -400,28 +470,26 @@
                 <div><strong>Data:</strong> <span id="pdf-date"></span> <span id="pdf-week"></span></div>
             </div>
             <div style="line-height: 1.8;">
-                <div><strong>Solicitante:</strong> <span id="pdf-requestor"></span></div>
-                <div><strong>Aplicador:</strong> <span id="pdf-applicator"></span></div>
+                <div><strong><span id="pdf-req-label">Solicitante:</span></strong> <span id="pdf-requestor"></span></div>
+                <div><strong><span id="pdf-app-label">Aplicador:</span></strong> <span id="pdf-applicator"></span></div>
             </div>
-            <div style="line-height: 1.8; text-align: right;">
+            <div id="pdf-time-container" style="line-height: 1.8; text-align: right;">
                 <div><strong>Horário:</strong> <span id="pdf-time"></span></div>
-                <div><strong>TOTAL DE APLICAÇÕES:</strong> <span id="pdf-total-blocks"></span></div>
+                <div><strong id="pdf-total-label">TOTAL DE APLICAÇÕES:</strong> <span id="pdf-total-blocks"></span></div>
             </div>
         </div>
 
-        <h3 style="font-size: 14px; font-weight: bold; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 10px;">DETALHAMENTO DAS APLICAÇÕES</h3>
+        <h3 id="pdf-table-title" style="font-size: 14px; font-weight: bold; color: #1e293b; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 10px;">DETALHAMENTO DAS APLICAÇÕES</h3>
         
         <table class="tech-table">
             <thead>
                 <tr>
-                    <th style="width: 15%;">Setor/Bloco</th>
-                    <th style="width: 15%;">Cultura</th>
-                    <th style="width: 10%;">Alvo</th>
-                    <th style="width: 30%;">Produtos (Dose)</th>
-                    <!-- Ajustado tamanho da fonte para Calda (L) -->
-                    <th style="width: 10%; font-size: 10px;">Calda (L)</th>
-                    <!-- Alterado de pH para P.H -->
-                    <th style="width: 5%;">P.H</th>
+                    <th style="width: 15%;" id="pdf-th-1">Setor/Bloco</th>
+                    <th style="width: 15%;" id="pdf-th-2">Cultura</th>
+                    <th style="width: 10%;" id="pdf-th-3">Alvo</th>
+                    <th style="width: 30%;" id="pdf-th-4">Produtos (Dose)</th>
+                    <th style="width: 10%; font-size: 10px;" id="pdf-th-5">Calda (L)</th>
+                    <th style="width: 5%;" id="pdf-th-6">P.H</th>
                     <th style="width: 15%;">Obs</th>
                 </tr>
             </thead>
@@ -435,7 +503,7 @@
                 Responsável Técnico
             </div>
             <div style="width: 40%; border-top: 1px solid #333; text-align: center; font-size: 11px; padding-top: 5px;">
-                Responsável Aplicação
+                Responsável Operacional
             </div>
         </div>
         
@@ -468,18 +536,18 @@
                 <!-- Icon injetado via JS -->
             </div>
             <h3 id="msgTitle" class="text-lg font-bold text-slate-800"></h3>
-            <p id="msgText" class="text-sm text-slate-500 mt-2 mb-4"></p>
+            <p id="msgText" class="text-sm text-slate-500 mt-2 mb-4 whitespace-pre-line"></p>
             <button onclick="hideMessageModal()" class="w-full px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-sm transition-colors">OK</button>
         </div>
     </div>
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        console.log("Aplicação 'Fitossanitário SPG' carregada.");
+        console.log("Aplicação 'Controle SPG' carregada.");
 
         let appData = [];
         let editingIndex = -1;
-        let lastFormState = null; // Variável para guardar o estado antes da edição
+        let lastFormState = null; 
         const STORAGE_KEY = 'spg_fitosanitario_data'; 
         const GLOBAL_KEY = 'spg_global_info'; 
 
@@ -496,13 +564,135 @@
 
         // INICIALIZAÇÃO
         lucide.createIcons();
-        // REMOVIDO: document.getElementById('appDate').valueAsDate = new Date();
         addProductRow();
         loadFromStorage();
         updateDynamicTitle();
         calculateDuration();
         updateGlobalState();
-        handleCropChange(); // Garante o estado inicial correto
+        handleCropChange();
+
+        // --- LÓGICA DE MODOS (NOVO: Fito, Multiplicacao, Adubacao) ---
+        function getRecordType() {
+            const checked = document.querySelector('input[name="recordTypeRadio"]:checked');
+            return checked ? checked.value : 'Fito';
+        }
+
+        function toggleFormType(skipValidation = false) {
+            const newRecordType = getRecordType();
+
+            // Validação: Não permitir misturar tipos no mesmo relatório
+            if (!skipValidation) {
+                const itemsToCheck = editingIndex >= 0 ? appData.filter((_, idx) => idx !== editingIndex) : appData;
+                if (itemsToCheck.length > 0 && itemsToCheck[0].recordType !== newRecordType) {
+                    // Reverte a ação marcando a opção original
+                    document.querySelector(`input[name="recordTypeRadio"][value="${itemsToCheck[0].recordType}"]`).checked = true;
+                    
+                    let typeName = '';
+                    if (itemsToCheck[0].recordType === 'Multiplicacao') typeName = 'Multiplicação de Biológicos';
+                    else if (itemsToCheck[0].recordType === 'Adubacao') typeName = 'Adubação Granulada';
+                    else typeName = 'Aplicações Fitossanitárias';
+                    
+                    showMessageModal('Ação Bloqueada', `Não é permitido misturar tipos diferentes no mesmo relatório.\n\nJá existem registros de ${typeName} salvos nesta lista.\n\nPara iniciar um relatório diferente, conclua este ou clique em "Limpar Tudo".`, 'error');
+                    return; 
+                }
+                
+                // Reseta a lista de produtos quando alterna manualmente para carregar a lista correta
+                const container = document.getElementById('productsContainer');
+                if (container) {
+                    container.innerHTML = '';
+                    addProductRow();
+                }
+            }
+
+            const fito1 = document.getElementById('fito-row-1');
+            const fito2 = document.getElementById('fito-row-2');
+            const fito3 = document.getElementById('fito-row-3');
+            const fito4 = document.getElementById('fito-row-4');
+            const multi1 = document.getElementById('multi-row-1');
+            const obsContainer = document.getElementById('obs-container');
+            const formTitle = document.getElementById('formTitle');
+            const submitBtnText = document.querySelector('#submitBtn span');
+            const submitBtnIcon = document.querySelector('#submitBtn i');
+            const submitBtn = document.getElementById('submitBtn');
+            const generalCard = document.getElementById('generalDataCard');
+            const formContainer = document.getElementById('formContainer');
+            
+            const reqLabel = document.getElementById('requestorLabel');
+            const appLabel = document.getElementById('applicatorLabel');
+            const timeRow = document.getElementById('timeRow');
+            const adubacaoRow = document.getElementById('adubacao-specific-row');
+
+            if (newRecordType === 'Multiplicacao') {
+                fito1.classList.add('hidden');
+                fito2.classList.add('hidden');
+                fito3.classList.add('hidden');
+                fito4.classList.add('hidden');
+                multi1.classList.remove('hidden');
+                adubacaoRow.classList.add('hidden');
+                obsContainer.classList.remove('col-span-2');
+                obsContainer.classList.add('col-span-3');
+                
+                reqLabel.innerText = "Quem pediu a multiplicação?";
+                appLabel.innerText = "Responsável por iniciar";
+                timeRow.classList.add('hidden');
+                clearError('startTime');
+                clearError('endTime');
+
+                if (editingIndex === -1) {
+                    formTitle.innerHTML = '<i data-lucide="flask-conical" class="text-emerald-600"></i> Nova Multiplicação';
+                    submitBtnText.innerText = 'Registrar Multiplicação';
+                    if(submitBtnIcon) submitBtnIcon.setAttribute('data-lucide', 'plus-circle');
+                    submitBtn.className = "w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 mt-4 active:scale-95";
+                }
+            } else if (newRecordType === 'Adubacao') {
+                fito1.classList.remove('hidden'); 
+                fito2.classList.add('hidden'); 
+                fito3.classList.add('hidden'); 
+                fito4.classList.remove('hidden'); 
+                multi1.classList.add('hidden');
+                adubacaoRow.classList.remove('hidden');
+                obsContainer.classList.remove('col-span-3');
+                obsContainer.classList.add('col-span-2');
+                
+                reqLabel.innerText = "Solicitante";
+                appLabel.innerText = "Aplicador";
+                timeRow.classList.add('hidden'); // Tempo Global escondido (fica individual no bloco)
+                clearError('startTime');
+                clearError('endTime');
+
+                if (editingIndex === -1) {
+                    formTitle.innerHTML = '<i data-lucide="sprout" class="text-amber-600"></i> Nova Adubação';
+                    submitBtnText.innerText = 'Registrar Adubação';
+                    if(submitBtnIcon) submitBtnIcon.setAttribute('data-lucide', 'plus-circle');
+                    submitBtn.className = "w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 mt-4 active:scale-95";
+                }
+            } else {
+                // Fito
+                fito1.classList.remove('hidden');
+                fito2.classList.remove('hidden');
+                fito3.classList.remove('hidden');
+                fito4.classList.remove('hidden');
+                multi1.classList.add('hidden');
+                adubacaoRow.classList.add('hidden');
+                obsContainer.classList.remove('col-span-3');
+                obsContainer.classList.add('col-span-2');
+                
+                reqLabel.innerText = "Solicitante";
+                appLabel.innerText = "Aplicador";
+                timeRow.classList.remove('hidden'); // Tempo Global ativo para fito
+
+                if (editingIndex === -1) {
+                    formTitle.innerHTML = '<i data-lucide="spray-can" class="text-blue-600"></i> Nova Aplicação';
+                    submitBtnText.innerText = 'Registrar Aplicação';
+                    if(submitBtnIcon) submitBtnIcon.setAttribute('data-lucide', 'plus-circle');
+                    submitBtn.className = "w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 mt-4 active:scale-95";
+                }
+            }
+            lucide.createIcons();
+            updateDynamicTitle();
+            renderHeaderAndSummary();
+            renderReport();
+        }
 
         // --- VALIDAÇÃO DE CAMPO ---
         function toggleError(id, show) {
@@ -528,7 +718,6 @@
         function validateHeader() {
             let isValid = true;
             
-            // Helper to check standard vs custom input
             const checkField = (selectId, customInputId) => {
                 const select = document.getElementById(selectId);
                 const customInput = document.getElementById(customInputId);
@@ -552,41 +741,18 @@
                 }
             };
 
-            // 1. Local
-            if(!document.getElementById('partner').value) { 
-                toggleError('partner', true); 
-                isValid = false; 
-            } else { 
-                toggleError('partner', false); 
-            }
+            if(!document.getElementById('partner').value) { toggleError('partner', true); isValid = false; } else { toggleError('partner', false); }
+            if(!document.getElementById('appDate').value) { toggleError('appDate', true); isValid = false; } else { toggleError('appDate', false); }
 
-            // 2. Data
-            if(!document.getElementById('appDate').value) { 
-                toggleError('appDate', true); 
-                isValid = false; 
-            } else { 
-                toggleError('appDate', false); 
-            }
-
-            // 3. Solicitante
             if (!checkField('requestor', 'otherRequestorInput')) isValid = false;
-
-            // 4. Aplicador
             if (!checkField('applicator', 'otherApplicatorInput')) isValid = false;
 
-            // 5. Início
-            if(!document.getElementById('startTime').value) { 
-                toggleError('startTime', true); 
-                isValid = false; 
-            } else { 
+            const recType = getRecordType();
+            if (recType === 'Fito') {
+                if(!document.getElementById('startTime').value) { toggleError('startTime', true); isValid = false; } else { toggleError('startTime', false); }
+                if(!document.getElementById('endTime').value) { toggleError('endTime', true); isValid = false; } else { toggleError('endTime', false); }
+            } else {
                 toggleError('startTime', false); 
-            }
-
-            // 6. Fim
-            if(!document.getElementById('endTime').value) { 
-                toggleError('endTime', true); 
-                isValid = false; 
-            } else { 
                 toggleError('endTime', false); 
             }
 
@@ -595,35 +761,23 @@
 
         // --- ATUALIZAÇÃO EM TEMPO REAL (DADOS GERAIS) ---
         function updateGlobalState() {
-            // Limpa erros visuais ao editar
             const fields = ['partner', 'appDate', 'requestor', 'otherRequestorInput', 'applicator', 'otherApplicatorInput', 'startTime', 'endTime'];
             fields.forEach(id => {
                 const el = document.getElementById(id);
-                // Reset manual simples:
                  if(el) el.classList.remove('border-red-500', 'ring-1', 'ring-red-500');
             });
-            // Oculta spans de erro específicos
             document.querySelectorAll('[id^="error-"]').forEach(el => el.classList.add('hidden'));
 
-            // Coleta dados dos campos globais
             globalInfo.partner = document.getElementById('partner').value;
             globalInfo.date = document.getElementById('appDate').value;
             
-            // Solicitante
             const reqSelect = document.getElementById('requestor');
-            if (!reqSelect.classList.contains('hidden')) {
-                 globalInfo.requestor = reqSelect.value;
-            } else {
-                 globalInfo.requestor = document.getElementById('otherRequestorInput').value;
-            }
+            if (!reqSelect.classList.contains('hidden')) { globalInfo.requestor = reqSelect.value; } 
+            else { globalInfo.requestor = document.getElementById('otherRequestorInput').value; }
 
-            // Aplicador
             const appSelect = document.getElementById('applicator');
-            if (!appSelect.classList.contains('hidden')) {
-                globalInfo.applicator = appSelect.value;
-            } else {
-                globalInfo.applicator = document.getElementById('otherApplicatorInput').value;
-            }
+            if (!appSelect.classList.contains('hidden')) { globalInfo.applicator = appSelect.value; } 
+            else { globalInfo.applicator = document.getElementById('otherApplicatorInput').value; }
 
             globalInfo.startTime = document.getElementById('startTime').value;
             globalInfo.endTime = document.getElementById('endTime').value;
@@ -632,13 +786,10 @@
             localStorage.setItem(GLOBAL_KEY, JSON.stringify(globalInfo));
             updateDynamicTitle();
             renderHeaderAndSummary();
-            
-            // Re-render list to filter by new partner immediately
             renderList();
             renderReport();
         }
 
-        // --- FUNÇÕES DE FORMATAÇÃO ---
         function formatDecimalInput(input) {
             let value = input.value;
             value = value.replace('.', ',');
@@ -650,11 +801,9 @@
             input.value = value;
         }
 
-        // Nova função para formatar milhares nas plantas
         function formatThousands(input) {
-            let value = input.value.replace(/\D/g, ''); // Remove o que não é dígito
+            let value = input.value.replace(/\D/g, ''); 
             if (value) {
-                // Aplica formatação pt-BR (pontos como separador de milhar)
                 input.value = parseInt(value, 10).toLocaleString('pt-BR');
             } else {
                 input.value = '';
@@ -670,29 +819,54 @@
             div.className = "flex gap-2 items-start product-row animate-fade-in flex-wrap sm:flex-nowrap"; 
             div.id = rowId;
             
-            // Options for select
+            const recType = getRecordType();
+            
+            // Adjust default unit depending on mode
+            if (!unit) {
+                unit = (recType === 'Adubacao') ? 'Kg' : 'ml';
+            }
+            
             const units = ['ml', 'L', 'g', 'Kg'];
             const optionsHtml = units.map(u => `<option value="${u}" ${u === unit ? 'selected' : ''}>${u}</option>`).join('');
 
-            // Tipos de Produto - ORDENADOS A-Z
-            const standardTypes = [
-                'Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Desfolhantes',
-                'Espalhante', 'Estabilizador de PH', 'Fungicidas', 'Herbicidas', 'Inseticidas',
-                'Natural', 'Nematicidas', 'Nutricional', 'Repelente', 'Rodenticidas'
-            ];
+            // Tipos
+            let standardTypes = [];
+            if (recType === 'Adubacao') {
+                standardTypes = ['Orgânico', 'Mineral', 'Foliar', 'Organomineral'];
+            } else {
+                standardTypes = [
+                    'Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Desfolhantes',
+                    'Espalhante', 'Estabilizador de PH', 'Fungicidas', 'Herbicidas', 'Inseticidas',
+                    'Natural', 'Nematicidas', 'Nutricional', 'Repelente', 'Rodenticidas'
+                ];
+            }
 
-            // List of Products SORTED ALPHABETICALLY
-            const standardProducts = [
-                "Acadian", "Ácido Peracético", "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", "Boro", "Bicarbonato",
-                "Carbon N-10", "CalPlant", "Cabrio Top", "Coda Sul PH", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Eleito", "Evidence", "Ferro", "Full Grow", 
-                "Facility", "Joiner", "Karate", "Kasumin", "Lannate", "Leite de Vaca", "Mancozeb", "Manipueira", "MAP (Monoamônio Fosfato)", "Master Mix", "Metarhizium", 
-                "MKP (Monofosfato de Potássio)", "Molibdato", "Mukussan", "Nitrato de Cálcio", "Nitrato de Potássio", "Octaborato", 
-                "Óleo Vegetal", "Óleo Vegetal Speed", "Premio", "Ridomil", "Shenzi", "Score", "Sanmite", "Speed Dil", "Sulfato de Magnésio", "Sulfato de Potássio", "Timorex", "Trichoderma", 
-                "Trichodermil", "Vinagre", "Vertimec","Xixi", "YaraVita - Biotrac", "YaraVita - Bortrac", "YaraVita - Caltrac", 
-                "YaraVita - Gotamax", "YaraVita - Zintrac", "Ziel"
-            ];
+            // Produtos
+            let standardProducts = [];
+            if (recType === 'Multiplicacao') {
+                standardProducts = [
+                    "Açúcar", "Antiespumantes", "Azototal", "Bac-in", "Bravo", "Crystal BT", "Fung-in", "Kilper-S", "Optimun", "Supress - H"
+                ].sort();
+            } else if (recType === 'Adubacao') {
+                standardProducts = [
+                    "Adubo Orgânico", "Calcário", "Cloreto de Potássio", "Esterco", "MAP", 
+                    "Nitrato de Amônio", "Nitrato de Cálcio", "NPK 04-14-08", "NPK 10-10-10", 
+                    "NPK 20-05-20", "Superfosfato Simples", "Superfosfato Triplo", 
+                    "Sulfato de Amônio", "Ureia", "YaraBasa", "YaraMila"
+                ].sort();
+            } else {
+                // Fito
+                standardProducts = [
+                    "Acadian", "Ácido Peracético", "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", "Boro", "Bicarbonato",
+                    "Carbon N-10", "CalPlant", "Cabrio Top", "Coda Sul PH", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Eleito", "Evidence", "Ferro", "Full Grow", 
+                    "Facility", "Joiner", "Karate", "Kasumin", "Lannate", "Leite de Vaca", "Mancozeb", "Manipueira", "MAP (Monoamônio Fosfato)", "Master Mix", "Metarhizium", 
+                    "MKP (Monofosfato de Potássio)", "Molibdato", "Mukussan", "Nitrato de Cálcio", "Nitrato de Potássio", "Octaborato", 
+                    "Óleo Vegetal", "Óleo Vegetal Speed", "Premio", "Ridomil", "Shenzi", "Score", "Sanmite", "Speed Dil", "Sulfato de Magnésio", "Sulfato de Potássio", "Timorex", "Trichoderma", 
+                    "Trichodermil", "Vinagre", "Vertimec","Xixi", "YaraVita - Biotrac", "YaraVita - Bortrac", "YaraVita - Caltrac", 
+                    "YaraVita - Gotamax", "YaraVita - Zintrac", "Ziel"
+                ].sort();
+            }
             
-            // Determine initial state for TYPE
             let isCustom = false;
             let displayType = type;
             let customTypeValue = '';
@@ -710,7 +884,6 @@
                 `<option value="${t}" ${t === displayType ? 'selected' : ''}>${t}</option>`
             ).join('');
 
-            // Determine initial state for PRODUCT NAME
             let isCustomProduct = false;
             let displayProduct = name;
             let customProductValue = '';
@@ -725,13 +898,11 @@
                 `<option value="${p}" ${p === displayProduct ? 'selected' : ''}>${p}</option>`
             ).join('');
             
-            // Classes e Atributos para TIPO
             const selectClass = isCustom ? "prod-type-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-type-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!type ? 'text-slate-400' : 'text-slate-800'}`;
             const customInputDivClass = isCustom ? "prod-type-custom-div w-full relative" : "prod-type-custom-div hidden w-full relative";
             const selectRequired = !isCustom ? 'required' : '';
             const inputRequired = isCustom ? 'required' : '';
 
-            // Classes e Atributos para PRODUTO
             const prodSelectClass = isCustomProduct ? "prod-name-select hidden w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" : `prod-name-select w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!name ? 'text-slate-400' : 'text-slate-800'}`;
             const prodCustomInputDivClass = isCustomProduct ? "prod-name-custom-div w-full relative" : "prod-name-custom-div hidden w-full relative";
             const prodSelectRequired = !isCustomProduct ? 'required' : '';
@@ -739,13 +910,10 @@
 
             div.innerHTML = `
                 <div class="w-full sm:w-auto sm:flex-grow relative">
-                    <!-- PRODUCT SELECT -->
                     <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); this.classList.remove('border-red-500'); toggleRowCustomProduct(this)" class="${prodSelectClass}" ${prodSelectRequired}>
                         <option value="" disabled ${!name ? 'selected' : ''}>Selecione o Produto...</option>
                         ${productsOptionsHtml}
                     </select>
-
-                    <!-- PRODUCT INPUT OVERLAY -->
                     <div class="${prodCustomInputDivClass}">
                         <input type="text" placeholder="Nome do Produto" oninput="this.classList.remove('border-red-500')" class="prod-name-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customProductValue}" ${prodInputRequired}>
                         <button type="button" onclick="resetRowProduct(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
@@ -754,13 +922,10 @@
                     </div>
                 </div>
                 <div class="w-1/2 sm:w-28 relative">
-                     <!-- TYPE SELECT -->
                      <select onchange="this.classList.remove('text-slate-400'); this.classList.add('text-slate-800'); this.classList.remove('border-red-500'); toggleRowCustomType(this)" class="${selectClass}" ${selectRequired}>
                         <option value="" disabled ${!type ? 'selected' : ''}>Selecione...</option>
                         ${typesOptionsHtml}
                     </select>
-
-                    <!-- TYPE INPUT OVERLAY -->
                     <div class="${customInputDivClass}">
                         <input type="text" placeholder="Qual?" oninput="this.classList.remove('border-red-500')" class="prod-type-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${customTypeValue}" ${inputRequired}>
                         <button type="button" onclick="resetRowType(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1">
@@ -784,16 +949,13 @@
             lucide.createIcons();
         }
 
-        // --- NEW PRODUCT TOGGLE FUNCTIONS (COM LÓGICA DE REQUIRED) ---
         function toggleRowCustomProduct(selectElement) {
             if(selectElement.value === 'Outros') {
                 const parent = selectElement.parentElement;
                 const customDiv = parent.querySelector('.prod-name-custom-div');
                 const customInput = customDiv.querySelector('input');
-                
                 selectElement.classList.add('hidden');
                 selectElement.required = false; 
-
                 customDiv.classList.remove('hidden');
                 customInput.required = true; 
                 customInput.focus();
@@ -805,15 +967,12 @@
             const parent = customDiv.parentElement;
             const select = parent.querySelector('.prod-name-select');
             const input = customDiv.querySelector('input');
-            
             input.value = ''; 
             input.required = false; 
-            
             select.selectedIndex = 0; 
             select.classList.remove('hidden');
             select.classList.add('text-slate-400'); 
             select.required = true; 
-
             customDiv.classList.add('hidden');
         }
 
@@ -822,10 +981,8 @@
                 const parent = selectElement.parentElement;
                 const customDiv = parent.querySelector('.prod-type-custom-div');
                 const customInput = customDiv.querySelector('input');
-                
                 selectElement.classList.add('hidden');
                 selectElement.required = false;
-
                 customDiv.classList.remove('hidden');
                 customInput.required = true;
                 customInput.focus();
@@ -837,16 +994,13 @@
             const parent = customDiv.parentElement;
             const select = parent.querySelector('.prod-type-select');
             const input = customDiv.querySelector('input');
-            
             input.value = ''; 
             input.required = false;
-
             select.value = ''; 
             select.selectedIndex = 0; 
             select.classList.remove('hidden');
             select.classList.add('text-slate-400');
             select.required = true;
-
             customDiv.classList.add('hidden');
         }
 
@@ -870,27 +1024,20 @@
             rows.forEach(row => {
                 const prodSelect = row.querySelector('.prod-name-select');
                 let name = prodSelect.value;
-                if (prodSelect.classList.contains('hidden')) {
-                    name = row.querySelector('.prod-name-custom-input').value.trim();
-                }
+                if (prodSelect.classList.contains('hidden')) { name = row.querySelector('.prod-name-custom-input').value.trim(); }
 
                 const select = row.querySelector('.prod-type-select');
                 let type = select.value;
-                if (select.classList.contains('hidden')) {
-                    type = row.querySelector('.prod-type-custom-input').value.trim();
-                }
+                if (select.classList.contains('hidden')) { type = row.querySelector('.prod-type-custom-input').value.trim(); }
 
                 const dose = row.querySelector('.prod-dose-input').value.trim();
                 const unit = row.querySelector('.prod-unit-input').value;
                 
-                if (name && dose) {
-                    products.push({ name, type, dose, unit });
-                }
+                if (name && dose) { products.push({ name, type, dose, unit }); }
             });
             return products;
         }
 
-        // --- NOVA FUNÇÃO: Captura estado bruto dos produtos (mesmo incompletos) ---
         function getRawProductsState() {
             const rows = document.querySelectorAll('.product-row');
             return Array.from(rows).map(row => {
@@ -900,8 +1047,7 @@
                 const typeCustom = row.querySelector('.prod-type-custom-input');
                 
                 let name = prodSelect.value;
-                if (prodSelect.classList.contains('hidden')) name = prodCustom.value; // Pega valor bruto
-                
+                if (prodSelect.classList.contains('hidden')) name = prodCustom.value;
                 let type = typeSelect.value;
                 if (typeSelect.classList.contains('hidden')) type = typeCustom.value;
 
@@ -914,27 +1060,24 @@
             });
         }
 
-        // --- NOVA FUNÇÃO: Captura estado completo do formulário ---
         function getFormStateObject() {
-            // Determina cultura efetiva
+            const recType = getRecordType();
+
             const cropSel = document.getElementById('crop');
             const cropInp = document.getElementById('otherCropInput');
             let crop = cropSel.value;
             if (cropSel.classList.contains('hidden')) crop = cropInp.value;
 
-            // Determina bloco efetivo
             const blockInp = document.getElementById('blockId');
             const blockSel = document.getElementById('blockSelect');
             let block = blockInp.value;
             if (!blockSel.classList.contains('hidden')) block = blockSel.value;
             
-            // Determina alvo efetivo
             const targetSel = document.getElementById('targetPestSelect');
             const targetInp = document.getElementById('targetPestInput');
             let target = targetSel.value;
             if (targetSel.classList.contains('hidden')) target = targetInp.value;
 
-            // Determina solicitante e aplicador efetivos
             const reqSel = document.getElementById('requestor');
             const reqInp = document.getElementById('otherRequestorInput');
             let req = reqSel.value;
@@ -946,7 +1089,7 @@
             if (appSel.classList.contains('hidden') || app === 'Outro') app = appInp.value;
 
             return {
-                // Globais
+                recordType: recType,
                 partner: document.getElementById('partner').value,
                 date: document.getElementById('appDate').value,
                 requestor: req,
@@ -954,8 +1097,6 @@
                 startTime: document.getElementById('startTime').value,
                 endTime: document.getElementById('endTime').value,
                 duration: document.getElementById('totalDuration').value,
-                
-                // Bloco
                 crop: crop,
                 block: block,
                 plants: document.getElementById('totalPlants').value,
@@ -963,20 +1104,28 @@
                 products: getRawProductsState(),
                 volume: document.getElementById('syrupVolume').value,
                 ph: document.getElementById('phValue').value,
-                notes: document.getElementById('notes').value
+                notes: document.getElementById('notes').value,
+                multiLiters: document.getElementById('multiLiters').value,
+                reactorDays: document.getElementById('reactorDays').value,
+                
+                adubacaoMethod: document.getElementById('adubacaoMethod').value,
+                adubacaoStart: document.getElementById('adubacaoStart').value,
+                adubacaoEnd: document.getElementById('adubacaoEnd').value,
+                adubacaoDuration: document.getElementById('adubacaoDuration').value
             };
         }
 
-        // --- NOVA FUNÇÃO: Preenche o formulário com um objeto de dados (usado para editar e restaurar) ---
         function populateForm(item) {
-            // 1. DADOS GERAIS
+            // Seta o radio
+            const rType = item.recordType || 'Fito';
+            document.querySelector(`input[name="recordTypeRadio"][value="${rType}"]`).checked = true;
+            toggleFormType(true);
+
             document.getElementById('partner').value = item.partner || '';
             document.getElementById('appDate').value = item.date || '';
 
-            // Solicitante
             const reqSelect = document.getElementById('requestor');
             const reqOptions = Array.from(reqSelect.options).map(o => o.value);
-            // Reset visual
             reqSelect.classList.remove('hidden');
             document.getElementById('requestor-custom-div').classList.add('hidden');
             
@@ -988,10 +1137,8 @@
                 document.getElementById('otherRequestorInput').value = item.requestor || '';
             }
 
-            // Aplicador
             const appSelect = document.getElementById('applicator');
             const appOptions = Array.from(appSelect.options).map(o => o.value);
-            // Reset visual
             appSelect.classList.remove('hidden');
             document.getElementById('applicator-custom-div').classList.add('hidden');
 
@@ -1008,12 +1155,10 @@
             calculateDuration(); 
             updateGlobalState();
 
-            // 2. CULTURA
             const cropSelect = document.getElementById('crop');
             const otherInput = document.getElementById('otherCropInput');
             const cropOptions = Array.from(cropSelect.options).map(o => o.value);
             
-            // Reset visual
             const cropCustomDiv = document.getElementById('crop-custom-div');
             cropSelect.classList.remove('hidden');
             cropCustomDiv.classList.add('hidden');
@@ -1026,9 +1171,8 @@
                 otherInput.value = item.crop || ''; 
             }
             
-            handleCropChange(); // Atualiza visibilidade de bloco e lista de pragas
+            handleCropChange(); 
 
-            // 3. BLOCO
             const blockSelect = document.getElementById('blockSelect');
             const blockInput = document.getElementById('blockId');
             if (blockSelect && !blockSelect.classList.contains('hidden')) {
@@ -1037,12 +1181,11 @@
                 blockInput.value = item.block || '';
             }
 
-            // 4. ALVO BIOLÓGICO
             const targetSelect = document.getElementById('targetPestSelect');
             const targetInput = document.getElementById('targetPestInput');
             const targetOptions = Array.from(targetSelect.options).map(o => o.value);
             
-            resetTargetPestField(); // Reset visual
+            resetTargetPestField(); 
 
             if (targetOptions.includes(item.target) && item.target !== 'Outros') {
                 targetSelect.value = item.target || '';
@@ -1052,7 +1195,6 @@
                 targetInput.value = item.target || ''; 
             }
 
-            // 5. PRODUTOS
             const container = document.getElementById('productsContainer');
             container.innerHTML = '';
             if (item.products && item.products.length > 0) {
@@ -1061,19 +1203,25 @@
                 addProductRow(item.product, item.dosage, 'ml', 'Biológico');
             }
 
-            // 6. OUTROS
             const totalPlantsInput = document.getElementById('totalPlants');
             totalPlantsInput.value = item.plants || '';
-            if (item.plants) formatThousands(totalPlantsInput); // Garante a formatação ao carregar
+            if (item.plants) formatThousands(totalPlantsInput); 
             
             document.getElementById('syrupVolume').value = item.volume || '';
             document.getElementById('phValue').value = item.ph || '';
             document.getElementById('notes').value = item.notes || '';
             
+            document.getElementById('multiLiters').value = item.multiLiters || '';
+            document.getElementById('reactorDays').value = item.reactorDays || '';
+            
+            document.getElementById('adubacaoMethod').value = item.adubacaoMethod || '';
+            document.getElementById('adubacaoStart').value = item.adubacaoStart || '';
+            document.getElementById('adubacaoEnd').value = item.adubacaoEnd || '';
+            document.getElementById('adubacaoDuration').value = item.adubacaoDuration || '';
+
             lucide.createIcons();
         }
 
-        // --- CÁLCULO DE TEMPO ---
         function calculateDuration() {
             const start = document.getElementById('startTime').value;
             const end = document.getElementById('endTime').value;
@@ -1095,8 +1243,28 @@
             }
             updateGlobalState();
         }
+        
+        function calculateAdubacaoDuration() {
+            const start = document.getElementById('adubacaoStart').value;
+            const end = document.getElementById('adubacaoEnd').value;
+            const totalInput = document.getElementById('adubacaoDuration');
+            if (start && end) {
+                const startD = new Date(`2000-01-01T${start}`);
+                const endD = new Date(`2000-01-01T${end}`);
+                let diffMs = endD - startD;
+                if (diffMs < 0) diffMs += 24 * 60 * 60 * 1000;
+                const totalMinutes = Math.floor(diffMs / 60000);
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+                let durationStr = "";
+                if (hours > 0) durationStr += `${hours}h `;
+                durationStr += `${minutes}min`;
+                totalInput.value = durationStr;
+            } else {
+                totalInput.value = "";
+            }
+        }
 
-        // --- FUNÇÃO PARA GERENCIAR CULTURA E BLOCO/SETOR ---
         function handleCropChange() {
             const select = document.getElementById('crop');
             const otherInput = document.getElementById('otherCropInput');
@@ -1105,30 +1273,22 @@
             const blockInput = document.getElementById('blockId');
             const blockSelect = document.getElementById('blockSelect'); 
 
-            // ALVO BIOLÓGICO ELEMENTS
             const targetSelect = document.getElementById('targetPestSelect');
             
-            // LISTAS DE PRAGAS/DOENÇAS
             const pestsBrassicas = [
                 "Adubação Foliar", "Alternaria", "Bacteriose", "Hérnia", "Lagarta", "Míldio", 
                 "Podridão Negra", "Pulgão", "Traça", "Tripes", "Vaquinha"
             ];
-            
             const pestsCucumber = [
                 "Ácaro", "Adubação Foliar", "Alternaria", "Antracnose", "Bacteriose", "Lagarta", 
                 "Mancha Angular", "Míldio", "Mosca Branca", "Oídio", "Pulgão", 
                 "Tripes", "Vaquinha", "Vírus"
             ];
-
             const pestsGeneral = ["Adubação Foliar", "Ácaro", "Lagarta", "Fungo", "Bactéria", "Vírus"];
 
-            // 1. Alternar input 'Outros' (Cultura)
             let cropValue = select.value;
-            if (select.classList.contains('hidden')) {
-                cropValue = 'Outros'; 
-            }
+            if (select.classList.contains('hidden')) { cropValue = 'Outros'; }
 
-            // 2. Lógica do Dropdown/Input de Bloco
             let useSelect = false;
             let options = [];
             let pestOptions = [];
@@ -1137,40 +1297,28 @@
                 blockLabel.innerText = 'Nº Setor';
                 useSelect = true;
                 options = ['1', '2', '3', '4'];
-                // Ordena e adiciona Outros no final
                 pestOptions = pestsCucumber.sort();
                 pestOptions.push("Outros");
             } else if (cropValue === 'Brócolis' || cropValue === 'Couve-Flor') {
                 blockLabel.innerText = 'Nº Bloco/Talhão';
                 useSelect = true;
-                
-                // Gera 1-19
-                for (let i = 1; i <= 19; i++) {
-                    options.push(i.toString());
-                }
-                
-                // Adiciona letras A, B, C, D, E
+                for (let i = 1; i <= 19; i++) { options.push(i.toString()); }
                 options.push('A', 'B', 'C', 'D', 'E');
-                // Ordena e adiciona Outros no final
                 pestOptions = pestsBrassicas.sort();
                 pestOptions.push("Outros");
             } else {
-                // Outros
                 blockLabel.innerText = 'Nº Bloco/Talhão';
-                useSelect = false; // Use text input
-                // Ordena e adiciona Outros no final
+                useSelect = false; 
                 pestOptions = pestsGeneral.sort();
                 pestOptions.push("Outros");
             }
 
-            // Atualiza Bloco
             if (useSelect) {
                 blockInput.classList.add('hidden');
                 blockInput.required = false;
                 if(blockSelect) {
                     blockSelect.classList.remove('hidden');
                     blockSelect.required = true;
-                    // Save current selection if valid
                     const currentVal = blockSelect.value;
                     blockSelect.innerHTML = '<option value="">Selecione...</option>';
                     options.forEach(opt => {
@@ -1190,13 +1338,10 @@
                 }
             }
 
-            // Atualiza Alvo Biológico
             if(targetSelect) {
                 const currentPest = targetSelect.value;
                 const isCustomPestVisible = !document.getElementById('targetPest-custom-div').classList.contains('hidden');
-
                 targetSelect.innerHTML = '<option value="">Selecione...</option>';
-                // pestOptions já está ordenado e com Outros no final, removemos o .sort() daqui
                 pestOptions.forEach(pest => {
                     const el = document.createElement('option');
                     el.value = pest;
@@ -1208,7 +1353,6 @@
             }
         }
 
-        // --- LÓGICA DE ALVO BIOLÓGICO (NOVO) ---
         function toggleOtherTargetPestInput() {
             const select = document.getElementById('targetPestSelect');
             const customDiv = document.getElementById('targetPest-custom-div');
@@ -1230,7 +1374,6 @@
             customDiv.classList.add('hidden');
         }
 
-        // --- LÓGICA DE INPUTS "OUTRO" (SOLICITANTE/APLICADOR) ---
         function toggleOtherRequestorInput() {
             const select = document.getElementById('requestor');
             const customDiv = document.getElementById('requestor-custom-div');
@@ -1293,7 +1436,6 @@
             customDiv.classList.add('hidden');
         }
 
-        // --- PERSISTÊNCIA ---
         function saveToStorage() {
             try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appData)); } catch (e) { console.error("Erro ao salvar", e); }
         }
@@ -1339,8 +1481,14 @@
                             item.products = [{ name: item.product, dose: item.dosage, unit: 'ml', type: 'Biológico' }]; 
                         }
                     });
+                    
+                    if(appData.length > 0) {
+                        const firstType = appData[0].recordType || 'Fito';
+                        document.querySelector(`input[name="recordTypeRadio"][value="${firstType}"]`).checked = true;
+                    }
                     renderList();
                 }
+                toggleFormType(true); // Garante a UI correta ao carregar
                 renderHeaderAndSummary();
                 updateDynamicTitle();
                 renderReport(); 
@@ -1363,8 +1511,27 @@
 
         function updateDynamicTitle() {
             const displayPartner = globalInfo.partner || 'Parceiro';
-            const titleHTML = `Resumo de Aplicações Fitossanitárias<br>${displayPartner}`;
+            const recType = appData.length > 0 ? (appData[0].recordType || 'Fito') : getRecordType();
+            
+            let titlePrefix = "Resumo de Aplicações Fitossanitárias";
+            let listTitleText = "Aplicações Registradas";
+            
+            if (recType === 'Multiplicacao') {
+                titlePrefix = "Resumo de Multiplicações de Biológicos";
+                listTitleText = "Multiplicações Registradas";
+            }
+            if (recType === 'Adubacao') {
+                titlePrefix = "Resumo de Adubações Granuladas";
+                listTitleText = "Adubações Registradas";
+            }
+            
+            const titleHTML = `${titlePrefix}<br>${displayPartner}`;
             document.getElementById('reportTitle').innerHTML = titleHTML;
+
+            const listTitleEl = document.getElementById('listTitle');
+            if (listTitleEl) {
+                listTitleEl.innerText = listTitleText;
+            }
 
             const dateElement = document.getElementById('headerDateTime');
             if (globalInfo.date) {
@@ -1374,21 +1541,25 @@
                 const year = parts[0];
                 const dateForWeek = new Date(year, month - 1, day);
                 const weekNumber = getWeekNumber(dateForWeek);
-                dateElement.innerText = `Aplicações: ${day}/${month}/${year} - Semana ${weekNumber}`;
+                const prefixText = recType === 'Multiplicacao' ? 'Data' : (recType === 'Adubacao' ? 'Data' : 'Aplicações');
+                dateElement.innerText = `${prefixText}: ${day}/${month}/${year} - Semana ${weekNumber}`;
                 dateElement.style.opacity = "1";
             } else {
-                dateElement.innerText = "Aplicações:";
+                dateElement.innerText = "Aguardando data...";
+            }
+            
+            // Trocar estilo do cabeçalho do card preview
+            const headerBg = document.getElementById('reportHeaderBg');
+            if(headerBg) {
+                headerBg.classList.remove('from-slate-700', 'to-slate-900', 'from-emerald-700', 'to-emerald-900', 'from-amber-600', 'to-amber-800');
+                if (recType === 'Multiplicacao') headerBg.classList.add('from-emerald-700', 'to-emerald-900');
+                else if (recType === 'Adubacao') headerBg.classList.add('from-amber-600', 'to-amber-800');
+                else headerBg.classList.add('from-slate-700', 'to-slate-900');
             }
         }
 
-        // MODAL FUNCTIONS
-        function showClearAllModal() {
-            document.getElementById('clearAllModal').classList.remove('hidden');
-        }
-
-        function hideClearAllModal() {
-            document.getElementById('clearAllModal').classList.add('hidden');
-        }
+        function showClearAllModal() { document.getElementById('clearAllModal').classList.remove('hidden'); }
+        function hideClearAllModal() { document.getElementById('clearAllModal').classList.add('hidden'); }
 
         function confirmClearAll() {
             appData = [];
@@ -1399,7 +1570,6 @@
             hideClearAllModal();
         }
 
-        // --- MENSAGENS MODAL (Substitui alerts) ---
         function showMessageModal(title, message, type) {
             const modal = document.getElementById('messageModal');
             const iconContainer = document.getElementById('msgIconContainer');
@@ -1424,9 +1594,7 @@
             lucide.createIcons();
         }
 
-        function hideMessageModal() {
-            document.getElementById('messageModal').classList.add('hidden');
-        }
+        function hideMessageModal() { document.getElementById('messageModal').classList.add('hidden'); }
 
         function clearBlockForm(clearAll = false) {
             if (clearAll) {
@@ -1439,34 +1607,24 @@
                 updateGlobalState();
             }
 
-            // Reset CROP & BLOCK visibility logic
-            // Use resetCropField which handles showing select and hiding custom input
-            // But we also need to reset the select index
             const cropSelect = document.getElementById('crop');
             cropSelect.selectedIndex = 0; 
             document.getElementById('otherCropInput').value = '';
             
-            // This function handles visibility of input vs select for crop, AND updates block list
-            // However, handleCropChange relies on the current state.
-            // Let's ensure state is reset first.
             const cropCustomDiv = document.getElementById('crop-custom-div');
             cropSelect.classList.remove('hidden');
             cropCustomDiv.classList.add('hidden');
 
             handleCropChange(); 
             
-            // Reset Block
             document.getElementById('blockId').value = '';
             const bSelect = document.getElementById('blockSelect');
             if(bSelect) bSelect.selectedIndex = 0;
             
-            // Reset Target
             const targetSelect = document.getElementById('targetPestSelect');
-            if(targetSelect.classList.contains('hidden')){
-                resetTargetPestField();
-            }
-            targetSelect.selectedIndex = 0;
-            document.getElementById('targetPestInput').value = '';
+            if(targetSelect && targetSelect.classList.contains('hidden')){ resetTargetPestField(); }
+            if(targetSelect) targetSelect.selectedIndex = 0;
+            if(document.getElementById('targetPestInput')) document.getElementById('targetPestInput').value = '';
 
             document.getElementById('productsContainer').innerHTML = '';
             addProductRow(); 
@@ -1475,26 +1633,43 @@
             document.getElementById('phValue').value = ''; 
             document.getElementById('notes').value = '';
             
-            const blockFields = ['crop', 'otherCropInput', 'blockId', 'blockSelect', 'targetPestSelect', 'targetPestInput', 'syrupVolume'];
+            document.getElementById('multiLiters').value = '';
+            document.getElementById('reactorDays').value = '';
+            
+            document.getElementById('adubacaoMethod').selectedIndex = 0;
+            document.getElementById('adubacaoStart').value = '';
+            document.getElementById('adubacaoEnd').value = '';
+            document.getElementById('adubacaoDuration').value = '';
+            
+            if (appData.length > 0) {
+                const firstType = appData[0].recordType || 'Fito';
+                document.querySelector(`input[name="recordTypeRadio"][value="${firstType}"]`).checked = true;
+            }
+            toggleFormType(true);
+            
+            const blockFields = ['crop', 'otherCropInput', 'blockId', 'blockSelect', 'targetPestSelect', 'targetPestInput', 'syrupVolume', 'multiLiters', 'reactorDays', 'adubacaoMethod', 'adubacaoStart', 'adubacaoEnd'];
             blockFields.forEach(id => toggleError(id, false));
 
             editingIndex = -1;
             const submitBtn = document.getElementById('submitBtn');
             const formTitle = document.getElementById('formTitle');
             const formContainer = document.getElementById('formContainer');
-            submitBtn.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> <span>Registrar Aplicação</span>';
-            submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-            submitBtn.classList.add('bg-slate-800', 'hover:bg-slate-900');
-            formTitle.innerHTML = '<i data-lucide="spray-can" class="text-blue-600"></i> Nova Aplicação';
+            
             formContainer.classList.remove('border-blue-300', 'ring-2', 'ring-blue-100');
             lucide.createIcons();
         }
 
-        // --- ADD ITEM ---
         function addItem(e) {
             e.preventDefault();
 
             let isValid = true;
+            const newRecordType = getRecordType();
+
+            const itemsToCheck = editingIndex >= 0 ? appData.filter((_, idx) => idx !== editingIndex) : appData;
+            if (itemsToCheck.length > 0 && itemsToCheck[0].recordType !== newRecordType) {
+                showMessageModal('Erro', 'Não é possível salvar. Você está tentando misturar tipos de registro no mesmo relatório.', 'error');
+                return;
+            }
 
             if (!validateHeader()) {
                  isValid = false;
@@ -1502,52 +1677,61 @@
                  return;
             }
 
-            // Validação Bloco
-            const crop = document.getElementById('crop');
-            let finalCropName = crop.value;
-            
-            if (crop.classList.contains('hidden') || crop.value === 'Outros') {
-                 // Custom Crop Mode
-                 const customInput = document.getElementById('otherCropInput');
-                 if (!customInput.value.trim()) { 
-                     toggleError('otherCropInput', true); 
-                     isValid = false; 
-                 } else { 
-                     toggleError('otherCropInput', false); 
-                     finalCropName = customInput.value.trim();
-                 }
-            } else {
-                 if (!crop.value) { toggleError('crop', true); isValid = false; }
-                 else toggleError('crop', false);
-            }
-
-            // Bloco
-            const blockSelect = document.getElementById('blockSelect');
+            let finalCropName = "";
             let finalBlockValue = "";
-            if (blockSelect && !blockSelect.classList.contains('hidden')) {
-                 if(!blockSelect.value) { toggleError('blockSelect', true); isValid = false; }
-                 else { toggleError('blockSelect', false); finalBlockValue = blockSelect.value; }
-            } else {
-                const blockId = document.getElementById('blockId');
-                if (!blockId.value) { toggleError('blockId', true); isValid = false; }
-                else { toggleError('blockId', false); finalBlockValue = blockId.value; }
-            }
-
-            // Validação Alvo
-            const targetSelect = document.getElementById('targetPestSelect');
             let finalTarget = "";
-            if (targetSelect.classList.contains('hidden') || targetSelect.value === 'Outros') {
-                const targetInput = document.getElementById('targetPestInput');
-                if(!targetInput.value) { toggleError('targetPestInput', true); isValid = false; }
-                else { toggleError('targetPestInput', false); finalTarget = targetInput.value; }
-            } else {
-                if(!targetSelect.value) { toggleError('targetPestSelect', true); isValid = false; }
-                else { toggleError('targetPestSelect', false); finalTarget = targetSelect.value; }
-            }
 
-            const syrupVolume = document.getElementById('syrupVolume');
-            if (!syrupVolume.value) { toggleError('syrupVolume', true); isValid = false; }
-            else toggleError('syrupVolume', false);
+            if (newRecordType === 'Fito' || newRecordType === 'Adubacao') {
+                const crop = document.getElementById('crop');
+                finalCropName = crop.value;
+                
+                if (crop.classList.contains('hidden') || crop.value === 'Outros') {
+                     const customInput = document.getElementById('otherCropInput');
+                     if (!customInput.value.trim()) { toggleError('otherCropInput', true); isValid = false; } 
+                     else { toggleError('otherCropInput', false); finalCropName = customInput.value.trim(); }
+                } else {
+                     if (!crop.value) { toggleError('crop', true); isValid = false; } else toggleError('crop', false);
+                }
+
+                const blockSelect = document.getElementById('blockSelect');
+                if (blockSelect && !blockSelect.classList.contains('hidden')) {
+                     if(!blockSelect.value) { toggleError('blockSelect', true); isValid = false; }
+                     else { toggleError('blockSelect', false); finalBlockValue = blockSelect.value; }
+                } else {
+                    const blockId = document.getElementById('blockId');
+                    if (!blockId.value) { toggleError('blockId', true); isValid = false; }
+                    else { toggleError('blockId', false); finalBlockValue = blockId.value; }
+                }
+
+                if (newRecordType === 'Fito') {
+                    const targetSelect = document.getElementById('targetPestSelect');
+                    if (targetSelect.classList.contains('hidden') || targetSelect.value === 'Outros') {
+                        const targetInput = document.getElementById('targetPestInput');
+                        if(!targetInput.value) { toggleError('targetPestInput', true); isValid = false; }
+                        else { toggleError('targetPestInput', false); finalTarget = targetInput.value; }
+                    } else {
+                        if(!targetSelect.value) { toggleError('targetPestSelect', true); isValid = false; }
+                        else { toggleError('targetPestSelect', false); finalTarget = targetSelect.value; }
+                    }
+
+                    const syrupVolume = document.getElementById('syrupVolume');
+                    if (!syrupVolume.value) { toggleError('syrupVolume', true); isValid = false; } else toggleError('syrupVolume', false);
+                } else if (newRecordType === 'Adubacao') {
+                    const adubacaoMethod = document.getElementById('adubacaoMethod');
+                    const adubacaoStart = document.getElementById('adubacaoStart');
+                    const adubacaoEnd = document.getElementById('adubacaoEnd');
+
+                    if (!adubacaoMethod.value) { toggleError('adubacaoMethod', true); isValid = false; } else toggleError('adubacaoMethod', false);
+                    if (!adubacaoStart.value) { toggleError('adubacaoStart', true); isValid = false; } else toggleError('adubacaoStart', false);
+                    if (!adubacaoEnd.value) { toggleError('adubacaoEnd', true); isValid = false; } else toggleError('adubacaoEnd', false);
+                }
+            } else if (newRecordType === 'Multiplicacao') {
+                const multiLiters = document.getElementById('multiLiters');
+                const reactorDays = document.getElementById('reactorDays');
+
+                if (!multiLiters.value) { toggleError('multiLiters', true); isValid = false; } else toggleError('multiLiters', false);
+                if (!reactorDays.value) { toggleError('reactorDays', true); isValid = false; } else toggleError('reactorDays', false);
+            }
 
             const productsList = [];
             const rows = document.querySelectorAll('.product-row');
@@ -1587,11 +1771,12 @@
             }
 
             if (!isValid) {
-                showMessageModal('Atenção', 'Por favor, selecione o Produto, o Tipo e informe a Dose.', 'error');
+                showMessageModal('Atenção', 'Por favor, preencha todos os campos obrigatórios e os dados dos produtos corretamente.', 'error');
                 return;
             }
 
             const newItem = {
+                recordType: newRecordType,
                 partner: globalInfo.partner, 
                 date: globalInfo.date,
                 requestor: globalInfo.requestor,
@@ -1599,42 +1784,46 @@
                 startTime: globalInfo.startTime,
                 endTime: globalInfo.endTime,
                 duration: globalInfo.duration,
-                crop: finalCropName,
-                block: finalBlockValue, 
-                plants: document.getElementById('totalPlants').value,
-                target: finalTarget, // Valor corrigido
                 products: productsList,
-                volume: parseFloat(document.getElementById('syrupVolume').value) || 0,
-                ph: document.getElementById('phValue').value,
-                notes: document.getElementById('notes').value
+                notes: document.getElementById('notes').value,
+                
+                crop: newRecordType !== 'Multiplicacao' ? finalCropName : null,
+                block: newRecordType !== 'Multiplicacao' ? finalBlockValue : null, 
+                plants: newRecordType !== 'Multiplicacao' ? document.getElementById('totalPlants').value : null,
+                target: newRecordType === 'Fito' ? finalTarget : null,
+                volume: newRecordType === 'Fito' ? (parseFloat(document.getElementById('syrupVolume').value) || 0) : null,
+                ph: newRecordType === 'Fito' ? document.getElementById('phValue').value : null,
+                
+                multiLiters: newRecordType === 'Multiplicacao' ? parseFloat(document.getElementById('multiLiters').value) : null,
+                reactorDays: newRecordType === 'Multiplicacao' ? parseInt(document.getElementById('reactorDays').value) : null,
+
+                adubacaoMethod: newRecordType === 'Adubacao' ? document.getElementById('adubacaoMethod').value : null,
+                adubacaoStart: newRecordType === 'Adubacao' ? document.getElementById('adubacaoStart').value : null,
+                adubacaoEnd: newRecordType === 'Adubacao' ? document.getElementById('adubacaoEnd').value : null,
+                adubacaoDuration: newRecordType === 'Adubacao' ? document.getElementById('adubacaoDuration').value : null
             };
 
             if (editingIndex >= 0) {
                 appData[editingIndex] = newItem;
                 editingIndex = -1; 
                 
-                // RESTAURA O ESTADO ANTERIOR À EDIÇÃO
                 if (lastFormState) {
                     populateForm(lastFormState);
-                    lastFormState = null; // Limpa o estado salvo
+                    lastFormState = null; 
                     
-                    // Reseta UI do botão manualmente para "Registrar"
-                    const submitBtn = document.getElementById('submitBtn');
-                    const formTitle = document.getElementById('formTitle');
                     const formContainer = document.getElementById('formContainer');
-
-                    submitBtn.innerHTML = '<i data-lucide="plus-circle" class="w-4 h-4"></i> <span>Registrar Aplicação</span>';
-                    submitBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                    submitBtn.classList.add('bg-slate-800', 'hover:bg-slate-900');
-                    formTitle.innerHTML = '<i data-lucide="spray-can" class="text-blue-600"></i> Nova Aplicação';
                     formContainer.classList.remove('border-blue-300', 'ring-2', 'ring-blue-100');
                     
-                    // Foca no Bloco para continuar o trabalho
-                    const bSelect = document.getElementById('blockSelect');
-                    const bInput = document.getElementById('blockId');
                     setTimeout(() => {
-                        if (bSelect && !bSelect.classList.contains('hidden')) bSelect.focus();
-                        else if (bInput) bInput.focus();
+                        const recTypeRestored = getRecordType();
+                        if (recTypeRestored === 'Multiplicacao') {
+                            document.getElementById('multiLiters').focus();
+                        } else {
+                            const bSelect = document.getElementById('blockSelect');
+                            const bInput = document.getElementById('blockId');
+                            if (bSelect && !bSelect.classList.contains('hidden')) bSelect.focus();
+                            else if (bInput) bInput.focus();
+                        }
                     }, 100);
                 } else {
                     clearBlockForm(false); 
@@ -1642,14 +1831,14 @@
 
             } else {
                 appData.push(newItem);
-                // Mantém o formulário preenchido e foca no Bloco para facilitar digitação sequencial
-                const bSelect = document.getElementById('blockSelect');
-                const bInput = document.getElementById('blockId');
-                if (bSelect && !bSelect.classList.contains('hidden')) {
-                    bSelect.focus();
-                } else if (bInput && !bInput.classList.contains('hidden')) {
-                    bInput.focus();
-                    bInput.select();
+                if (newRecordType === 'Multiplicacao') {
+                    document.getElementById('multiLiters').focus();
+                    document.getElementById('multiLiters').select();
+                } else {
+                    const bSelect = document.getElementById('blockSelect');
+                    const bInput = document.getElementById('blockId');
+                    if (bSelect && !bSelect.classList.contains('hidden')) { bSelect.focus(); } 
+                    else if (bInput && !bInput.classList.contains('hidden')) { bInput.focus(); bInput.select(); }
                 }
             }
             saveToStorage();
@@ -1658,23 +1847,19 @@
         }
 
         function editItem(index) {
-            // SALVA O ESTADO ATUAL ANTES DE CARREGAR O ITEM
             lastFormState = getFormStateObject();
 
             const item = appData[index];
             editingIndex = index; 
             
-            // Usa a nova função unificada para preencher
             populateForm(item);
             
-            // Ajusta UI para modo de edição
             const submitBtn = document.getElementById('submitBtn');
             const formTitle = document.getElementById('formTitle');
             const formContainer = document.getElementById('formContainer');
 
             submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> <span>Salvar Alterações</span>';
-            submitBtn.classList.remove('bg-slate-800', 'hover:bg-slate-900');
-            submitBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            submitBtn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 mt-4 active:scale-95";
 
             formTitle.innerHTML = '<i data-lucide="pencil" class="text-blue-600"></i> Editando Registro';
             formContainer.classList.add('border-blue-300', 'ring-2', 'ring-blue-100');
@@ -1684,11 +1869,17 @@
 
         function removeItem(index) {
             if (editingIndex === index) {
-                clearBlockForm(false); 
                 editingIndex = -1;
+                clearBlockForm(false); 
             }
             appData.splice(index, 1);
             saveToStorage();
+            
+            if (appData.length === 0) {
+                document.querySelector('input[name="recordTypeRadio"][value="Fito"]').checked = true;
+                toggleFormType(true);
+            }
+            
             renderReport();
             renderList();
         }
@@ -1700,6 +1891,11 @@
             const req = globalInfo.requestor || '-';
             const app = globalInfo.applicator || '-';
             
+            const recType = appData.length > 0 ? (appData[0].recordType || 'Fito') : getRecordType();
+            
+            const reqLabelText = recType === 'Multiplicacao' ? 'Solicitante' : 'Solicitante';
+            const appLabelText = recType === 'Multiplicacao' ? 'Responsável' : 'Aplicador';
+            
             let timeRange = "Não informado";
             if (globalInfo.startTime) {
                 timeRange = `Início: ${globalInfo.startTime}`;
@@ -1708,21 +1904,35 @@
                     if (globalInfo.duration) timeRange += ` (${globalInfo.duration})`;
                 }
             }
+            
+            let timeHtml = "";
+            if (recType === 'Fito') {
+                timeHtml = `
+                    <div class="text-right w-1/3">
+                        <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-1">Tempo Operação</span>
+                        <span class="font-bold text-slate-700 text-[10px]">${timeRange}</span>
+                    </div>
+                `;
+            } else if (recType === 'Adubacao') {
+                timeHtml = `
+                    <div class="text-right w-1/3">
+                        <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-1">Tempo Operação</span>
+                        <span class="font-bold text-slate-700 text-[10px]">Por Setor/Bloco</span>
+                    </div>
+                `;
+            }
 
             summaryContainer.innerHTML = `
                 <div class="flex flex-col gap-2 text-xs">
                     <div class="flex justify-between items-start border-b border-slate-200 pb-2">
-                        <div class="flex flex-col gap-1 w-2/3">
+                        <div class="flex flex-col gap-1 ${recType === 'Multiplicacao' ? 'w-full' : 'w-2/3'}">
                             <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Responsáveis</span>
                             <div class="flex flex-col sm:flex-row gap-2 sm:gap-4">
-                                <span class="text-slate-600 font-medium">Solicitante: <b class="text-slate-800">${req}</b></span>
-                                <span class="text-slate-600 font-medium">Aplicador: <b class="text-slate-800">${app}</b></span>
+                                <span class="text-slate-600 font-medium text-[10px]">${reqLabelText}: <b class="text-slate-800">${req}</b></span>
+                                <span class="text-slate-600 font-medium text-[10px]">${appLabelText}: <b class="text-slate-800">${app}</b></span>
                             </div>
                         </div>
-                        <div class="text-right w-1/3">
-                            <span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-1">Tempo de Aplicação</span>
-                            <span class="font-bold text-slate-700 text-[10px]">${timeRange}</span>
-                        </div>
+                        ${timeHtml}
                     </div>
                 </div>
             `;
@@ -1759,18 +1969,32 @@
                     prodSummary = item.product || "Sem produto";
                 }
 
-                let locationLabel = "Bloco";
-                if (item.crop && item.crop.toLowerCase().includes('pepino')) {
-                    locationLabel = "Setor";
+                const recType = item.recordType || 'Fito';
+                let headerContent = "";
+                let subContent = "";
+
+                if (recType === 'Multiplicacao') {
+                    headerContent = `<span class="text-emerald-500 flex items-center gap-1"><i data-lucide="flask-conical" class="w-3 h-3"></i> Laboratório</span>`;
+                    subContent = `${item.multiLiters}L • Reator: ${item.reactorDays} dias`;
+                } else if (recType === 'Adubacao') {
+                    let locationLabel = "Bloco";
+                    if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                    headerContent = `<span class="text-amber-600 flex items-center gap-1"><i data-lucide="sprout" class="w-3 h-3"></i> ${locationLabel} ${item.block}</span>`;
+                    subContent = item.plants ? `${item.plants} plantas` : '';
+                } else {
+                    let locationLabel = "Bloco";
+                    if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                    headerContent = `${locationLabel} ${item.block}`;
+                    subContent = item.target;
                 }
 
                 const li = document.createElement('li');
                 li.className = `flex justify-between items-center p-2 rounded border ${activeClass} transition-all`;
                 li.innerHTML = `
                     <div class="flex flex-col">
-                        <span class="text-[10px] text-slate-400 font-bold uppercase">${shortDate} • ${locationLabel} ${item.block}</span>
+                        <span class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1">${shortDate} • ${headerContent}</span>
                         <span class="font-bold text-slate-700">${prodSummary}</span>
-                        <span class="text-xs text-slate-500">${item.target}</span>
+                        <span class="text-xs text-slate-500">${subContent}</span>
                     </div>
                     <div class="flex items-center">
                         <button onclick="editItem(${originalIndex})" class="text-blue-500 hover:bg-blue-100 p-1.5 rounded-md mr-1 transition-colors">
@@ -1796,11 +2020,15 @@
             if (displayData.length === 0) {
                 container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs italic leading-relaxed h-full flex flex-col items-center justify-center"><i data-lucide="clipboard-list" class="mb-2 w-8 h-8 opacity-20"></i><span>Adicione registros.</span></div>`;
             } else {
-                displayData.sort((a, b) => a.block.localeCompare(b.block, undefined, {numeric: true, sensitivity: 'base'}));
+                displayData.sort((a, b) => {
+                    const blockA = a.block || '';
+                    const blockB = b.block || '';
+                    return blockA.localeCompare(blockB, undefined, {numeric: true, sensitivity: 'base'});
+                });
+                
                 displayData.forEach((item) => { 
                     totalApps++;
-                    let locationLabel = "Bloco";
-                    if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                    const recType = item.recordType || 'Fito';
 
                     let productsHtml = '';
                     if (item.products && item.products.length > 0) {
@@ -1808,12 +2036,19 @@
                         item.products.forEach(p => {
                             const unitDisplay = p.unit ? p.unit : '';
                             let typeClass = "text-slate-400";
-                            if(p.type === 'Biológico') typeClass = "text-green-600";
-                            if(p.type === 'Químico') typeClass = "text-red-600";
-                            if(p.type === 'Nutricional') typeClass = "text-blue-600";
-                            if(p.type === 'Natural' || p.type === 'Repelente') typeClass = "text-emerald-600";
-                            if(p.type === 'Adjuvantes' || p.type === 'Espalhante' || p.type === 'Estabilizador de PH') typeClass = "text-amber-600"; 
-                            if(['Inseticidas', 'Fungicidas', 'Herbicidas', 'Acaricidas', 'Nematicidas', 'Bactericidas', 'Rodenticidas', 'Desfolhantes', 'Químico'].includes(p.type)) typeClass = "text-red-600";
+                            
+                            if (recType === 'Adubacao') {
+                                if (p.type === 'Orgânico' || p.type === 'Esterco') typeClass = "text-emerald-700";
+                                else if (p.type === 'Mineral') typeClass = "text-amber-600";
+                                else typeClass = "text-blue-600";
+                            } else {
+                                if(p.type === 'Biológico') typeClass = "text-green-600";
+                                if(p.type === 'Químico') typeClass = "text-red-600";
+                                if(p.type === 'Nutricional') typeClass = "text-blue-600";
+                                if(p.type === 'Natural' || p.type === 'Repelente') typeClass = "text-emerald-600";
+                                if(p.type === 'Adjuvantes' || p.type === 'Espalhante' || p.type === 'Estabilizador de PH') typeClass = "text-amber-600"; 
+                                if(['Inseticidas', 'Fungicidas', 'Herbicidas', 'Acaricidas', 'Nematicidas', 'Bactericidas', 'Rodenticidas', 'Desfolhantes', 'Químico'].includes(p.type)) typeClass = "text-red-600";
+                            }
 
                             productsHtml += `
                                 <div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1 last:border-0">
@@ -1827,55 +2062,113 @@
                         productsHtml += `</div>`;
                     }
                     
-                    const html = `
-                    <div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
-                        <div class="flex flex-col mb-2">
-                            <div class="flex items-start justify-between mt-1">
-                                <div class="w-full">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
-                                        <div class="text-xs font-bold text-slate-600 flex items-center gap-1"><span class="text-orange-600 text-sm font-extrabold">Alvo:</span> ${item.target}</div>
-                                    </div>
-                                    <div class="bg-slate-50/50 rounded-lg border border-slate-100 p-2">
-                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1 text-center">Produtos & Dosagens</span>
-                                        ${productsHtml}
-                                    </div>
-                                    <div class="mt-2 flex justify-end items-center gap-3">
-                                        ${item.ph ? `<span class="text-[10px] font-bold text-red-600">PH: ${item.ph}</span>` : ''}
-                                        <span class="text-[10px] font-bold text-blue-600">Volume Calda: ${item.volume} L</span>
+                    let html = '';
+                    
+                    if (recType === 'Multiplicacao') {
+                        html = `
+                        <div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0 bg-emerald-50/30">
+                            <div class="flex flex-col mb-2">
+                                <div class="flex items-start justify-between mt-1">
+                                    <div class="w-full">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-sm font-bold text-emerald-700 flex items-center gap-1"><i data-lucide="flask-conical" class="w-4 h-4 text-emerald-500"></i> Multiplicação de Biológicos</span>
+                                            <div class="text-[10px] font-bold text-emerald-600 border border-emerald-200 bg-emerald-50 px-2 py-0.5 rounded-full">Reator: ${item.reactorDays} dias</div>
+                                        </div>
+                                        <div class="bg-white rounded-lg border border-emerald-100 p-2 shadow-sm">
+                                            <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block mb-1 text-center">Produtos Base Utilizados</span>
+                                            ${productsHtml}
+                                        </div>
+                                        <div class="mt-2 flex justify-end items-center gap-3">
+                                            <span class="text-[11px] font-extrabold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Produzido: ${item.multiLiters} Litros</span>
+                                        </div>
                                     </div>
                                 </div>
+                                ${item.notes ? `<div class="mt-2 text-[10px] text-slate-400 italic border-l-2 border-emerald-200 pl-2">Obs: ${item.notes}</div>` : ''}
                             </div>
-                            ${item.notes ? `<div class="mt-2 text-[10px] text-slate-400 italic border-l-2 border-slate-200 pl-2">Obs: ${item.notes}</div>` : ''}
-                        </div>
-                    </div>`;
+                        </div>`;
+                    } else if (recType === 'Adubacao') {
+                        let locationLabel = "Bloco";
+                        if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+
+                        html = `
+                        <div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0 bg-amber-50/20">
+                            <div class="flex flex-col mb-2">
+                                <div class="flex items-start justify-between mt-1">
+                                    <div class="w-full">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
+                                            <div class="text-[10px] font-bold text-amber-600 border border-amber-200 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1"><i data-lucide="sprout" class="w-3 h-3"></i> Adubação ${item.adubacaoMethod ? `(${item.adubacaoMethod})` : ''}</div>
+                                        </div>
+                                        <div class="bg-white rounded-lg border border-amber-100 p-2 shadow-sm">
+                                            <span class="text-[9px] font-bold text-amber-600 uppercase tracking-wider block mb-1 text-center">Adubos & Dosagens</span>
+                                            ${productsHtml}
+                                        </div>
+                                        ${item.adubacaoStart && item.adubacaoEnd ? `
+                                        <div class="mt-2 flex justify-start items-center gap-3 border-t border-amber-100 pt-2">
+                                            <span class="text-[10px] font-bold text-amber-700 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> ${item.adubacaoStart} às ${item.adubacaoEnd} (${item.adubacaoDuration})</span>
+                                        </div>` : ''}
+                                    </div>
+                                </div>
+                                ${item.notes ? `<div class="mt-2 text-[10px] text-slate-400 italic border-l-2 border-amber-100 pl-2">Obs: ${item.notes}</div>` : ''}
+                            </div>
+                        </div>`;
+                    } else {
+                        // FITO
+                        let locationLabel = "Bloco";
+                        if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+
+                        html = `
+                        <div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0">
+                            <div class="flex flex-col mb-2">
+                                <div class="flex items-start justify-between mt-1">
+                                    <div class="w-full">
+                                        <div class="flex justify-between items-center mb-2">
+                                            <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
+                                            <div class="text-xs font-bold text-slate-600 flex items-center gap-1"><span class="text-orange-600 text-sm font-extrabold">Alvo:</span> ${item.target}</div>
+                                        </div>
+                                        <div class="bg-slate-50/50 rounded-lg border border-slate-100 p-2">
+                                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mb-1 text-center">Produtos & Dosagens</span>
+                                            ${productsHtml}
+                                        </div>
+                                        <div class="mt-2 flex justify-end items-center gap-3">
+                                            ${item.ph ? `<span class="text-[10px] font-bold text-red-600">PH: ${item.ph}</span>` : ''}
+                                            <span class="text-[10px] font-bold text-blue-600">Volume Calda: ${item.volume} L</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                ${item.notes ? `<div class="mt-2 text-[10px] text-slate-400 italic border-l-2 border-slate-200 pl-2">Obs: ${item.notes}</div>` : ''}
+                            </div>
+                        </div>`;
+                    }
                     container.innerHTML += html;
                 });
             }
             
+            const recType = appData.length > 0 ? (appData[0].recordType || 'Fito') : getRecordType();
+            let totalLabelText = 'TOTAL DE APLICAÇÕES';
+            if (recType === 'Multiplicacao') totalLabelText = 'TOTAL DE MULTIPLICAÇÕES';
+            if (recType === 'Adubacao') totalLabelText = 'TOTAL DE ADUBAÇÕES';
+
             footerContainer.innerHTML = `
                 <div class="bg-slate-100 rounded-xl p-4 flex justify-center items-center relative overflow-hidden">
                     <div class="absolute top-0 right-0 w-16 h-16 bg-slate-200/50 rounded-full -mr-8 -mt-8 pointer-events-none"></div>
                     <div class="text-center">
-                        <div class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">TOTAL DE APLICAÇÕES</div>
+                        <div class="text-[10px] text-slate-500 font-bold uppercase mb-0.5">${totalLabelText}</div>
                         <div class="text-xl font-extrabold text-slate-800">${totalApps}</div>
                     </div>
                 </div>`;
             
             lucide.createIcons();
-            renderHeaderAndSummary(); // Atualiza header com dados globais
+            renderHeaderAndSummary(); 
         }
 
-        // ... (Export functions maintained)
         function copyToWhatsApp() {
-            // Usa globalInfo para o cabeçalho
             const displayData = getFilteredData();
             if (displayData.length === 0) {
                 showMessageModal('Atenção', 'Adicione registros primeiro para gerar o resumo.', 'error');
                 return;
             }
 
-            // CORREÇÃO DA DATA
             let dateStr;
             if (globalInfo.date) {
                 const parts = globalInfo.date.split('-');
@@ -1894,33 +2187,81 @@
                 timeRange = `${globalInfo.startTime} às ${globalInfo.endTime}`;
             }
 
-            let text = `🌱 *Registro Fitossanitário - ${partnerName}*\n`;
+            const recType = displayData.length > 0 ? (displayData[0].recordType || 'Fito') : 'Fito';
+
+            let text = '';
+            if (recType === 'Multiplicacao') text = `🧪 *Relatório de Multiplicações - ${partnerName}*\n`;
+            else if (recType === 'Adubacao') text = `🌾 *Relatório de Adubações - ${partnerName}*\n`;
+            else text = `🌱 *Registro Fitossanitário - ${partnerName}*\n`;
+
             text += `📅 Data: ${dateStr}\n`;
-            text += `👨‍🌾 Solic: ${req}\n`;
-            text += `🚜 Aplic: ${app}\n`;
-            if (timeRange) text += `⏰ Horário: ${timeRange}\n`;
             
-            text += `\n*APLICAÇÕES:*\n\n`;
+            if (recType === 'Multiplicacao') {
+                text += `👨‍🔬 Solicitante: ${req}\n`;
+                text += `🧪 Responsável: ${app}\n`;
+            } else {
+                text += `👨‍🌾 Solic: ${req}\n`;
+                text += `🚜 Aplic: ${app}\n`;
+                if (recType === 'Fito' && timeRange) text += `⏰ Horário: ${timeRange}\n`;
+            }
+            
+            if (recType === 'Multiplicacao') text += `\n*MULTIPLICAÇÕES:*\n\n`;
+            else if (recType === 'Adubacao') text += `\n*ADUBAÇÕES:*\n\n`;
+            else text += `\n*APLICAÇÕES:*\n\n`;
 
             displayData.forEach(item => {
-                let locationLabel = "Bloco";
-                if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                if (item.recordType === 'Multiplicacao') {
+                    text += `🧪 *MULTIPLICAÇÃO DE BIOLÓGICOS*\n`;
+                    text += `⏳ Reator ligado por: ${item.reactorDays} dias\n`;
+                    
+                    if (item.products && item.products.length > 0) {
+                        item.products.forEach(p => {
+                            const unitDisplay = p.unit ? p.unit : ''; 
+                            text += `➕ [${p.type || '?'}] ${p.name} (${p.dose} ${unitDisplay})\n`;
+                        });
+                    }
 
-                text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
-                text += `🎯 Alvo: ${item.target}\n`;
-                
-                if (item.products && item.products.length > 0) {
-                    item.products.forEach(p => {
-                        const unitDisplay = p.unit ? p.unit : ''; 
-                        text += `🛡️ [${p.type || '?'}] ${p.name} (${p.dose} ${unitDisplay})\n`;
-                    });
+                    text += `💧 Produzido: ${item.multiLiters}L\n`;
+                    if(item.notes) text += `📝 Obs: ${item.notes}\n`;
+                    text += `----------------\n`;
+                } else if (item.recordType === 'Adubacao') {
+                    let locationLabel = "Bloco";
+                    if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+
+                    text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
+                    
+                    if (item.products && item.products.length > 0) {
+                        item.products.forEach(p => {
+                            const unitDisplay = p.unit ? p.unit : ''; 
+                            text += `🌾 [${p.type || 'Adubo'}] ${p.name} (${p.dose} ${unitDisplay})\n`;
+                        });
+                    }
+                    
+                    if(item.adubacaoMethod) text += `🚜 Método: ${item.adubacaoMethod}\n`;
+                    if(item.adubacaoStart && item.adubacaoEnd) text += `⏰ Horário: ${item.adubacaoStart} às ${item.adubacaoEnd} (${item.adubacaoDuration})\n`;
+
+                    if(item.notes) text += `📝 Obs: ${item.notes}\n`;
+                    text += `----------------\n`;
+                } else {
+                    let locationLabel = "Bloco";
+                    if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+
+                    text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
+                    text += `🎯 Alvo: ${item.target}\n`;
+                    
+                    if (item.products && item.products.length > 0) {
+                        item.products.forEach(p => {
+                            const unitDisplay = p.unit ? p.unit : ''; 
+                            text += `🛡️ [${p.type || '?'}] ${p.name} (${p.dose} ${unitDisplay})\n`;
+                        });
+                    }
+
+                    text += `💧 Vol: ${item.volume}L`;
+                    if(item.ph) text += ` | PH: ${item.ph}`;
+                    text += `\n`;
+                    if(item.notes) text += `📝 Obs: ${item.notes}\n`;
+                    text += `----------------\n`;
                 }
-
-                text += `💧 Vol: ${item.volume}L`;
-                if(item.ph) text += ` | PH: ${item.ph}`;
-                text += `\n`;
-                if(item.notes) text += `📝 Obs: ${item.notes}\n`;
-                text += `----------------\n`;
             });
 
             const textArea = document.createElement("textarea");
@@ -1940,30 +2281,26 @@
             document.body.removeChild(textArea);
         }
 
-        // --- FUNÇÃO PARA GERAR IMAGEM HD (ATUALIZADA IGUAL AO ANEXO) ---
         async function downloadImage() {
             const element = document.getElementById('report-card');
-            // Busca correta do texto do botão
             const btnSpan = document.querySelector('button[onclick="downloadImage()"] span');
             const originalText = btnSpan.innerText;
             btnSpan.innerText = "Gerando Imagem...";
 
             try {
-                // Check for data first
                 const data = getFilteredData();
                 if (data.length === 0) {
                     showMessageModal('Atenção', 'Adicione registros primeiro.', 'error');
                     return;
                 }
 
-                // Configurações idênticas ao código de referência
                 const options = {
-                    scale: 5, // Alta resolução
+                    scale: 5, 
                     useCORS: true, 
                     allowTaint: true,
                     scrollY: -window.scrollY,
                     backgroundColor: '#ffffff', 
-                    windowWidth: 480, // Força layout mobile
+                    windowWidth: 480, 
                     onclone: (doc) => {
                         const el = doc.getElementById('report-card');
                         const content = doc.getElementById('reportContent');
@@ -1985,11 +2322,8 @@
                 };
 
                 const canvas = await html2canvas(element, options);
-                
-                // Gera Link de Download
                 const imgData = canvas.toDataURL('image/png');
                 
-                // --- GERAR NOME DO ARQUIVO PERSONALIZADO ---
                 const now = new Date();
                 const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
                 const weekNum = getWeekNumber(now);
@@ -2004,12 +2338,13 @@
                     partnerName = appData[0].partner;
                 }
 
-                // LÓGICA DE PREFIXO DO NOME DO ARQUIVO
-                let filePrefix = "Resumo de Aplicações Fitossanitárias";
+                const recType = appData.length > 0 ? (appData[0].recordType || 'Fito') : 'Fito';
+                let filePrefix = "Resumo_Fitossanitario";
+                if (recType === 'Multiplicacao') filePrefix = "Resumo_Multiplicacoes";
+                if (recType === 'Adubacao') filePrefix = "Resumo_Adubacoes";
 
-                const fileName = `${filePrefix} - ${weekday} ${dateStr} Semana ${weekNum} - ${partnerName}.png`;
+                const fileName = `${filePrefix}_${weekday}_${dateStr}_Semana_${weekNum}_${partnerName}.png`;
 
-                // Cria elemento temporário para download
                 const link = document.createElement('a');
                 link.href = imgData;
                 link.download = fileName;
@@ -2028,23 +2363,18 @@
         async function downloadPDF() {
              const { jsPDF } = window.jspdf;
             
-            // --- ATUALIZAR DADOS NO TEMPLATE PDF ---
             const data = getFilteredData();
             if (data.length === 0) {
                 showMessageModal('Atenção', 'Adicione registros primeiro.', 'error');
                 return;
             }
 
-            // Dados Gerais
             document.getElementById('pdf-partner').innerText = globalInfo.partner || '-';
             
-            // Format Date
             let dateStr;
             if (globalInfo.date) {
                 const parts = globalInfo.date.split('-');
                 dateStr = `${parts[2]}/${parts[1]}/${parts[0]}`;
-                
-                // Add Week Number
                 const dateObj = new Date(globalInfo.date);
                 const weekNum = getWeekNumber(dateObj);
                 document.getElementById('pdf-week').innerText = ` - Semana ${weekNum}`;
@@ -2057,20 +2387,95 @@
             document.getElementById('pdf-applicator').innerText = globalInfo.applicator || '-';
             document.getElementById('pdf-total-blocks').innerText = data.length;
 
-            let timeStr = "-";
-            if(globalInfo.startTime && globalInfo.endTime) {
-                timeStr = `${globalInfo.startTime} às ${globalInfo.endTime}`;
-                if (globalInfo.duration) timeStr += ` (${globalInfo.duration})`;
-            }
-            document.getElementById('pdf-time').innerText = timeStr;
+            const recType = data.length > 0 ? (data[0].recordType || 'Fito') : 'Fito';
 
-            // Preencher Tabela
+            // Ajustes dinâmicos do Template PDF
+            if (recType === 'Multiplicacao') {
+                document.getElementById('pdf-main-title').innerText = 'RELATÓRIO DE MULTIPLICAÇÃO';
+                document.getElementById('pdf-req-label').innerText = 'Solicitante:';
+                document.getElementById('pdf-app-label').innerText = 'Responsável:';
+                document.getElementById('pdf-time').innerText = '-';
+                document.getElementById('pdf-time-container').style.display = 'none';
+                document.getElementById('pdf-total-label').innerText = 'TOTAL DE MULTIPLICAÇÕES:';
+                document.getElementById('pdf-table-title').innerText = 'DETALHAMENTO DAS MULTIPLICAÇÕES';
+                
+                // Headers da tabela
+                document.getElementById('pdf-th-1').innerText = "Laboratório";
+                document.getElementById('pdf-th-2').innerText = "-";
+                document.getElementById('pdf-th-3').innerText = "Processo";
+                document.getElementById('pdf-th-4').innerText = "Produtos (Dose)";
+                document.getElementById('pdf-th-5').innerText = "Produzido (L)";
+                document.getElementById('pdf-th-6').innerText = "-";
+            } else if (recType === 'Adubacao') {
+                document.getElementById('pdf-main-title').innerText = 'RELATÓRIO DE ADUBAÇÃO';
+                document.getElementById('pdf-req-label').innerText = 'Solicitante:';
+                document.getElementById('pdf-app-label').innerText = 'Aplicador:';
+                document.getElementById('pdf-time-container').style.display = 'none'; // Esconde tempo global no PDF de adubação
+                document.getElementById('pdf-total-label').innerText = 'TOTAL DE ADUBAÇÕES:';
+                document.getElementById('pdf-table-title').innerText = 'DETALHAMENTO DAS ADUBAÇÕES';
+                
+                // Headers da tabela
+                document.getElementById('pdf-th-1').innerText = "Setor/Bloco";
+                document.getElementById('pdf-th-2').innerText = "Cultura";
+                document.getElementById('pdf-th-3').innerText = "Método";
+                document.getElementById('pdf-th-4').innerText = "Adubos (Dose)";
+                document.getElementById('pdf-th-5').innerText = "Horário";
+                document.getElementById('pdf-th-6').innerText = "-";
+                
+                document.getElementById('pdf-time').innerText = "-";
+            } else {
+                document.getElementById('pdf-main-title').innerText = 'RELATÓRIO DE APLICAÇÃO';
+                document.getElementById('pdf-req-label').innerText = 'Solicitante:';
+                document.getElementById('pdf-app-label').innerText = 'Aplicador:';
+                document.getElementById('pdf-time-container').style.display = 'block';
+                document.getElementById('pdf-total-label').innerText = 'TOTAL DE APLICAÇÕES:';
+                document.getElementById('pdf-table-title').innerText = 'DETALHAMENTO DAS APLICAÇÕES';
+                
+                // Headers da tabela
+                document.getElementById('pdf-th-1').innerText = "Setor/Bloco";
+                document.getElementById('pdf-th-2').innerText = "Cultura";
+                document.getElementById('pdf-th-3').innerText = "Alvo";
+                document.getElementById('pdf-th-4').innerText = "Produtos (Dose)";
+                document.getElementById('pdf-th-5').innerText = "Calda (L)";
+                document.getElementById('pdf-th-6').innerText = "P.H.";
+
+                let timeStr = "-";
+                if(globalInfo.startTime && globalInfo.endTime) {
+                    timeStr = `${globalInfo.startTime} às ${globalInfo.endTime}`;
+                    if (globalInfo.duration) timeStr += ` (${globalInfo.duration})`;
+                }
+                document.getElementById('pdf-time').innerText = timeStr;
+            }
+
             const tbody = document.getElementById('pdf-table-body');
             tbody.innerHTML = '';
             
             data.forEach(item => {
-                let locationLabel = "Bloco";
-                if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                let col1, col2, col3, col5, col6;
+                
+                if (item.recordType === 'Multiplicacao') {
+                    col1 = "Lab";
+                    col2 = "-";
+                    col3 = `Multiplicação<br><span style="font-size: 8px; color: #10b981;">Reator: ${item.reactorDays} d</span>`;
+                    col5 = item.multiLiters;
+                    col6 = "-";
+                } else if (item.recordType === 'Adubacao') {
+                    let locationLabel = "Bloco";
+                    if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                    col1 = `${locationLabel} ${item.block}${item.plants ? `<br><span style="font-size: 8px; color: #64748b;">${item.plants} ptas</span>` : ''}`;
+                    col2 = item.crop;
+                    col3 = item.adubacaoMethod || "-";
+                    col5 = `${item.adubacaoStart || ''} - ${item.adubacaoEnd || ''}<br><span style="font-size:8px; color: #64748b;">${item.adubacaoDuration || ''}</span>`;
+                    col6 = "-";
+                } else {
+                    let locationLabel = "Bloco";
+                    if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
+                    col1 = `${locationLabel} ${item.block}${item.plants ? `<br><span style="font-size: 8px; color: #64748b;">${item.plants} ptas</span>` : ''}`;
+                    col2 = item.crop;
+                    col3 = item.target;
+                    col5 = item.volume;
+                    col6 = item.ph || '-';
+                }
                 
                 let productsStr = "";
                 if (item.products && item.products.length > 0) {
@@ -2079,36 +2484,31 @@
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
-                    <td>${locationLabel} ${item.block}${item.plants ? `<br><span style="font-size: 8px; color: #64748b;">${item.plants} ptas</span>` : ''}</td>
-                    <td>${item.crop}</td>
-                    <td>${item.target}</td>
+                    <td>${col1}</td>
+                    <td>${col2}</td>
+                    <td>${col3}</td>
                     <td>${productsStr}</td>
-                    <td>${item.volume}</td>
-                    <td>${item.ph || '-'}</td>
+                    <td>${col5}</td>
+                    <td>${col6}</td>
                     <td>${item.notes || '-'}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
-            // --- GERAÇÃO PDF ---
             const element = document.getElementById('technical-report-template');
             const btnText = document.querySelector('button[onclick="downloadPDF()"] span');
             const originalText = btnText.innerText;
             btnText.innerText = "Gerando...";
 
             try {
-                // ALTERAÇÃO: Não movemos mais o elemento original para a tela.
-                // Usamos o onclone do html2canvas para posicionar apenas a cópia virtual.
-                
                 const canvas = await html2canvas(element, { 
                     scale: 2, 
                     useCORS: true, 
                     backgroundColor: '#ffffff',
-                    windowWidth: 794, // Garante contexto largo suficiente
+                    windowWidth: 794,
                     onclone: (clonedDoc) => {
                         const clone = clonedDoc.getElementById('technical-report-template');
                         if (clone) {
-                            // Move apenas o clone para a posição visível (dentro do documento virtual)
                             clone.style.top = '0';
                             clone.style.left = '0';
                             clone.style.position = 'relative'; 
