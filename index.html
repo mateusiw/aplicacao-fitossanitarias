@@ -340,7 +340,7 @@
                             <span id="error-multiLiters" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                         </div>
                          <div class="col-span-1 relative">
-                            <label class="text-[10px] font-bold text-emerald-600 mb-1 block">Dias de Reator <span class="text-red-500">*</span></label>
+                            <label class="text-[10px] font-bold text-emerald-600 mb-1 block">Dias de Aeração <span class="text-red-500">*</span></label>
                             <input type="number" id="reactorDays" oninput="clearError('reactorDays')" placeholder="Ex: 5" class="w-full p-2 border border-emerald-200 bg-emerald-50 rounded-lg text-sm text-emerald-800 font-bold focus:outline-none focus:ring-2 focus:ring-emerald-500">
                             <span id="error-reactorDays" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                         </div>
@@ -845,7 +845,7 @@
             let standardProducts = [];
             if (recType === 'Multiplicacao') {
                 standardProducts = [
-                    "Açúcar", "Antiespumantes", "Azototal", "Bac-in", "Bravo", "Crystal BT", "Fung-in", "Kilper-S", "Optimun", "Supress - H"
+                    "Açúcar", "Antiespumantes", "Azototal", "Bac-in", "Bioimpeto", "Bravo", "Crystal BT", "Fung-in", "Kilper-S", "Optimun", "Supress - H"
                 ].sort();
             } else if (recType === 'Adubacao') {
                 standardProducts = [
@@ -1975,7 +1975,7 @@
 
                 if (recType === 'Multiplicacao') {
                     headerContent = `<span class="text-emerald-500 flex items-center gap-1"><i data-lucide="flask-conical" class="w-3 h-3"></i> Laboratório</span>`;
-                    subContent = `${item.multiLiters}L • Reator: ${item.reactorDays} dias`;
+                    subContent = `${item.multiLiters}L • Aeração: ${item.reactorDays} dias`;
                 } else if (recType === 'Adubacao') {
                     let locationLabel = "Bloco";
                     if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
@@ -2071,15 +2071,15 @@
                                 <div class="flex items-start justify-between mt-1">
                                     <div class="w-full">
                                         <div class="flex justify-between items-center mb-2">
-                                            <span class="text-sm font-bold text-emerald-700 flex items-center gap-1"><i data-lucide="flask-conical" class="w-4 h-4 text-emerald-500"></i> Multiplicação de Biológicos</span>
-                                            <div class="text-[10px] font-bold text-emerald-600 border border-emerald-200 bg-emerald-50 px-2 py-0.5 rounded-full">Reator: ${item.reactorDays} dias</div>
+                                            <span class="text-sm font-bold text-emerald-700">Multiplicação de Biológicos</span>
+                                            <div class="text-xs font-bold text-emerald-600">Aeração: ${item.reactorDays} dias</div>
                                         </div>
                                         <div class="bg-white rounded-lg border border-emerald-100 p-2 shadow-sm">
                                             <span class="text-[9px] font-bold text-emerald-600 uppercase tracking-wider block mb-1 text-center">Produtos Base Utilizados</span>
                                             ${productsHtml}
                                         </div>
                                         <div class="mt-2 flex justify-end items-center gap-3">
-                                            <span class="text-[11px] font-extrabold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Produzido: ${item.multiLiters} Litros</span>
+                                            <span class="text-[11px] font-extrabold text-emerald-600">Produzido: ${item.multiLiters} Litros</span>
                                         </div>
                                     </div>
                                 </div>
@@ -2097,7 +2097,7 @@
                                     <div class="w-full">
                                         <div class="flex justify-between items-center mb-2">
                                             <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
-                                            <div class="text-[10px] font-bold text-amber-600 border border-amber-200 bg-amber-100 px-2 py-0.5 rounded-full flex items-center gap-1"><i data-lucide="sprout" class="w-3 h-3"></i> Adubação ${item.adubacaoMethod ? `(${item.adubacaoMethod})` : ''}</div>
+                                            <div class="text-xs font-bold text-slate-600">Adubação ${item.adubacaoMethod ? `(${item.adubacaoMethod})` : ''}</div>
                                         </div>
                                         <div class="bg-white rounded-lg border border-amber-100 p-2 shadow-sm">
                                             <span class="text-[9px] font-bold text-amber-600 uppercase tracking-wider block mb-1 text-center">Adubos & Dosagens</span>
@@ -2105,7 +2105,7 @@
                                         </div>
                                         ${item.adubacaoStart && item.adubacaoEnd ? `
                                         <div class="mt-2 flex justify-start items-center gap-3 border-t border-amber-100 pt-2">
-                                            <span class="text-[10px] font-bold text-amber-700 flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3 text-amber-600"></i> ${item.adubacaoStart} às ${item.adubacaoEnd} (${item.adubacaoDuration})</span>
+                                            <span class="text-[10px] font-bold text-amber-700 flex items-center gap-1">Horário: ${item.adubacaoStart} às ${item.adubacaoEnd} (${item.adubacaoDuration})</span>
                                         </div>` : ''}
                                     </div>
                                 </div>
@@ -2212,7 +2212,7 @@
             displayData.forEach(item => {
                 if (item.recordType === 'Multiplicacao') {
                     text += `🧪 *MULTIPLICAÇÃO DE BIOLÓGICOS*\n`;
-                    text += `⏳ Reator ligado por: ${item.reactorDays} dias\n`;
+                    text += `⏳ Tempo de aeração: ${item.reactorDays} dias\n`;
                     
                     if (item.products && item.products.length > 0) {
                         item.products.forEach(p => {
@@ -2456,7 +2456,7 @@
                 if (item.recordType === 'Multiplicacao') {
                     col1 = "Lab";
                     col2 = "-";
-                    col3 = `Multiplicação<br><span style="font-size: 8px; color: #10b981;">Reator: ${item.reactorDays} d</span>`;
+                    col3 = `Multiplicação<br><span style="font-size: 8px; color: #10b981;">Aeração: ${item.reactorDays} dias</span>`;
                     col5 = item.multiLiters;
                     col6 = "-";
                 } else if (item.recordType === 'Adubacao') {
