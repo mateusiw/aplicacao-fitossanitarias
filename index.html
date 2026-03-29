@@ -91,22 +91,10 @@
             </div>
         </div>
         <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
-            <!-- Botão WhatsApp -->
-            <button id="btnZap" onclick="copyToWhatsApp()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-emerald-500/20 transition-all active:scale-95 active:bg-emerald-700 whitespace-nowrap">
-                <i data-lucide="message-circle" class="w-4 h-4"></i>
-                <span>Zap</span>
-            </button>
-            
-            <!-- Botão Imagem (Laranja) -->
-            <button onclick="downloadImage()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold shadow-lg shadow-orange-500/20 transition-all active:scale-95 active:bg-orange-700 whitespace-nowrap">
-                <i data-lucide="image" class="w-4 h-4"></i>
-                <span>Imagem</span>
-            </button>
-
-            <!-- Botão PDF -->
-            <button id="pdfBtn" type="button" onclick="downloadPDF()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-red-600/20 transition-all active:scale-95 active:bg-red-800 whitespace-nowrap">
-                <i data-lucide="file-down" class="w-4 h-4"></i>
-                <span>PDF Técnico</span>
+            <!-- Botão Enviar (Verde) -->
+            <button onclick="showConfirmSendModal()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-600/20 transition-all active:scale-95 active:bg-green-800 whitespace-nowrap">
+                <i data-lucide="send" class="w-4 h-4"></i>
+                <span>Enviar para o WhatsApp</span>
             </button>
         </div>
     </div>
@@ -243,10 +231,10 @@
                 <!-- Adicionado novalidate para controle JS -->
                 <form id="appForm" onsubmit="addItem(event)" class="space-y-4" novalidate>
                     
-                    <!-- LINHA 1: CULTURA E BLOCO (Fito e Adubacao) -->
-                    <div id="fito-row-1" class="grid grid-cols-2 gap-3 mb-5">
+                    <!-- LINHA 1: CULTURA, BLOCO E CICLO (Fito e Adubacao) -->
+                    <div id="fito-row-1" class="grid grid-cols-3 gap-2 mb-5">
                         <div class="relative">
-                            <label class="text-xs font-bold text-slate-500 uppercase mb-1 block">Cultura</label>
+                            <label class="text-[11px] font-bold text-slate-500 uppercase mb-1 block">Cultura</label>
                             
                             <!-- SELECT CULTURA -->
                             <select id="crop" onchange="toggleOtherCropInput(); clearError('crop'); handleCropChange();" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
@@ -269,7 +257,7 @@
                         </div>
 
                         <div class="relative">
-                            <label id="blockLabel" class="text-xs font-bold text-slate-500 uppercase mb-1 block">Nº Bloco/Talhão</label>
+                            <label id="blockLabel" class="text-[11px] font-bold text-slate-500 uppercase mb-1 block">Nº Bloco</label>
                             
                             <!-- Input e Select alternáveis -->
                             <input type="text" id="blockId" oninput="clearError('blockId')" placeholder="Ex: 1 - A" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
@@ -280,6 +268,11 @@
 
                             <span id="error-blockId" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                             <span id="error-blockSelect" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Selecione</span>
+                        </div>
+                        
+                        <div class="relative">
+                            <label class="text-[11px] font-bold text-slate-500 uppercase mb-1 block">Ciclo</label>
+                            <input type="text" id="cycle" oninput="clearError('cycle')" placeholder="Ex: 1" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                         </div>
                     </div>
 
@@ -545,6 +538,23 @@
         </div>
     </div>
 
+    <!-- MODAL DE CONFIRMAÇÃO DE ENVIO -->
+    <div id="confirmSendModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 w-11/12 max-w-sm transform transition-all scale-100 flex flex-col items-center text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full border-2 border-[#5b7566]/30 bg-[#5b7566]/5 mb-4 text-[#5b7566]">
+                <i data-lucide="help-circle" class="h-6 w-6"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-[#1e293b] mb-2">Conferiu os dados?</h3>
+            <p class="text-[13px] text-[#64748b] mb-6">Você conferiu todas as informações? Se sim, toque para enviar.</p>
+            <p class="text-[13px] font-bold text-[#d97706] mb-8 px-1">Caso tenha enviado alguma informação errada, informe ao responsável para que ele possa alterar na planilha.</p>
+            
+            <div class="flex gap-3 w-full">
+                <button onclick="hideConfirmSendModal()" class="flex-1 px-4 py-3 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#475569] font-bold rounded-xl text-xs uppercase tracking-wider transition-colors">Cancelar</button>
+                <button onclick="confirmAndSend()" class="flex-1 px-4 py-3 bg-[#5b7566] hover:bg-[#4d6356] text-white font-bold rounded-xl text-xs uppercase tracking-wider transition-colors shadow-lg shadow-[#5b7566]/30">Enviar Agora</button>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL GENÉRICO DE MENSAGEM -->
     <div id="messageModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm transform transition-all scale-100 text-center">
@@ -566,6 +576,9 @@
         let lastFormState = null; 
         const STORAGE_KEY = 'spg_fitosanitario_data'; 
         const GLOBAL_KEY = 'spg_global_info'; 
+
+        // INSIRA SUA URL DO GOOGLE APPS SCRIPT AQUI
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRFds75AyGIDIgFd3N0TO-uFOowhhVoYA-VXg0hmWDODeT1c_FJroKPK526G7xIDGG/exec';
 
         // Estado Global
         let globalInfo = {
@@ -1132,6 +1145,7 @@
                 duration: document.getElementById('totalDuration').value,
                 crop: crop,
                 block: block,
+                cycle: document.getElementById('cycle') ? document.getElementById('cycle').value : '',
                 plants: document.getElementById('totalPlants').value,
                 target: target,
                 products: getRawProductsState(),
@@ -1228,6 +1242,10 @@
                 targetSelect.value = 'Outros';
                 toggleOtherTargetPestInput(); 
                 targetInput.value = item.target || ''; 
+            }
+
+            if (document.getElementById('cycle')) {
+                document.getElementById('cycle').value = item.cycle || '';
             }
 
             const container = document.getElementById('productsContainer');
@@ -1336,14 +1354,14 @@
                 pestOptions = pestsCucumber.sort();
                 pestOptions.push("Outros");
             } else if (cropValue === 'Brócolis' || cropValue === 'Couve-Flor') {
-                blockLabel.innerText = 'Nº Bloco/Talhão';
+                blockLabel.innerText = 'Nº Bloco';
                 useSelect = true;
                 for (let i = 1; i <= 19; i++) { options.push(i.toString()); }
                 options.push('A', 'B', 'C', 'D', 'E');
                 pestOptions = pestsBrassicas.sort();
                 pestOptions.push("Outros");
             } else {
-                blockLabel.innerText = 'Nº Bloco/Talhão';
+                blockLabel.innerText = 'Nº Bloco';
                 useSelect = false; 
                 pestOptions = pestsGeneral.sort();
                 pestOptions.push("Outros");
@@ -1632,6 +1650,27 @@
 
         function hideMessageModal() { document.getElementById('messageModal').classList.add('hidden'); }
 
+        function showConfirmSendModal() {
+            const data = getFilteredData();
+            if (data.length === 0) {
+                showMessageModal('Atenção', 'Adicione registros primeiro para enviar.', 'error');
+                return;
+            }
+            document.getElementById('confirmSendModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function hideConfirmSendModal() {
+            document.getElementById('confirmSendModal').classList.add('hidden');
+        }
+
+        function confirmAndSend() {
+            hideConfirmSendModal();
+            const data = getFilteredData();
+            sendToAppsScript(data);
+            downloadImage();
+        }
+
         function clearBlockForm(clearAll = false) {
             if (clearAll) {
                 document.getElementById('partner').selectedIndex = 0;
@@ -1662,6 +1701,8 @@
             if(targetSelect) targetSelect.selectedIndex = 0;
             if(document.getElementById('targetPestInput')) document.getElementById('targetPestInput').value = '';
 
+            if(document.getElementById('cycle')) document.getElementById('cycle').value = '';
+
             document.getElementById('productsContainer').innerHTML = '';
             addProductRow(); 
             document.getElementById('totalPlants').value = '';
@@ -1684,7 +1725,7 @@
             }
             toggleFormType(true);
             
-            const blockFields = ['crop', 'otherCropInput', 'blockId', 'blockSelect', 'targetPestSelect', 'targetPestInput', 'syrupVolume', 'finalProduct', 'multiLiters', 'reactorDays', 'adubacaoMethod', 'adubacaoStart', 'adubacaoEnd'];
+            const blockFields = ['crop', 'otherCropInput', 'blockId', 'blockSelect', 'targetPestSelect', 'targetPestInput', 'syrupVolume', 'finalProduct', 'multiLiters', 'reactorDays', 'adubacaoMethod', 'adubacaoStart', 'adubacaoEnd', 'cycle'];
             blockFields.forEach(id => toggleError(id, false));
 
             editingIndex = -1;
@@ -1839,6 +1880,7 @@
                 
                 crop: newRecordType !== 'Multiplicacao' ? finalCropName : null,
                 block: newRecordType !== 'Multiplicacao' ? finalBlockValue : null, 
+                cycle: newRecordType !== 'Multiplicacao' && document.getElementById('cycle') ? document.getElementById('cycle').value.trim() : null,
                 plants: newRecordType !== 'Multiplicacao' ? document.getElementById('totalPlants').value : null,
                 target: newRecordType === 'Fito' ? finalTarget : null,
                 volume: newRecordType === 'Fito' ? (parseFloat(document.getElementById('syrupVolume').value) || 0) : null,
@@ -2031,12 +2073,14 @@
                 } else if (recType === 'Adubacao') {
                     let locationLabel = "Bloco";
                     if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
-                    headerContent = `<span class="text-amber-600 flex items-center gap-1"><i data-lucide="sprout" class="w-3 h-3"></i> ${locationLabel} ${item.block}</span>`;
+                    let cicloStr = item.cycle ? ` (Ciclo ${item.cycle})` : '';
+                    headerContent = `<span class="text-amber-600 flex items-center gap-1"><i data-lucide="sprout" class="w-3 h-3"></i> ${locationLabel} ${item.block}${cicloStr}</span>`;
                     subContent = item.plants ? `${item.plants} plantas` : '';
                 } else {
                     let locationLabel = "Bloco";
                     if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
-                    headerContent = `${locationLabel} ${item.block}`;
+                    let cicloStr = item.cycle ? ` (Ciclo ${item.cycle})` : '';
+                    headerContent = `${locationLabel} ${item.block}${cicloStr}`;
                     subContent = item.target;
                 }
 
@@ -2158,7 +2202,7 @@
                                 <div class="flex items-start justify-between mt-1">
                                     <div class="w-full">
                                         <div class="flex justify-between items-center mb-2">
-                                            <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
+                                            <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.cycle ? ` (Ciclo ${item.cycle})` : ''}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
                                             <div class="text-xs font-bold text-slate-600">Adubação ${item.adubacaoMethod ? `(${item.adubacaoMethod})` : ''}</div>
                                         </div>
                                         <div class="bg-white rounded-lg border border-amber-100 p-2 shadow-sm">
@@ -2185,7 +2229,7 @@
                                 <div class="flex items-start justify-between mt-1">
                                     <div class="w-full">
                                         <div class="flex justify-between items-center mb-2">
-                                            <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
+                                            <span class="text-sm font-bold text-slate-700">${locationLabel} ${item.block} • ${item.crop}${item.cycle ? ` (Ciclo ${item.cycle})` : ''}${item.plants ? ` <span class="text-xs font-normal text-slate-500">(${item.plants} plantas)</span>` : ''}</span>
                                             <div class="text-xs font-bold text-slate-600 flex items-center gap-1"><span class="text-orange-600 text-sm font-extrabold">Alvo:</span> ${item.target}</div>
                                         </div>
                                         <div class="bg-slate-50/50 rounded-lg border border-slate-100 p-2">
@@ -2290,7 +2334,7 @@
                     let locationLabel = "Bloco";
                     if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
 
-                    text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
+                    text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.cycle ? ` - Ciclo: ${item.cycle}` : ''}${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
                     
                     if (item.products && item.products.length > 0) {
                         item.products.forEach(p => {
@@ -2308,7 +2352,7 @@
                     let locationLabel = "Bloco";
                     if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
 
-                    text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
+                    text += `📍 *${locationLabel} ${item.block}* (${item.crop})${item.cycle ? ` - Ciclo: ${item.cycle}` : ''}${item.plants ? ` - ${item.plants} plantas` : ''}\n`;
                     text += `🎯 Alvo: ${item.target}\n`;
                     
                     if (item.products && item.products.length > 0) {
@@ -2345,9 +2389,9 @@
 
         async function downloadImage() {
             const element = document.getElementById('report-card');
-            const btnSpan = document.querySelector('button[onclick="downloadImage()"] span');
-            const originalText = btnSpan.innerText;
-            btnSpan.innerText = "Gerando Imagem...";
+            const btnSpan = document.querySelector('button[onclick="showConfirmSendModal()"] span');
+            const originalText = btnSpan ? btnSpan.innerText : '';
+            if (btnSpan) btnSpan.innerText = "Gerando Imagem...";
 
             try {
                 const data = getFilteredData();
@@ -2418,7 +2462,7 @@
                 console.error("Erro ao gerar imagem:", err);
                 showMessageModal('Erro', 'Falha ao gerar imagem: ' + err.message, 'error');
             } finally {
-                btnSpan.innerText = originalText;
+                if (btnSpan) btnSpan.innerText = originalText;
             }
         }
 
@@ -2525,7 +2569,7 @@
                     let locationLabel = "Bloco";
                     if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
                     col1 = `${locationLabel} ${item.block}${item.plants ? `<br><span style="font-size: 8px; color: #64748b;">${item.plants} ptas</span>` : ''}`;
-                    col2 = item.crop;
+                    col2 = `${item.crop}${item.cycle ? `<br><span style="font-size: 8px; color: #3b82f6;">Ciclo ${item.cycle}</span>` : ''}`;
                     col3 = item.adubacaoMethod || "-";
                     col5 = `${item.adubacaoStart || ''} - ${item.adubacaoEnd || ''}<br><span style="font-size:8px; color: #64748b;">${item.adubacaoDuration || ''}</span>`;
                     col6 = "-";
@@ -2533,7 +2577,7 @@
                     let locationLabel = "Bloco";
                     if (item.crop && item.crop.toLowerCase().includes('pepino')) locationLabel = "Setor";
                     col1 = `${locationLabel} ${item.block}${item.plants ? `<br><span style="font-size: 8px; color: #64748b;">${item.plants} ptas</span>` : ''}`;
-                    col2 = item.crop;
+                    col2 = `${item.crop}${item.cycle ? `<br><span style="font-size: 8px; color: #3b82f6;">Ciclo ${item.cycle}</span>` : ''}`;
                     col3 = item.target;
                     col5 = item.volume;
                     col6 = item.ph || '-';
@@ -2595,6 +2639,26 @@
                 showMessageModal('Erro', 'Falha ao gerar PDF.', 'error');
             } finally {
                 btnText.innerText = originalText;
+            }
+        }
+
+        async function sendToAppsScript(dataArray) {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'SUA_URL_DO_APPS_SCRIPT_AQUI') return;
+            
+            try {
+                const dataEnvio = new Date().toLocaleString('pt-BR');
+                const dataWithTimestamp = dataArray.map(item => ({ ...item, timestamp: dataEnvio }));
+                
+                const payload = JSON.stringify(dataWithTimestamp);
+                
+                await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: payload
+                });
+                console.log("Dados enviados para a planilha com sucesso!");
+            } catch (err) {
+                console.error("Erro ao enviar dados para o Apps Script:", err);
             }
         }
     </script>
