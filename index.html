@@ -868,10 +868,10 @@
                 standardTypes = ['Orgânico', 'Mineral', 'Foliar', 'Organomineral'];
             } else if (recType === 'Fito') {
                 standardTypes = [
-                    'Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Desfolhantes',
-                    'Espalhante', 'Estabilizador de PH', 'Fungicidas', 'Herbicidas', 'Inseticidas',
-                    'Natural', 'Nematicidas', 'Nutricional', 'Repelente', 'Rodenticidas'
-                ];
+                    'Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Defensivo', 'Desfolhantes',
+                    'Espalhante', 'Estabilizador de PH', 'Estruturador', 'Extrato', 'Fertilizante', 'Foliar', 'Fungicidas', 'Herbicidas', 'Inseticidas',
+                    'Manipulado', 'Natural', 'Nematicidas', 'Nutricional', 'Repelente', 'Rodenticidas'
+                ].sort();
             }
 
             // Produtos
@@ -890,11 +890,11 @@
             } else {
                 // Fito
                 standardProducts = [
-                    "Acadian", "Ácido Peracético", "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", "Boro", "Bicarbonato",
-                    "Carbon N-10", "CalPlant", "Cabrio Top", "Coda Sul PH", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Eleito", "Evidence", "Ferro", "Full Grow", 
-                    "Facility", "Joiner", "Karate", "Kasumin", "Lannate", "Leite de Vaca", "Mancozeb", "Manipueira", "MAP (Monoamônio Fosfato)", "Master Mix", "Metarhizium", 
+                    "Acadian", "Ácido Peracético", "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", "BioProtect", "Boro", "Bicarbonato",
+                    "Caltrac", "Carbon N-10", "CalPlant", "Cabrio Top", "Coda Sul PH", "Coptrac", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Eleito", "Elexa", "Evidence", "Ferro", "Full Grow", 
+                    "Facility", "Joiner", "Karate", "Kasumin", "Lannate", "Leite de Vaca", "Mancozeb", "Manipueira", "MAP (Monoamônio Fosfato)", "Master Mix", "Melaço", "Metarhizium", "Miravis Duo",
                     "MKP (Monofosfato de Potássio)", "Molibdato", "Mukussan", "Nitrato de Cálcio", "Nitrato de Potássio", "Octaborato", 
-                    "Óleo Vegetal", "Óleo Vegetal Speed", "Premio", "Ridomil", "Shenzi", "Score", "Sanmite", "Speed Dil", "Sulfato de Magnésio", "Sulfato de Potássio", "Timorex", "Trichoderma", 
+                    "Óleo Vegetal", "Óleo Vegetal Speed", "Orthocide", "Premio", "Ridomil", "Shenzi", "Score", "Sanmite", "Speed Dil", "Speed Oil", "Sulfato de Magnésio", "Sulfato de Potássio", "Timorex", "Trichoderma", 
                     "Trichodermil", "Vinagre", "Vertimec","Xixi", "YaraVita - Biotrac", "YaraVita - Bortrac", "YaraVita - Caltrac", 
                     "YaraVita - Gotamax", "YaraVita - Zintrac", "Ziel"
                 ].sort();
@@ -1656,6 +1656,27 @@
                 showMessageModal('Atenção', 'Adicione registros primeiro para enviar.', 'error');
                 return;
             }
+
+            // Nova Checagem: Validar cabeçalho (horários, responsáveis, etc) antes de abrir o modal
+            if (!validateHeader()) {
+                 showMessageModal('Atenção', 'Por favor, preencha todos os Dados Gerais (Local, Data, Responsáveis e Horários) corretamente antes de enviar.', 'error');
+                 document.getElementById('generalDataCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                 return;
+            }
+
+            // Sincronizar todos os itens da lista com os valores globais atuais para irem corretos para a Planilha
+            updateGlobalState();
+            appData.forEach(item => {
+                item.partner = globalInfo.partner;
+                item.date = globalInfo.date;
+                item.requestor = globalInfo.requestor;
+                item.applicator = globalInfo.applicator;
+                item.startTime = globalInfo.startTime;
+                item.endTime = globalInfo.endTime;
+                item.duration = globalInfo.duration;
+            });
+            saveToStorage();
+
             document.getElementById('confirmSendModal').classList.remove('hidden');
             lucide.createIcons();
         }
