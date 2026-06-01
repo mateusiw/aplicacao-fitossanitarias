@@ -782,9 +782,25 @@
         function fillAssistantSelect(selectId, list, placeholder) {
             const select = document.getElementById(selectId);
             if (!select) return;
-            const sorted = (list || []).slice().sort((a, b) => a.localeCompare(b, 'pt-BR'));
+            const sorted = (list || []).slice().sort((a, b) =>
+                selectId === 'assistantSectorSelect'
+                    ? compareAssistantSector(a, b)
+                    : a.localeCompare(b, 'pt-BR')
+            );
             select.innerHTML = `<option value="">${placeholder}</option>` +
                 sorted.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+        }
+        function compareAssistantSector(a, b) {
+            const va = String(a || '').trim();
+            const vb = String(b || '').trim();
+            const na = Number(va);
+            const nb = Number(vb);
+            const aNum = va !== '' && !Number.isNaN(na);
+            const bNum = vb !== '' && !Number.isNaN(nb);
+            if (aNum && bNum) return na - nb;
+            if (aNum && !bNum) return -1;
+            if (!aNum && bNum) return 1;
+            return va.localeCompare(vb, 'pt-BR');
         }
         function refreshAssistantFilterOptions() {
             const records = dashboardCache?.analytics?.allRecords || [];
@@ -1754,7 +1770,10 @@
                 ].filter(Boolean);
                 box.innerHTML =
                     '<div class="rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-white p-3 mb-3">' +
-                        '<div class="text-[10px] uppercase font-bold tracking-wide text-sky-700 mb-1">Resposta do Assistente</div>' +
+                        '<div class="flex items-start justify-between gap-2 mb-1">' +
+                            '<div class="text-[10px] uppercase font-bold tracking-wide text-sky-700">Resposta do Assistente</div>' +
+                            '<button type="button" id="assistantMinimizeBtn" onclick="toggleAssistantResultList()" aria-expanded="true" class="px-2 py-1 rounded-md border border-slate-300 bg-white text-[10px] font-bold text-slate-700 hover:bg-slate-50">Minimizar lista</button>' +
+                        '</div>' +
                         '<div class="text-sm font-extrabold text-slate-800">Alvo analisado: ' + escapeHtml(target) + '</div>' +
                         '<div class="text-[11px] text-slate-600 mt-1">Baseado no histórico local: <b>' + totalUsos + ' uso(s)</b> encontrados.</div>' +
                         '<div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">' +
@@ -1776,7 +1795,7 @@
                         '</div>' +
                         (filterTags.length ? '<div class="mt-2 flex flex-wrap gap-1">' + filterTags.map(tag => '<span class="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] text-slate-600">' + tag + '</span>').join('') + '</div>' : '') +
                     '</div>' +
-                    '<div class="space-y-2">' +
+                    '<div id="assistantResultList" class="space-y-2">' +
                         list.map((s, i) => {
                             const conf = Math.max(20, Math.min(95, Math.round((s.usos / totalUsos) * 100)));
                             const hist = getDoseHistoryForProduct(target, culture, cycle, sector, s.produto, s.tipo, s.unidade);
@@ -1809,6 +1828,14 @@
             } catch (err) {
                 box.innerHTML = '<span class="text-red-600">Erro ao consultar histórico técnico: ' + escapeHtml(err.message) + '</span>';
             }
+        }
+        function toggleAssistantResultList() {
+            const list = document.getElementById('assistantResultList');
+            const btn = document.getElementById('assistantMinimizeBtn');
+            if (!list || !btn) return;
+            const hidden = list.classList.toggle('hidden');
+            btn.textContent = hidden ? 'Expandir lista' : 'Minimizar lista';
+            btn.setAttribute('aria-expanded', hidden ? 'false' : 'true');
         }
     </script>
 </body>
