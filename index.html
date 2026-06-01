@@ -14,7 +14,7 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://unpkg.com/html-to-image@1.11.11/dist/html-to-image.js"></script>
     
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -36,6 +36,14 @@
             </div>
         </div>
         <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0">
+            <div id="initialDataLoadingBadge" class="hidden flex items-center gap-1 px-2 py-1 bg-amber-50 border border-amber-200 text-amber-700 rounded-lg text-[10px] font-bold whitespace-nowrap">
+                <span class="inline-block w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span id="initialDataLoadingText">Carregando dados... 0%</span>
+            </div>
+            <button onclick="showDashboardInPage()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-slate-700 hover:bg-slate-800 text-white rounded-lg text-xs font-bold shadow-lg shadow-slate-700/20 transition-all active:scale-95 whitespace-nowrap">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
+                <span>Dashboard</span>
+            </button>
             <button onclick="showConfirmSendModal()" class="flex-1 md:flex-none flex items-center justify-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold shadow-lg shadow-green-600/20 transition-all active:scale-95 active:bg-green-800 whitespace-nowrap">
                 <i data-lucide="send" class="w-4 h-4"></i>
                 <span>Enviar para o WhatsApp</span>
@@ -43,7 +51,7 @@
         </div>
     </div>
 
-    <div class="container mx-auto p-4 flex flex-col lg:flex-row gap-8 mt-4">
+    <div id="mainFormView" class="container mx-auto p-4 flex flex-col lg:flex-row gap-8 mt-4">
         
         <!-- ESQUERDA: CONTROLES -->
         <div class="w-full lg:w-2/5 space-y-4">
@@ -59,7 +67,7 @@
                         <select id="partner" required onchange="clearError('partner'); updateGlobalState()" class="w-full p-2 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm bg-white">
                             <option value="">Selecione...</option>
                             <option value="SPG Oásis">SPG Oásis</option>
-                            <option value="SPG Sede">SPG Sede</option>
+                            <option value="SPG Estufa 1">SPG Estufa 1</option>
                         </select>
                         <span id="error-partner" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                     </div>
@@ -75,13 +83,13 @@
                         <label id="requestorLabel" class="text-[10px] font-bold text-slate-500 mb-1 block">Solicitante</label>
                         <select id="requestor" onchange="toggleCustomField('requestor', 'requestor-custom-div', 'otherRequestorInput', 'Outro'); updateGlobalState();" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                             <option value="">Selecione...</option>
-                            <option value="José Márcio">José Márcio</option> 
                             <option value="Guilherme Ramos">Guilherme Ramos</option>
+                            <option value="Cláudio Soares">Cláudio Soares</option>
                             <option value="Outro">Outro (Digitar)</option>
                         </select>
                         <div id="requestor-custom-div" class="hidden relative w-full fade-in">
                             <input type="text" id="otherRequestorInput" oninput="clearError('otherRequestorInput'); updateGlobalState();" class="w-full p-2 pr-8 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Nome">
-                            <button type="button" onclick="resetCustomField('requestor', 'requestor-custom-div', 'otherRequestorInput', 'José Márcio'); updateGlobalState();" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"><i data-lucide="x-circle" width="14"></i></button>
+                            <button type="button" onclick="resetCustomField('requestor', 'requestor-custom-div', 'otherRequestorInput', 'Guilherme Ramos'); updateGlobalState();" class="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500"><i data-lucide="x-circle" width="14"></i></button>
                         </div>
                         <span id="error-requestor" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
                         <span id="error-otherRequestorInput" class="text-[9px] text-red-500 font-bold hidden absolute -bottom-4 left-0">Preencha</span>
@@ -287,7 +295,7 @@
 
                     <div class="grid grid-cols-3 gap-3 mt-2">
                         <div id="fito-row-4" class="col-span-1">
-                            <label class="text-[10px] font-bold text-slate-500 mb-1 block">Plantas (Opc.)</label>
+                            <label class="text-[10px] font-bold text-slate-500 mb-1 block">Plantas</label>
                             <input type="text" inputmode="numeric" id="totalPlants" oninput="formatThousands(this)" placeholder="Qtd" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
                         </div>
                         <div id="obs-container" class="col-span-2 transition-all">
@@ -370,6 +378,194 @@
             </div>
         </div>
     </div>
+    
+    <div id="dashboardView" class="hidden w-full px-4 mt-4">
+        <div class="bg-white border border-slate-200 rounded-xl p-3 mb-4 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+                <h2 class="text-sm font-bold text-slate-800">Dashboard Analítico</h2>
+                <div id="topDashboardTypeTabs" class="bg-slate-100 border border-slate-200 rounded-xl p-1 flex gap-1">
+                    <button type="button" data-type="Defensivos" onclick="setTopDashboardType('Defensivos')" class="px-3 py-2 text-xs font-bold rounded-lg bg-slate-800 text-white">Defensivos</button>
+                    <button type="button" data-type="Laboratório" onclick="setTopDashboardType('Laboratório')" class="px-3 py-2 text-xs font-bold rounded-lg text-slate-600 hover:bg-white">Laboratório</button>
+                    <button type="button" data-type="Adubação" onclick="setTopDashboardType('Adubação')" class="px-3 py-2 text-xs font-bold rounded-lg text-slate-600 hover:bg-white">Adubação</button>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 ml-auto">
+                <div class="relative">
+                    <button id="topPeriodButton" type="button" onclick="toggleTopPeriodPopover()" class="px-3 py-2 min-w-[220px] bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-lg hover:bg-slate-50 text-left">
+                        01/05/2026 - 31/05/2026
+                    </button>
+                    <div id="topPeriodPopover" class="hidden absolute right-0 top-full mt-2 w-[320px] bg-white border border-slate-200 rounded-xl shadow-2xl p-3 z-50">
+                        <div class="text-[10px] font-bold uppercase text-slate-500 mb-2">Período</div>
+                        <div class="grid grid-cols-2 gap-2 mb-2">
+                            <button type="button" onclick="setTopPeriodShortcut('7dias')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">7 dias</button>
+                            <button type="button" onclick="setTopPeriodShortcut('30dias')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">30 dias</button>
+                            <button type="button" onclick="setTopPeriodShortcut('mes')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">Este mês</button>
+                            <button type="button" onclick="setTopPeriodShortcut('mespassado')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">Mês passado</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 block mb-1">Início</label>
+                                <input id="topPeriodStart" type="date" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white">
+                            </div>
+                            <div>
+                                <label class="text-[10px] font-bold text-slate-500 block mb-1">Fim</label>
+                                <input id="topPeriodEnd" type="date" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white">
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="clearTopPeriodInputs()" class="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Limpar</button>
+                                <button type="button" onclick="clearTopPeriod()" class="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Automático</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <button type="button" onclick="closeTopPeriodPopover()" class="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
+                                <button type="button" onclick="applyTopPeriod()" class="px-3 py-2 text-xs font-bold bg-slate-800 text-white rounded-lg hover:bg-slate-900">Aplicar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" onclick="clearDashboardFiltersTop()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Limpar Filtros</button>
+                <button type="button" onclick="refreshDashboardTop()" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-xs">Atualizar</button>
+                <button onclick="hideDashboardInPage()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Voltar ao Formulário</button>
+            </div>
+        </div>
+        <div id="assistantAgronomicoCard" class="bg-gradient-to-br from-white via-sky-50/60 to-emerald-50/50 border border-sky-100 rounded-2xl p-4 mb-4 shadow-sm">
+            <div class="flex items-start justify-between gap-3 mb-3">
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-800">Assistente Agronômico</h3>
+                    <p class="text-[11px] text-slate-500">Consulta baseada no histórico real da planilha</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                <select id="dashboardTargetSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Carregando alvos...</option>
+                </select>
+                <select id="assistantCultureSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Cultura (opcional)</option>
+                </select>
+                <select id="assistantSectorSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Bloco/Setor (opcional)</option>
+                </select>
+                <select id="assistantCycleSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option value="">Ciclo (opcional)</option>
+                </select>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 mt-3">
+                <button type="button" onclick="getOfflineSuggestion()" class="px-3 py-2 text-xs font-bold bg-blue-600 text-white border border-blue-700 rounded-lg hover:bg-blue-700 whitespace-nowrap">Consultar Assistente</button>
+                <button type="button" onclick="resetAssistantFilters()" class="px-3 py-2 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 whitespace-nowrap">Limpar Filtros</button>
+                <span class="text-[10px] text-slate-500">Alvo é obrigatório. Filtros refinam a recomendação técnica.</span>
+            </div>
+            <div id="offlineSuggestionBox" class="hidden mt-3 p-3 rounded-xl border border-sky-100 bg-white text-[11px]"></div>
+        </div>
+        <iframe id="dashboardFrame" src="" scrolling="no" class="w-full min-h-[900px] bg-transparent border-0 rounded-none overflow-hidden"></iframe>
+    </div>
+
+    <div id="dashboardModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-200 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 text-slate-600"></i>
+                    Dashboard Operacional
+                </h3>
+                <button onclick="hideDashboardModal()" class="text-slate-500 hover:text-slate-700 p-1 rounded-md">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div id="dashboardLoading" class="p-6 text-sm text-slate-500">Carregando dados...</div>
+            <div id="dashboardContent" class="hidden p-4 overflow-y-auto space-y-4">
+                <div class="text-[11px] font-semibold text-slate-500 uppercase tracking-wide">Janela analítica: últimos <span id="dashDays">90</span> dias</div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Total de Aplicações</div>
+                        <div id="dashTotalRegistros" class="text-xl font-extrabold text-slate-800">0</div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-blue-500">Defensivos</div>
+                        <div id="dashTotalFito" class="text-xl font-extrabold text-blue-700">0</div>
+                    </div>
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-emerald-500">Laboratório</div>
+                        <div id="dashTotalLaboratorio" class="text-xl font-extrabold text-emerald-700">0</div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-amber-500">Adubação</div>
+                        <div id="dashTotalAdubacao" class="text-xl font-extrabold text-amber-700">0</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div class="bg-white border border-slate-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Setores Ativos</div>
+                        <div id="dashSetoresAtivos" class="text-lg font-extrabold text-slate-800">0</div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Produtos Únicos</div>
+                        <div id="dashProdutosUnicos" class="text-lg font-extrabold text-slate-800">0</div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Litros Laboratório</div>
+                        <div id="dashLitrosLab" class="text-lg font-extrabold text-slate-800">0</div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-lg p-3">
+                        <div class="text-[10px] uppercase font-bold text-slate-400">Tempo Médio</div>
+                        <div id="dashTempoMedio" class="text-lg font-extrabold text-slate-800">0 min</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                        <div class="px-3 py-2 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">Aplicações por Setor (Top 8)</div>
+                        <div id="dashTopSetores" class="p-3 space-y-2 text-xs"></div>
+                    </div>
+                    <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                        <div class="px-3 py-2 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">Tendência Semanal</div>
+                        <div id="dashSemanas" class="p-3 space-y-2 text-xs"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+                        <div class="px-3 py-2 border-b border-blue-200 text-xs font-bold text-blue-700 uppercase">Defensivos: Produtos Mais Aplicados</div>
+                        <div id="dashTopProdutos" class="p-3 space-y-2 text-xs"></div>
+                    </div>
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg overflow-hidden">
+                        <div class="px-3 py-2 border-b border-blue-200 text-xs font-bold text-blue-700 uppercase">Defensivos por Tipo</div>
+                        <div id="dashTiposDefensivos" class="p-3 space-y-2 text-xs"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg overflow-hidden">
+                        <div class="px-3 py-2 border-b border-emerald-200 text-xs font-bold text-emerald-700 uppercase">Laboratório: Multiplicação por Produto Final</div>
+                        <div id="dashLaboratorioProdutos" class="p-3 space-y-2 text-xs"></div>
+                    </div>
+                    <div class="bg-amber-50 border border-amber-200 rounded-lg overflow-hidden">
+                        <div class="px-3 py-2 border-b border-amber-200 text-xs font-bold text-amber-700 uppercase">Adubação por Método</div>
+                        <div id="dashAdubacaoMetodos" class="p-3 space-y-2 text-xs"></div>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+                    <div class="px-3 py-2 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">Últimas aplicações registradas</div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-50 text-slate-600">
+                                <tr>
+                                    <th class="text-left p-2">Data</th>
+                                    <th class="text-left p-2">Tipo</th>
+                                    <th class="text-left p-2">Local</th>
+                                    <th class="text-left p-2">Setor</th>
+                                    <th class="text-left p-2">Responsável</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashRecentRows"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div id="dashboardError" class="hidden p-6 text-sm text-red-600"></div>
+        </div>
+    </div>
 
     <div id="messageModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-white rounded-xl shadow-2xl p-6 w-11/12 max-w-sm text-center">
@@ -390,19 +586,24 @@
         const PESTS_GENERAL = ["Adubação Foliar", "Ácaro", "Lagarta", "Fungo", "Bactéria", "Vírus"];
         const TYPES_ADUBACAO = ['Orgânico', 'Mineral', 'Foliar', 'Organomineral'];
         const TYPES_FITO = ['Acaricidas', 'Adjuvantes', 'Bactericidas', 'Biológico', 'Defensivo', 'Desfolhantes', 'Espalhante', 'Estabilizador de PH', 'Estruturador', 'Extrato', 'Fertilizante', 'Foliar', 'Fungicidas', 'Herbicidas', 'Inseticidas', 'Manipulado', 'Natural', 'Nematicidas', 'Nutricional', 'Repelente', 'Rodenticidas'].sort();
-        const PRODS_MULTI = ["Açúcar", "Antiespumantes", "Azototal", "Bac-in", "Bioimpeto", "Bravo", "Crystal BT", "Fung-in", "Kilper-S", "Optimun", "Supress - H"].sort();
-        const PRODS_ADUBACAO = ["Adubo Orgânico", "Calcário", "Cloreto de Potássio", "Complex 12-11-18", "Esterco", "MAP", "Nitrato de Amônio", "Nitrato de Cálcio", "NKálcio 09-00-24", "NPK 04-14-08", "NPK 10-10-10", "NPK 20-05-20", "NPK 20-10-20", "NPK 6-24-12", "Superfosfato Simples", "Superfosfato Triplo", "Sulfato de Amônio", "Ureia", "Yara Bela 16-05-20", "Yara Bela 27-00-00 (Nitrato de Amônia)", "YaraBasa", "YaraMila"].sort();
-        const PRODS_FITO = ["Acadian", "Ácido Peracético", "Alexia", "Alliado", "Avatar", "Azospirilium", "Beauveria", "Bioimpeto", "BioProtect", "Boro", "Bicarbonato", "Caltrac", "Carbon N-10", "CalPlant", "Cabrio Top", "Coda Sul PH", "Coptrac", "Crystal-BT", "Detergente", "Dipel", "Durivo", "Eleito", "Elexa", "Evidence", "Ferro", "Full Grow", "Facility", "Joiner", "Karate", "Kasumin", "Lannate", "Leite de Vaca", "Mancozeb", "Manipueira", "MAP (Monoamônio Fosfato)", "Master Mix", "Melaço", "Metarhizium", "Miravis Duo", "MKP (Monofosfato de Potássio)", "Molibdato", "Mukussan", "Nitrato de Cálcio", "Nitrato de Potássio", "Octaborato", "Óleo Vegetal", "Óleo Vegetal Speed", "Orthocide", "Premio", "Ridomil", "Shenzi", "Score", "Sanmite", "Speed Dil", "Speed Oil", "Sulfato de Magnésio", "Sulfato de Potássio", "Timorex", "Trichoderma", "Trichodermil", "Vinagre", "Vertimec","Xixi", "YaraVita - Biotrac", "YaraVita - Bortrac", "YaraVita - Caltrac", "YaraVita - Gotamax", "YaraVita - Zintrac", "Ziel"].sort();
+        let PRODS_MULTI = [];
+        let PRODS_ADUBACAO = [];
+        let PRODS_FITO = [];
 
         let appData = [], editingIndex = -1, lastFormState = null; 
         const STORAGE_KEY = 'spg_fitosanitario_data', GLOBAL_KEY = 'spg_global_info'; 
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRFds75AyGIDIgFd3N0TO-uFOowhhVoYA-VXg0hmWDODeT1c_FJroKPK526G7xIDGG/exec';
+        let dashboardCache = null;
+        let isInitialDataReady = false;
+        let currentDashboardType = 'Defensivos';
+        let topPeriodState = { inicio: '', fim: '' };
 
         let globalInfo = { partner: '', date: '', requestor: '', applicator: '', startTime: '', endTime: '', duration: '' };
 
         lucide.createIcons();
         addProductRow();
         loadFromStorage();
+        bootInitialDataLoad();
         updateDynamicTitle();
         calcDuration('startTime','endTime','totalDuration', true);
         updateGlobalState();
@@ -417,6 +618,15 @@
             if(err) err.classList.toggle('hidden', !show);
         }
         function clearError(id) { toggleError(id, false); }
+        function setProductInputsDisabled(disabled) {
+            document.querySelectorAll('.prod-name-input').forEach(input => {
+                input.disabled = disabled;
+                input.classList.toggle('opacity-60', disabled);
+                input.classList.toggle('cursor-not-allowed', disabled);
+                if (disabled) input.setAttribute('title', 'Aguarde carregar os dados...');
+                else input.removeAttribute('title');
+            });
+        }
         
         function toggleCustomField(selectId, divId, inputId, triggerVal) {
             const select = document.getElementById(selectId);
@@ -432,6 +642,360 @@
             select.value = defaultVal; if(!select.value) select.selectedIndex = 0;
             select.classList.remove('hidden'); select.required = true;
             document.getElementById(divId).classList.add('hidden');
+        }
+        function mergeUniqueProducts(localList, remoteList) {
+            const map = {};
+            const out = [];
+            [...(localList || []), ...(remoteList || [])].forEach(name => {
+                const val = (name || '').trim();
+                if (!val) return;
+                const key = val.toLowerCase();
+                if (map[key]) return;
+                map[key] = true;
+                out.push(val);
+            });
+            return out.sort((a, b) => a.localeCompare(b, 'pt-BR'));
+        }
+        function refreshApplicatorOptions() {
+            const select = document.getElementById('applicator');
+            if (!select) return;
+
+            const currentValue = select.classList.contains('hidden') ? '' : (select.value || '');
+            const defaults = ['Equipe Erisvaldo', 'Hugo Melo', 'Silvio Brito'];
+            const localNames = (appData || []).map(item => (item?.applicator || '').trim()).filter(Boolean);
+            const remoteNames = (dashboardCache?.analytics?.allRecords || []).map(rec =>
+                (rec?.aplicador || rec?.responsavel || rec?.['responsável'] || '').toString().trim()
+            ).filter(Boolean);
+
+            const map = {};
+            const names = [...defaults, ...localNames, ...remoteNames].filter(name => {
+                const key = name.toLowerCase();
+                if (!key || map[key]) return false;
+                map[key] = true;
+                return true;
+            }).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+
+            select.innerHTML = '<option value="">Selecione...</option>' +
+                names.map(name => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('') +
+                '<option value="Outro">Outro (Digitar)</option>';
+
+            if (currentValue && currentValue !== 'Outro') {
+                const exists = names.some(name => name.toLowerCase() === currentValue.toLowerCase());
+                if (exists) select.value = currentValue;
+            }
+        }
+        async function loadProductsCatalog() {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'SUA_URL_DO_APPS_SCRIPT_AQUI') return;
+            try {
+                const res = await fetch(APPS_SCRIPT_URL + '?action=products', { method: 'GET' });
+                if (!res.ok) throw new Error('Falha na consulta (' + res.status + ')');
+                const data = await res.json();
+                if (data.status !== 'success' || !data.products) throw new Error('Resposta inválida');
+                PRODS_FITO = mergeUniqueProducts(PRODS_FITO, data.products.Fito || []);
+                PRODS_ADUBACAO = mergeUniqueProducts(PRODS_ADUBACAO, data.products.Adubacao || []);
+                PRODS_MULTI = mergeUniqueProducts(PRODS_MULTI, data.products.Multiplicacao || []);
+                refreshOpenProductSuggestions();
+            } catch (err) {
+                console.warn('Não foi possível carregar catálogo remoto de produtos:', err.message);
+            }
+        }
+        async function prefetchDashboardData() {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'SUA_URL_DO_APPS_SCRIPT_AQUI') return;
+            try {
+                const res = await fetch(APPS_SCRIPT_URL + '?days=90', { method: 'GET' });
+                if (!res.ok) throw new Error('Falha na consulta (' + res.status + ')');
+                const data = await res.json();
+                if (data.status === 'success') {
+                    dashboardCache = data;
+                    refreshDashboardTargetOptions();
+                    refreshApplicatorOptions();
+                }
+            } catch (err) {
+                console.warn('Não foi possível pré-carregar dados do dashboard:', err.message);
+            }
+        }
+        function preloadDashboardFrame() {
+            return new Promise(resolve => {
+                const frame = document.getElementById('dashboardFrame');
+                if (!frame) return resolve();
+                const currentSrc = frame.getAttribute('src');
+                if (currentSrc) return resolve();
+
+                let done = false;
+                const finish = () => {
+                    if (done) return;
+                    done = true;
+                    resolve();
+                };
+                frame.addEventListener('load', finish, { once: true });
+                frame.setAttribute('src', 'dashboard.html');
+                setTimeout(finish, 3000);
+            });
+        }
+        async function bootInitialDataLoad() {
+            const badge = document.getElementById('initialDataLoadingBadge');
+            const text = document.getElementById('initialDataLoadingText');
+            const setProgress = (value) => {
+                const pct = Math.max(0, Math.min(100, value));
+                if (text) text.innerText = `Carregando dados... ${pct}%`;
+            };
+            if (badge) badge.classList.remove('hidden');
+            setProgress(0);
+            const tasks = [
+                loadProductsCatalog().then(() => setProgress(34)).catch(() => setProgress(34)),
+                prefetchDashboardData().then(() => setProgress(67)).catch(() => setProgress(67)),
+                preloadDashboardFrame().then(() => setProgress(100)).catch(() => setProgress(100))
+            ];
+            await Promise.all(tasks);
+            isInitialDataReady = true;
+            setProductInputsDisabled(false);
+            if (text) text.innerText = 'Dados carregados 100%';
+            setTimeout(() => badge && badge.classList.add('hidden'), 900);
+        }
+        function getStandardProductsByRecordType(recType) {
+            return recType === 'Multiplicacao' ? PRODS_MULTI : (recType === 'Adubacao' ? PRODS_ADUBACAO : PRODS_FITO);
+        }
+        function refreshDashboardTargetOptions() {
+            const select = document.getElementById('dashboardTargetSelect');
+            if (!select) return;
+            const items = dashboardCache?.analytics?.porAlvo || [];
+            const map = {};
+            const targets = [];
+            items.forEach(item => {
+                const alvo = (item?.alvo || '').toString().trim();
+                if (!alvo) return;
+                const key = alvo.toLowerCase();
+                if (map[key]) return;
+                map[key] = true;
+                targets.push(alvo);
+            });
+            targets.sort((a, b) => a.localeCompare(b, 'pt-BR'));
+            if (!targets.length) {
+                select.innerHTML = '<option value="">Sem alvos registrados no período</option>';
+                refreshAssistantFilterOptions();
+                return;
+            }
+            select.innerHTML = '<option value="">Selecione um alvo registrado...</option>' +
+                targets.map(alvo => `<option value="${escapeHtml(alvo)}">${escapeHtml(alvo)}</option>`).join('');
+            refreshAssistantFilterOptions();
+        }
+        function fillAssistantSelect(selectId, list, placeholder) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+            const sorted = (list || []).slice().sort((a, b) => a.localeCompare(b, 'pt-BR'));
+            select.innerHTML = `<option value="">${placeholder}</option>` +
+                sorted.map(item => `<option value="${escapeHtml(item)}">${escapeHtml(item)}</option>`).join('');
+        }
+        function refreshAssistantFilterOptions() {
+            const records = dashboardCache?.analytics?.allRecords || [];
+            const culturas = [];
+            const ciclos = [];
+            const setores = [];
+            const mapCult = {};
+            const mapCiclo = {};
+            const mapSetor = {};
+
+            records.forEach(rec => {
+                const cultura = (rec?.rawRows?.[0]?.['Cultura'] || '').toString().trim();
+                const ciclo = (rec?.ciclo || '').toString().trim();
+                const setor = (rec?.setor || '').toString().trim();
+                if (cultura && !mapCult[cultura.toLowerCase()]) {
+                    mapCult[cultura.toLowerCase()] = true;
+                    culturas.push(cultura);
+                }
+                if (ciclo && !mapCiclo[ciclo.toLowerCase()]) {
+                    mapCiclo[ciclo.toLowerCase()] = true;
+                    ciclos.push(ciclo);
+                }
+                if (setor && !mapSetor[setor.toLowerCase()]) {
+                    mapSetor[setor.toLowerCase()] = true;
+                    setores.push(setor);
+                }
+            });
+
+            fillAssistantSelect('assistantCultureSelect', culturas, 'Cultura (opcional)');
+            fillAssistantSelect('assistantCycleSelect', ciclos, 'Ciclo (opcional)');
+            fillAssistantSelect('assistantSectorSelect', setores, 'Bloco/Setor (opcional)');
+            bindAssistantFilterEvents();
+            updateAssistantDependentFilters();
+        }
+        function getAssistantSelection() {
+            return {
+                target: (document.getElementById('dashboardTargetSelect')?.value || '').trim(),
+                culture: (document.getElementById('assistantCultureSelect')?.value || '').trim(),
+                cycle: (document.getElementById('assistantCycleSelect')?.value || '').trim(),
+                sector: (document.getElementById('assistantSectorSelect')?.value || '').trim()
+            };
+        }
+        function collectFrontendAssistantFilters(target, culture) {
+            const records = dashboardCache?.analytics?.allRecords || [];
+            const cicloMap = {};
+            const setorMap = {};
+            records.forEach(rec => {
+                const raw = rec?.rawRows?.[0] || {};
+                const recTarget = ((rec?.alvos?.[0] || '').toString().trim()).toLowerCase();
+                const recCulture = ((raw['Cultura'] || '').toString().trim()).toLowerCase();
+                if (target && recTarget.indexOf(target.toLowerCase()) === -1) return;
+                if (culture && recCulture !== culture.toLowerCase()) return;
+                const ciclo = (rec?.ciclo || '').toString().trim();
+                const setor = (rec?.setor || '').toString().trim();
+                if (ciclo) cicloMap[ciclo] = true;
+                if (setor) setorMap[setor] = true;
+            });
+            return {
+                cycles: Object.keys(cicloMap).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+                sectors: Object.keys(setorMap).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+            };
+        }
+        async function updateAssistantDependentFilters() {
+            const selected = getAssistantSelection();
+            const prevCycle = selected.cycle;
+            const prevSector = selected.sector;
+            const frontend = collectFrontendAssistantFilters(selected.target, selected.culture);
+            const cycles = frontend.cycles;
+            const sectors = frontend.sectors;
+            fillAssistantSelect('assistantCycleSelect', cycles, 'Ciclo (opcional)');
+            fillAssistantSelect('assistantSectorSelect', sectors, 'Bloco/Setor (opcional)');
+
+            const cycleSelect = document.getElementById('assistantCycleSelect');
+            const sectorSelect = document.getElementById('assistantSectorSelect');
+            if (cycleSelect && prevCycle && cycles.includes(prevCycle)) cycleSelect.value = prevCycle;
+            if (sectorSelect && prevSector && sectors.includes(prevSector)) sectorSelect.value = prevSector;
+        }
+        function bindAssistantFilterEvents() {
+            const targetEl = document.getElementById('dashboardTargetSelect');
+            const cultureEl = document.getElementById('assistantCultureSelect');
+            if (targetEl && !targetEl.dataset.assistantBound) {
+                targetEl.addEventListener('change', () => updateAssistantDependentFilters());
+                targetEl.dataset.assistantBound = '1';
+            }
+            if (cultureEl && !cultureEl.dataset.assistantBound) {
+                cultureEl.addEventListener('change', () => updateAssistantDependentFilters());
+                cultureEl.dataset.assistantBound = '1';
+            }
+        }
+        function resetAssistantFilters() {
+            ['assistantCultureSelect', 'assistantCycleSelect', 'assistantSectorSelect'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.selectedIndex = 0;
+            });
+            updateAssistantDependentFilters();
+        }
+        function computeAssistantContextFallback(target, culture, cycle, sector) {
+            const records = dashboardCache?.analytics?.allRecords || [];
+            let volumeTotal = 0;
+            let plantasTotal = 0;
+            let usosComVolume = 0;
+            let usosComPlantas = 0;
+            let usosComVolumeEPlantas = 0;
+
+            records.forEach(rec => {
+                if ((rec?.tipo || '') !== 'Defensivos') return;
+                const recAlvos = Array.isArray(rec?.alvos) ? rec.alvos : [];
+                const recTargetMatch = recAlvos.some(a => (a || '').toString().toLowerCase().includes((target || '').toLowerCase()));
+                if (!recTargetMatch) return;
+                if (culture) {
+                    const recCulture = ((rec?.rawRows?.[0]?.['Cultura'] || '').toString().trim()).toLowerCase();
+                    if (recCulture !== culture.toLowerCase()) return;
+                }
+                if (cycle && ((rec?.ciclo || '').toString().trim().toLowerCase() !== cycle.toLowerCase())) return;
+                if (sector && ((rec?.setor || '').toString().trim().toLowerCase() !== sector.toLowerCase())) return;
+
+                const rows = Array.isArray(rec?.rawRows) && rec.rawRows.length ? rec.rawRows : [null];
+                const groupVolumeRaw = rows.find(r => (r?.['Volume Calda (L)'] || '').toString().trim())?.['Volume Calda (L)'] || '';
+                const groupPlantasRaw = rows.find(r => (r?.['Plantas'] || '').toString().trim())?.['Plantas'] || '';
+                const groupVolume = parseFloat(groupVolumeRaw.toString().replace(/\./g, '').replace(',', '.')) || 0;
+                const groupPlantas = parseFloat(groupPlantasRaw.toString().replace(/\./g, '').replace(',', '.')) || 0;
+                rows.forEach(row => {
+                    const volumeLinha = row ? (parseFloat((row['Volume Calda (L)'] || '').toString().replace(/\./g, '').replace(',', '.')) || 0) : 0;
+                    const plantasLinha = row ? (parseFloat((row['Plantas'] || '').toString().replace(/\./g, '').replace(',', '.')) || 0) : 0;
+                    const volume = volumeLinha > 0 ? volumeLinha : (groupVolume > 0 ? groupVolume : (parseFloat(rec?.volumeCalda) || 0));
+                    const plantas = plantasLinha > 0 ? plantasLinha : groupPlantas;
+                    if (volume > 0) {
+                        volumeTotal += volume;
+                        usosComVolume++;
+                    }
+                    if (plantas > 0) {
+                        plantasTotal += plantas;
+                        usosComPlantas++;
+                    }
+                    if (volume > 0 && plantas > 0) usosComVolumeEPlantas++;
+                });
+            });
+
+            const volumeCaldaMedio = usosComVolume ? Number((volumeTotal / usosComVolume).toFixed(2)) : 0;
+            const plantasMedias = usosComPlantas ? Math.round(plantasTotal / usosComPlantas) : 0;
+            const litrosPor100Plantas = (volumeTotal > 0 && plantasTotal > 0) ? Number(((volumeTotal / plantasTotal) * 100).toFixed(2)) : 0;
+            return { usosComVolume, usosComPlantas, usosComVolumeEPlantas, volumeCaldaMedio, plantasMedias, litrosPor100Plantas };
+        }
+        function getDoseHistoryForProduct(target, culture, cycle, sector, produto, tipo, unidade) {
+            const records = dashboardCache?.analytics?.allRecords || [];
+            const out = [];
+            records.forEach(rec => {
+                if ((rec?.tipo || '') !== 'Defensivos') return;
+                const recAlvos = Array.isArray(rec?.alvos) ? rec.alvos : [];
+                const recTargetMatch = recAlvos.some(a => (a || '').toString().toLowerCase().includes((target || '').toLowerCase()));
+                if (!recTargetMatch) return;
+                if (culture) {
+                    const recCulture = ((rec?.rawRows?.[0]?.['Cultura'] || '').toString().trim()).toLowerCase();
+                    if (recCulture !== culture.toLowerCase()) return;
+                }
+                if (cycle && ((rec?.ciclo || '').toString().trim().toLowerCase() !== cycle.toLowerCase())) return;
+                if (sector && ((rec?.setor || '').toString().trim().toLowerCase() !== sector.toLowerCase())) return;
+
+                const rows = Array.isArray(rec?.rawRows) ? rec.rawRows : [];
+                const groupVolumeRaw = rows.find(r => (r?.['Volume Calda (L)'] || '').toString().trim())?.['Volume Calda (L)'] || '';
+                const groupPlantasRaw = rows.find(r => (r?.['Plantas'] || '').toString().trim())?.['Plantas'] || '';
+                rows.forEach(row => {
+                    const rowProduto = (row?.['Produto'] || '').toString().trim();
+                    const rowTipo = (row?.['Tipo do Produto'] || '').toString().trim();
+                    const rowUnidade = (row?.['Unidade'] || '').toString().trim();
+                    if (rowProduto.toLowerCase() !== (produto || '').toLowerCase()) return;
+                    if (rowTipo.toLowerCase() !== (tipo || '').toLowerCase()) return;
+                    if (rowUnidade.toLowerCase() !== (unidade || '').toLowerCase()) return;
+                    const rowDose = (row?.['Dose'] || '').toString().trim();
+                    if (!rowDose) return;
+                    out.push({
+                        dose: rowDose,
+                        unidade: rowUnidade || unidade || '-',
+                        data: (row?.['Data da Aplicação'] || '').toString().trim() || '-',
+                        setor: (row?.['Bloco/Setor'] || '').toString().trim() || '-',
+                        plantas: (row?.['Plantas'] || '').toString().trim() || groupPlantasRaw.toString().trim() || '-',
+                        calda: (row?.['Volume Calda (L)'] || '').toString().trim() || groupVolumeRaw.toString().trim() || '-'
+                    });
+                });
+            });
+            return out.reverse();
+        }
+        function formatHistoryDate(value) {
+            const raw = (value || '').toString().trim();
+            if (!raw || raw === '-') return '-';
+            const br = raw.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+            if (br) return raw;
+            const iso = raw.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (iso) return `${iso[3]}/${iso[2]}/${iso[1]}`;
+            const dt = new Date(raw);
+            if (!Number.isNaN(dt.getTime())) {
+                const d = String(dt.getDate()).padStart(2, '0');
+                const m = String(dt.getMonth() + 1).padStart(2, '0');
+                const y = dt.getFullYear();
+                return `${d}/${m}/${y}`;
+            }
+            return raw;
+        }
+        function formatPtBrNumberText(value) {
+            const raw = (value || '').toString().trim();
+            if (!raw || raw === '-') return raw || '-';
+            const normalized = raw.replace(/\./g, '').replace(',', '.');
+            const num = Number(normalized);
+            if (!Number.isNaN(num)) return num.toLocaleString('pt-BR');
+            return raw;
+        }
+        function refreshOpenProductSuggestions() {
+            const list = getStandardProductsByRecordType(getRecordType());
+            document.querySelectorAll('.prod-suggestions').forEach(box => {
+                box.innerHTML = list.map(p => `<button type="button" onclick="selectProductSuggestion(this)" class="w-full text-left px-2 py-1.5 text-xs text-slate-700 hover:bg-blue-50">${p}</button>`).join('');
+            });
         }
 
         // Modos (Fito, Multi, Adubacao)
@@ -515,7 +1079,6 @@
             const standardProducts = recType === 'Multiplicacao' ? PRODS_MULTI : (recType === 'Adubacao' ? PRODS_ADUBACAO : PRODS_FITO);
             
             let isCustom = type && !standardTypes.includes(type) && type !== 'Outros', displayType = isCustom ? 'Outros' : (type || 'Outros');
-            let isCustomProd = name && !standardProducts.includes(name), displayProd = isCustomProd ? 'Outros' : name;
 
             const opts = arr => [...arr, 'Outros'].map(o => `<option value="${o}" ${o===arguments[1]?'selected':''}>${o}</option>`).join('');
 
@@ -533,12 +1096,9 @@
 
             div.innerHTML = `
                 <div class="w-full sm:w-auto sm:flex-grow relative">
-                    <select onchange="this.classList.replace('text-slate-400','text-slate-800'); this.classList.remove('border-red-500'); toggleRowCustomProduct(this)" class="prod-name-select ${isCustomProd?'hidden':''} w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!name?'text-slate-400':'text-slate-800'}" ${!isCustomProd?'required':''}>
-                        <option value="" disabled ${!name ? 'selected' : ''}>Produto...</option>${[...standardProducts, 'Outros'].map(p => `<option value="${p}" ${p === displayProd ? 'selected' : ''}>${p}</option>`).join('')}
-                    </select>
-                    <div class="prod-name-custom-div ${isCustomProd?'':'hidden'} w-full relative">
-                        <input type="text" placeholder="Nome" oninput="this.classList.remove('border-red-500')" class="prod-name-custom-input w-full p-2 pr-6 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none fade-in" value="${isCustomProd?name:''}" ${isCustomProd?'required':''}>
-                        <button type="button" onclick="resetRowProduct(this)" class="absolute right-1 top-1/2 -translate-y-1/2 text-slate-400 hover:text-red-500 p-1"><i data-lucide="x-circle" width="14"></i></button>
+                    <input type="text" oninput="this.classList.replace('text-slate-400','text-slate-800'); this.classList.remove('border-red-500'); filterProductSuggestions(this)" onfocus="filterProductSuggestions(this)" onblur="hideProductSuggestions(this)" placeholder="Produto..." class="prod-name-input w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none ${!name?'text-slate-400':'text-slate-800'} ${isInitialDataReady?'':'opacity-60 cursor-not-allowed'}" value="${name||''}" required autocomplete="off" ${isInitialDataReady?'':'disabled title=\"Aguarde carregar os dados...\"'}>
+                    <div class="prod-suggestions hidden absolute z-30 mt-1 w-full max-h-40 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-lg">
+                        ${standardProducts.map(p => `<button type="button" onclick="selectProductSuggestion(this)" class="w-full text-left px-2 py-1.5 text-xs text-slate-700 hover:bg-blue-50">${p}</button>`).join('')}
                     </div>
                 </div>
                 ${typeHtml}
@@ -549,8 +1109,33 @@
             container.appendChild(div); lucide.createIcons();
         }
 
-        function toggleRowCustomProduct(sel) { if(sel.value==='Outros'){ sel.classList.add('hidden'); sel.required=false; const d=sel.parentElement.querySelector('.prod-name-custom-div'); d.classList.remove('hidden'); d.querySelector('input').required=true; d.querySelector('input').focus(); } }
-        function resetRowProduct(btn) { const d=btn.parentElement, s=d.parentElement.querySelector('.prod-name-select'), i=d.querySelector('input'); i.value=''; i.required=false; s.selectedIndex=0; s.classList.remove('hidden'); s.classList.add('text-slate-400'); s.required=true; d.classList.add('hidden'); }
+        function toggleRowCustomProduct() {}
+        function resetRowProduct() {}
+        function filterProductSuggestions(input) {
+            const box = input.parentElement.querySelector('.prod-suggestions');
+            const term = input.value.trim().toLowerCase();
+            let hasVisible = false;
+            box.querySelectorAll('button').forEach(btn => {
+                const show = !term || btn.textContent.toLowerCase().includes(term);
+                btn.classList.toggle('hidden', !show);
+                if (show) hasVisible = true;
+            });
+            box.classList.toggle('hidden', !hasVisible);
+        }
+        function selectProductSuggestion(btn) {
+            const wrap = btn.closest('.relative');
+            const input = wrap.querySelector('.prod-name-input');
+            input.value = btn.textContent.trim();
+            input.classList.replace('text-slate-400', 'text-slate-800');
+            input.classList.remove('border-red-500');
+            wrap.querySelector('.prod-suggestions').classList.add('hidden');
+        }
+        function hideProductSuggestions(input) {
+            setTimeout(() => {
+                const box = input.parentElement.querySelector('.prod-suggestions');
+                if (box) box.classList.add('hidden');
+            }, 120);
+        }
         function toggleRowCustomType(sel) { if(sel.value==='Outros'){ sel.classList.add('hidden'); sel.required=false; const d=sel.parentElement.querySelector('.prod-type-custom-div'); d.classList.remove('hidden'); d.querySelector('input').required=true; d.querySelector('input').focus(); } }
         function resetRowType(btn) { const d=btn.parentElement, s=d.parentElement.querySelector('.prod-type-select'), i=d.querySelector('input'); i.value=''; i.required=false; s.value=''; s.selectedIndex=0; s.classList.remove('hidden'); s.classList.add('text-slate-400'); s.required=true; d.classList.add('hidden'); }
 
@@ -562,8 +1147,8 @@
 
         function getRawProductsState() {
             return Array.from(document.querySelectorAll('.product-row')).map(row => {
-                const sP = row.querySelector('.prod-name-select'), cP = row.querySelector('.prod-name-custom-input'), sT = row.querySelector('.prod-type-select'), cT = row.querySelector('.prod-type-custom-input');
-                return { name: sP.classList.contains('hidden') ? cP.value : sP.value, type: sT ? (sT.classList.contains('hidden') ? cT.value : sT.value) : '', dose: row.querySelector('.prod-dose-input').value, unit: row.querySelector('.prod-unit-input').value };
+                const pI = row.querySelector('.prod-name-input'), sT = row.querySelector('.prod-type-select'), cT = row.querySelector('.prod-type-custom-input');
+                return { name: pI ? pI.value : '', type: sT ? (sT.classList.contains('hidden') ? cT.value : sT.value) : '', dose: row.querySelector('.prod-dose-input').value, unit: row.querySelector('.prod-unit-input').value };
             });
         }
 
@@ -588,7 +1173,9 @@
             setVal('partner', item.partner); setVal('appDate', item.date); setVal('startTime', item.startTime); setVal('endTime', item.endTime);
             setCustom('requestor', 'requestor-custom-div', 'otherRequestorInput', item.requestor, 'Outro'); setCustom('applicator', 'applicator-custom-div', 'otherApplicatorInput', item.applicator, 'Outro');
             calcDuration('startTime','endTime','totalDuration', true);
-            setCustom('crop', 'crop-custom-div', 'otherCropInput', item.crop, 'Outros'); handleCropChange();
+            if (item.crop) setCustom('crop', 'crop-custom-div', 'otherCropInput', item.crop, 'Outros');
+            else resetCustomField('crop', 'crop-custom-div', 'otherCropInput', 'Brócolis');
+            handleCropChange();
             
             if(!document.getElementById('blockSelect').classList.contains('hidden')) setVal('blockSelect', item.block); else setVal('blockId', item.block);
             setVal('targetPestInput', item.target);
@@ -649,6 +1236,7 @@
             try {
                 if (localStorage.getItem(GLOBAL_KEY)) { globalInfo = JSON.parse(localStorage.getItem(GLOBAL_KEY)); populateForm({...globalInfo, recordType: 'Fito'}); }
                 if (localStorage.getItem(STORAGE_KEY)) { appData = JSON.parse(localStorage.getItem(STORAGE_KEY)).map(i => ({...i, products: i.products?.length ? i.products : [{name:i.product, dose:i.dosage, unit:'ml', type:'Biológico'}]})); if(appData.length) document.querySelector(`input[name="recordTypeRadio"][value="${appData[0].recordType||'Fito'}"]`).checked = true; renderList(); }
+                refreshApplicatorOptions();
                 toggleFormType(true); renderHeaderAndSummary(); updateDynamicTitle(); renderReport(); 
             } catch(e){}
         }
@@ -692,9 +1280,288 @@
         }
         function hideConfirmSendModal() { document.getElementById('confirmSendModal').classList.add('hidden'); }
         function confirmAndSend() { hideConfirmSendModal(); sendToAppsScript(getFilteredData()); downloadImage(); }
+        function showDashboardInPage() {
+            document.getElementById('mainFormView').classList.add('hidden');
+            document.getElementById('dashboardView').classList.remove('hidden');
+            const frame = document.getElementById('dashboardFrame');
+            const currentSrc = frame.getAttribute('src');
+            if (!currentSrc) frame.setAttribute('src', 'dashboard.html');
+            syncTopDashboardTypeTabs(currentDashboardType);
+            setTimeout(() => setTopDashboardType(currentDashboardType), 250);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideDashboardInPage() {
+            document.getElementById('dashboardView').classList.add('hidden');
+            document.getElementById('mainFormView').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.addEventListener('message', (event) => {
+            if (!event?.data || event.data.type !== 'dashboardHeight') return;
+            const frame = document.getElementById('dashboardFrame');
+            if (!frame) return;
+            const h = Number(event.data.height || 0);
+            if (!Number.isFinite(h) || h <= 0) return;
+            const safeHeight = Math.min(Math.max(Math.ceil(h), 900), 12000);
+            frame.style.height = `${safeHeight}px`;
+        });
+        window.addEventListener('message', (event) => {
+            if (!event?.data || event.data.type !== 'dashboardActiveType') return;
+            const card = document.getElementById('assistantAgronomicoCard');
+            if (!card) return;
+            const activeType = String(event.data.activeType || '');
+            currentDashboardType = activeType || 'Defensivos';
+            syncTopDashboardTypeTabs(currentDashboardType);
+            if (activeType === 'Defensivos') card.classList.remove('hidden');
+            else card.classList.add('hidden');
+        });
+        window.addEventListener('message', (event) => {
+            if (!event?.data || event.data.type !== 'dashboardPeriodLabel') return;
+            const btn = document.getElementById('topPeriodButton');
+            if (!btn) return;
+            btn.textContent = String(event.data.label || 'Período automático');
+            topPeriodState.inicio = String(event.data.inicio || '');
+            topPeriodState.fim = String(event.data.fim || '');
+        });
+        function syncTopDashboardTypeTabs(activeType) {
+            const root = document.getElementById('topDashboardTypeTabs');
+            if (!root) return;
+            root.querySelectorAll('button[data-type]').forEach(btn => {
+                const isActive = btn.getAttribute('data-type') === activeType;
+                btn.className = isActive
+                    ? 'px-3 py-2 text-xs font-bold rounded-lg bg-slate-800 text-white'
+                    : 'px-3 py-2 text-xs font-bold rounded-lg text-slate-600 hover:bg-white';
+            });
+        }
+        function setTopDashboardType(type) {
+            currentDashboardType = type;
+            syncTopDashboardTypeTabs(type);
+            const frame = document.getElementById('dashboardFrame');
+            if (!frame || !frame.contentWindow) return;
+            frame.contentWindow.postMessage({ type: 'setDashboardActiveType', activeType: type }, '*');
+        }
+        function postDashboardAction(action, extra = {}) {
+            const frame = document.getElementById('dashboardFrame');
+            if (!frame || !frame.contentWindow) return;
+            frame.contentWindow.postMessage({ type: 'dashboardAction', action: action, ...extra }, '*');
+        }
+        function openDashboardPeriodPicker() { toggleTopPeriodPopover(); }
+        function clearDashboardFiltersTop() { postDashboardAction('clearFilters'); }
+        function refreshDashboardTop() { postDashboardAction('refreshData'); }
+        function toggleTopPeriodPopover() {
+            const pop = document.getElementById('topPeriodPopover');
+            if (!pop) return;
+            const willOpen = pop.classList.contains('hidden');
+            if (willOpen) {
+                const inputStart = document.getElementById('topPeriodStart');
+                const inputEnd = document.getElementById('topPeriodEnd');
+                if (inputStart) inputStart.value = topPeriodState.inicio || '';
+                if (inputEnd) inputEnd.value = topPeriodState.fim || '';
+            }
+            pop.classList.toggle('hidden', !willOpen);
+        }
+        function closeTopPeriodPopover() {
+            const pop = document.getElementById('topPeriodPopover');
+            if (pop) pop.classList.add('hidden');
+        }
+        function getTodayIso() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+        function offsetIsoDays(baseIso, offset) {
+            const [y, m, d] = String(baseIso).split('-').map(Number);
+            const dt = new Date(y, (m || 1) - 1, d || 1);
+            dt.setDate(dt.getDate() + offset);
+            const yy = dt.getFullYear();
+            const mm = String(dt.getMonth() + 1).padStart(2, '0');
+            const dd = String(dt.getDate()).padStart(2, '0');
+            return `${yy}-${mm}-${dd}`;
+        }
+        function setTopPeriodShortcut(type) {
+            const end = getTodayIso();
+            let start = end;
+            if (type === '7dias') start = offsetIsoDays(end, -6);
+            if (type === '30dias') start = offsetIsoDays(end, -29);
+            if (type === 'mes') {
+                const [y, m] = end.split('-').map(Number);
+                start = `${y}-${String(m).padStart(2, '0')}-01`;
+            }
+            if (type === 'mespassado') {
+                const [y, m] = end.split('-').map(Number);
+                const firstThisMonth = new Date(y, m - 1, 1);
+                const lastPrev = new Date(firstThisMonth.getTime() - 86400000);
+                const firstPrev = new Date(lastPrev.getFullYear(), lastPrev.getMonth(), 1);
+                const fpY = firstPrev.getFullYear();
+                const fpM = String(firstPrev.getMonth() + 1).padStart(2, '0');
+                const lpY = lastPrev.getFullYear();
+                const lpM = String(lastPrev.getMonth() + 1).padStart(2, '0');
+                const lpD = String(lastPrev.getDate()).padStart(2, '0');
+                start = `${fpY}-${fpM}-01`;
+                const endPrev = `${lpY}-${lpM}-${lpD}`;
+                const inputEnd = document.getElementById('topPeriodEnd');
+                if (inputEnd) inputEnd.value = endPrev;
+            } else {
+                const inputEnd = document.getElementById('topPeriodEnd');
+                if (inputEnd) inputEnd.value = end;
+            }
+            const inputStart = document.getElementById('topPeriodStart');
+            if (inputStart) inputStart.value = start;
+        }
+        function applyTopPeriod() {
+            const inputStart = document.getElementById('topPeriodStart');
+            const inputEnd = document.getElementById('topPeriodEnd');
+            const inicio = String(inputStart?.value || '');
+            const fim = String(inputEnd?.value || '');
+            if ((inicio && !fim) || (!inicio && fim)) return;
+            if (inicio && fim && inicio > fim) return;
+            postDashboardAction('setPeriod', { inicio: inicio, fim: fim });
+            closeTopPeriodPopover();
+        }
+        function clearTopPeriod() {
+            postDashboardAction('setPeriod', { inicio: '', fim: '' });
+            closeTopPeriodPopover();
+        }
+        function clearTopPeriodInputs() {
+            const inputStart = document.getElementById('topPeriodStart');
+            const inputEnd = document.getElementById('topPeriodEnd');
+            if (inputStart) inputStart.value = '';
+            if (inputEnd) inputEnd.value = '';
+        }
+        document.addEventListener('click', (event) => {
+            const wrap = document.getElementById('topPeriodButton')?.parentElement;
+            if (!wrap) return;
+            if (!wrap.contains(event.target)) closeTopPeriodPopover();
+        });
+
+        function showDashboardModal() {
+            document.getElementById('dashboardModal').classList.remove('hidden');
+            document.getElementById('dashboardLoading').classList.remove('hidden');
+            document.getElementById('dashboardContent').classList.add('hidden');
+            document.getElementById('dashboardError').classList.add('hidden');
+            loadDashboardData();
+            lucide.createIcons();
+        }
+
+        function hideDashboardModal() { document.getElementById('dashboardModal').classList.add('hidden'); }
+
+        async function loadDashboardData() {
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'SUA_URL_DO_APPS_SCRIPT_AQUI') {
+                return showDashboardError('URL do Apps Script não configurada.');
+            }
+            if (dashboardCache && dashboardCache.status === 'success') {
+                return renderDashboard(dashboardCache);
+            }
+            try {
+                const res = await fetch(APPS_SCRIPT_URL + '?days=90', { method: 'GET' });
+                if (!res.ok) throw new Error('Falha ao buscar dados (' + res.status + ')');
+                const data = await res.json();
+                if (data.status !== 'success') throw new Error(data.message || 'Resposta inválida do Apps Script');
+                dashboardCache = data;
+                refreshDashboardTargetOptions();
+                renderDashboard(data);
+            } catch (err) {
+                showDashboardError('Não foi possível carregar o dashboard. ' + err.message);
+            }
+        }
+
+        function showDashboardError(message) {
+            document.getElementById('dashboardLoading').classList.add('hidden');
+            const errEl = document.getElementById('dashboardError');
+            errEl.innerText = message;
+            errEl.classList.remove('hidden');
+        }
+
+        function renderDashboard(data) {
+            document.getElementById('dashboardLoading').classList.add('hidden');
+            document.getElementById('dashboardError').classList.add('hidden');
+            document.getElementById('dashboardContent').classList.remove('hidden');
+
+            const analytics = data.analytics || {};
+            const totals = analytics.totals || {};
+            const kpis = analytics.kpis || {};
+            document.getElementById('dashDays').innerText = data.days || analytics.days || 90;
+            document.getElementById('dashTotalRegistros').innerText = totals.total || 0;
+            document.getElementById('dashTotalFito').innerText = totals.fito || 0;
+            document.getElementById('dashTotalLaboratorio').innerText = totals.laboratorio || 0;
+            document.getElementById('dashTotalAdubacao').innerText = totals.adubacao || 0;
+            document.getElementById('dashSetoresAtivos').innerText = kpis.setoresAtivos || 0;
+            document.getElementById('dashProdutosUnicos').innerText = kpis.produtosUnicos || 0;
+            document.getElementById('dashLitrosLab').innerText = formatNumber(kpis.litrosMultiplicados || 0) + ' L';
+            document.getElementById('dashTempoMedio').innerText = formatNumber(kpis.tempoMedioAplicacaoMin || 0) + ' min';
+
+            renderRankingBlock('dashTopSetores', analytics.topSetores || [], 'setor', 'total', function(item) {
+                return 'Fito: ' + (item.fito || 0) + ' | Adubação: ' + (item.adubacao || 0);
+            });
+            renderRankingBlock('dashSemanas', analytics.porSemana || [], 'semana', 'total', function(item) {
+                return 'F: ' + (item.fito || 0) + ' | L: ' + (item.laboratorio || 0) + ' | A: ' + (item.adubacao || 0);
+            });
+            renderRankingBlock('dashTopProdutos', analytics.topProdutos || [], 'produto', 'total');
+            renderRankingBlock('dashTiposDefensivos', analytics.defensivosTipos || [], 'tipo', 'total');
+            renderRankingBlock('dashLaboratorioProdutos', analytics.laboratorioProdutos || [], 'produto', 'litros', function(item) {
+                return 'Lotes: ' + (item.total || 0);
+            }, ' L');
+            renderRankingBlock('dashAdubacaoMetodos', analytics.adubacaoMetodos || [], 'metodo', 'total');
+
+            const rows = analytics.recent || [];
+            const tbody = document.getElementById('dashRecentRows');
+            if (!rows.length) {
+                tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Sem registros no período.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = rows.map(function(row) {
+                return '<tr class="border-t border-slate-100">' +
+                    '<td class="p-2">' + escapeHtml(row.data || '-') + '</td>' +
+                    '<td class="p-2">' + escapeHtml(row.tipo || '-') + '</td>' +
+                    '<td class="p-2">' + escapeHtml(row.local || '-') + '</td>' +
+                    '<td class="p-2">' + escapeHtml(row.setor || '-') + '</td>' +
+                    '<td class="p-2">' + escapeHtml(row.responsavel || '-') + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
+
+        function renderRankingBlock(containerId, items, labelKey, valueKey, subtitleFn, suffix) {
+            const el = document.getElementById(containerId);
+            if (!items.length) {
+                el.innerHTML = '<div class="text-slate-400 text-xs">Sem dados no período.</div>';
+                return;
+            }
+
+            const max = Math.max.apply(null, items.map(function(i) { return Number(i[valueKey] || 0); }));
+            el.innerHTML = items.map(function(item) {
+                const value = Number(item[valueKey] || 0);
+                const width = max > 0 ? Math.max(8, Math.round((value / max) * 100)) : 8;
+                const subtitle = subtitleFn ? subtitleFn(item) : '';
+                return '<div>' +
+                    '<div class="flex items-center justify-between mb-1">' +
+                    '<span class="font-semibold text-slate-700">' + escapeHtml(item[labelKey] || '-') + '</span>' +
+                    '<span class="font-bold text-slate-800">' + formatNumber(value) + (suffix || '') + '</span>' +
+                    '</div>' +
+                    '<div class="w-full bg-slate-200 rounded-full h-1.5"><div class="bg-slate-600 h-1.5 rounded-full" style="width:' + width + '%"></div></div>' +
+                    (subtitle ? '<div class="text-[10px] text-slate-500 mt-1">' + escapeHtml(subtitle) + '</div>' : '') +
+                    '</div>';
+            }).join('');
+        }
+
+        function formatNumber(value) {
+            return Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+        }
+
+        function escapeHtml(value) {
+            return String(value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
 
         function clearBlockForm(clearAll = false) {
-            if (clearAll) { document.getElementById('partner').selectedIndex=0; resetCustomField('requestor','requestor-custom-div','otherRequestorInput','José Márcio'); resetCustomField('applicator','applicator-custom-div','otherApplicatorInput',''); ['startTime','endTime','totalDuration'].forEach(id=>document.getElementById(id).value=''); updateGlobalState(); }
+            if (clearAll) { document.getElementById('partner').selectedIndex=0; resetCustomField('requestor','requestor-custom-div','otherRequestorInput','Guilherme Ramos'); resetCustomField('applicator','applicator-custom-div','otherApplicatorInput',''); ['startTime','endTime','totalDuration'].forEach(id=>document.getElementById(id).value=''); updateGlobalState(); }
             ['blockId','otherCropInput','targetPestInput','cycle','totalPlants','syrupVolume','phValue','notes','finalProduct','multiLiters','reactorDays','adubacaoStart','adubacaoEnd','adubacaoDuration'].forEach(id=>{if(document.getElementById(id)) document.getElementById(id).value='';});
             ['crop', 'blockSelect', 'targetPestSelect', 'adubacaoMethod'].forEach(id=>{if(document.getElementById(id)) document.getElementById(id).selectedIndex=0;});
             ['crop-custom-div'].forEach(id=>{if(document.getElementById(id)) document.getElementById(id).classList.add('hidden');});
@@ -702,29 +1569,31 @@
             
             handleCropChange(); document.getElementById('productsContainer').innerHTML = ''; addProductRow(); 
             if (appData.length) document.querySelector(`input[name="recordTypeRadio"][value="${appData[0].recordType||'Fito'}"]`).checked = true; toggleFormType(true);
-            ['crop','otherCropInput','blockId','blockSelect','targetPestInput','syrupVolume','finalProduct','multiLiters','reactorDays','adubacaoMethod','adubacaoStart','adubacaoEnd'].forEach(id=>toggleError(id, false));
+            ['crop','otherCropInput','blockId','blockSelect','targetPestInput','totalPlants','syrupVolume','finalProduct','multiLiters','reactorDays','adubacaoMethod','adubacaoStart','adubacaoEnd'].forEach(id=>toggleError(id, false));
             editingIndex = -1; document.getElementById('formContainer').classList.remove('border-blue-300', 'ring-2', 'ring-blue-100'); lucide.createIcons();
         }
 
         function addItem(e) {
             e.preventDefault();
             const recType = getRecordType(), sO = getFormStateObject(); let isValid = true;
-            if (editingIndex >= 0 ? appData.filter((_, idx) => idx !== editingIndex)[0]?.recordType !== recType : appData[0]?.recordType !== recType && appData.length) return showMessageModal('Erro', 'Tipos não podem ser misturados.', 'error');
+            const baseRecords = editingIndex >= 0 ? appData.filter((_, idx) => idx !== editingIndex) : appData;
+            if (baseRecords.length && baseRecords[0]?.recordType !== recType) return showMessageModal('Erro', 'Tipos não podem ser misturados.', 'error');
             if (!validateHeader()) { document.getElementById('generalDataCard').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
 
             const chk = (id, cond = true) => { if(!cond) return true; const v = sO[id] || (document.getElementById(id)?document.getElementById(id).value:''); toggleError(id, !v); if(!v) isValid = false; return !!v; };
             if (recType === 'Fito' || recType === 'Adubacao') {
                 const isC = document.getElementById('crop').classList.contains('hidden'); chk(isC ? 'otherCropInput' : 'crop');
                 const isB = !document.getElementById('blockSelect').classList.contains('hidden'); chk(isB ? 'blockSelect' : 'blockId');
+                chk('totalPlants');
                 if (recType === 'Fito') { chk('targetPestInput'); chk('syrupVolume'); } 
                 else { chk('adubacaoMethod'); chk('adubacaoStart'); chk('adubacaoEnd'); }
             } else { chk('finalProduct'); chk('multiLiters'); chk('reactorDays'); }
 
             const pList = [];
             document.querySelectorAll('.product-row').forEach(row => {
-                const sP = row.querySelector('.prod-name-select'), cP = row.querySelector('.prod-name-custom-input'), sT = row.querySelector('.prod-type-select'), cT = row.querySelector('.prod-type-custom-input'), dI = row.querySelector('.prod-dose-input');
-                let n = sP.classList.contains('hidden') ? cP.value.trim() : sP.value, t = sT ? (sT.classList.contains('hidden') ? cT.value.trim() : sT.value) : "Matéria-Prima", d = dI.value.trim();
-                if (!n) { (sP.classList.contains('hidden') ? cP : sP).classList.add('border-red-500'); isValid = false; }
+                const pI = row.querySelector('.prod-name-input'), sT = row.querySelector('.prod-type-select'), cT = row.querySelector('.prod-type-custom-input'), dI = row.querySelector('.prod-dose-input');
+                let n = (pI?.value || '').trim(), t = sT ? (sT.classList.contains('hidden') ? cT.value.trim() : sT.value) : "Matéria-Prima", d = dI.value.trim();
+                if (!n) { pI.classList.add('border-red-500'); isValid = false; }
                 if (recType !== 'Multiplicacao' && !t) { (sT.classList.contains('hidden') ? cT : sT).classList.add('border-red-500'); isValid = false; }
                 if (!d) { dI.classList.add('border-red-500'); isValid = false; }
                 if (n && d) pList.push({ name: n, type: t, dose: d, unit: row.querySelector('.prod-unit-input').value });
@@ -737,19 +1606,20 @@
             if (editingIndex >= 0) { appData[editingIndex] = sO; editingIndex = -1; if(lastFormState){ populateForm(lastFormState); lastFormState = null; document.getElementById('formContainer').classList.remove('border-blue-300', 'ring-2', 'ring-blue-100'); } else clearBlockForm(); } 
             else appData.push(sO);
 
+            refreshApplicatorOptions();
             saveToStorage(); renderReport(); renderList();
             if (editingIndex === -1 && !lastFormState) { const f = document.getElementById(recType==='Multiplicacao'?'multiLiters':(document.getElementById('blockSelect').classList.contains('hidden')?'blockId':'blockSelect')); if(f){f.focus(); if(f.select) f.select();} }
         }
 
         function editItem(index) { lastFormState = getFormStateObject(); populateForm(appData[index]); editingIndex = index; const f = document.getElementById('formContainer'), btn = document.getElementById('submitBtn'); document.getElementById('formTitle').innerHTML = '<i data-lucide="pencil" class="text-blue-600"></i> Editando Registro'; btn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> <span>Salvar Alterações</span>'; btn.className = "w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-all flex justify-center items-center gap-2 mt-4 active:scale-95"; f.classList.add('border-blue-300', 'ring-2', 'ring-blue-100'); f.scrollIntoView({ behavior: 'smooth', block: 'center' }); lucide.createIcons(); }
-        function removeItem(index) { if (editingIndex === index) { editingIndex = -1; clearBlockForm(); } appData.splice(index, 1); saveToStorage(); if (!appData.length) { document.querySelector('input[name="recordTypeRadio"][value="Fito"]').checked = true; toggleFormType(true); } renderReport(); renderList(); }
+        function removeItem(index) { if (editingIndex === index) { editingIndex = -1; clearBlockForm(); } appData.splice(index, 1); refreshApplicatorOptions(); saveToStorage(); if (!appData.length) { document.querySelector('input[name="recordTypeRadio"][value="Fito"]').checked = true; toggleFormType(true); } renderReport(); renderList(); }
 
         function renderHeaderAndSummary() {
             document.getElementById('operationalSummary').classList.remove('hidden');
             const rType = appData[0]?.recordType || getRecordType(), reqL = rType==='Multiplicacao'?'Solicitante':'Solicitante', appL = rType==='Multiplicacao'?'Responsável':'Aplicador';
             let tHtml = "";
-            if (rType !== 'Multiplicacao') tHtml = `<div class="text-right w-1/3"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-1">Tempo Operação</span><span class="font-bold text-slate-700 text-[10px]">${rType==='Adubacao' ? 'Por Setor/Bloco' : (globalInfo.startTime ? `Início: ${globalInfo.startTime}` + (globalInfo.endTime ? ` às ${globalInfo.endTime} (${globalInfo.duration})` : '') : 'Não informado')}</span></div>`;
-            document.getElementById('operationalSummary').innerHTML = `<div class="flex flex-col gap-2 text-xs"><div class="flex justify-between items-start border-b border-slate-200 pb-2"><div class="flex flex-col gap-1 ${rType==='Multiplicacao'?'w-full':'w-2/3'}"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Responsáveis</span><div class="flex flex-col sm:flex-row gap-2 sm:gap-4"><span class="text-slate-600 font-medium text-[10px]">${reqL}: <b class="text-slate-800">${globalInfo.requestor||'-'}</b></span><span class="text-slate-600 font-medium text-[10px]">${appL}: <b class="text-slate-800">${globalInfo.applicator||'-'}</b></span></div></div>${tHtml}</div></div>`;
+            if (rType !== 'Multiplicacao') tHtml = `<div class="text-right w-1/3"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider block mb-1">Tempo Operação</span><span class="font-bold text-slate-700 text-[9px] whitespace-nowrap">${rType==='Adubacao' ? 'Por Setor/Bloco' : (globalInfo.startTime ? `Início: ${globalInfo.startTime}` + (globalInfo.endTime ? ` às ${globalInfo.endTime} (${globalInfo.duration})` : '') : 'Não informado')}</span></div>`;
+            document.getElementById('operationalSummary').innerHTML = `<div class="flex flex-col gap-2 text-xs"><div class="flex justify-between items-start border-b border-slate-200 pb-2"><div class="flex flex-col gap-1 ${rType==='Multiplicacao'?'w-full':'w-2/3'}"><span class="text-[9px] uppercase font-bold text-slate-400 tracking-wider">Responsáveis</span><div class="flex flex-col gap-1"><span class="text-slate-600 font-medium text-[10px]">${reqL}: <b class="text-slate-800">${globalInfo.requestor||'-'}</b></span><span class="text-slate-600 font-medium text-[10px]">${appL}: <b class="text-slate-800">${globalInfo.applicator||'-'}</b></span></div></div>${tHtml}</div></div>`;
         }
 
         function renderList() {
@@ -776,15 +1646,15 @@
             if (!dD.length) { cont.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs italic leading-relaxed h-full flex flex-col items-center justify-center"><i data-lucide="clipboard-list" class="mb-2 w-8 h-8 opacity-20"></i><span>Adicione registros.</span></div>`; ft.innerHTML = ''; return; }
             
             dD.sort((a,b) => (a.block||'').localeCompare(b.block||'', undefined, {numeric: true})).forEach(i => {
-                const rT = i.recordType || 'Fito', lC = i.crop?.toLowerCase().includes('pepino') ? 'Setor' : 'Bloco', cS = i.cycle ? ` (Ciclo ${i.cycle})` : '', pS = i.plants ? ` <span class="text-xs font-normal text-slate-500">(${i.plants} ptas)</span>` : '';
+                const rT = i.recordType || 'Fito', lC = i.crop?.toLowerCase().includes('pepino') ? 'Setor' : 'Bloco', cS = i.cycle ? ` (Ciclo ${i.cycle})` : '', pS = i.plants ? ` <span class="text-xs font-normal text-slate-500">(${i.plants} Plantas)</span>` : '';
                 let pHtml = i.products?.length ? `<div class="mt-2 space-y-1">${i.products.map(p => {
                     let tC = "text-slate-400"; if(rT==='Adubacao') tC = p.type==='Orgânico'||p.type==='Esterco'?'text-emerald-700':(p.type==='Mineral'?'text-amber-600':'text-blue-600'); else if(rT==='Fito') tC = ['Inseticidas','Fungicidas','Herbicidas','Acaricidas','Nematicidas','Bactericidas','Rodenticidas','Desfolhantes','Químico'].includes(p.type)?'text-red-600':(p.type==='Biológico'||p.type==='Natural'||p.type==='Repelente'?'text-green-600':(p.type==='Nutricional'?'text-blue-600':'text-amber-600'));
-                    return `<div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1 last:border-0"><div class="flex items-center gap-1"><span class="font-bold text-slate-700">• ${p.name}</span>${rT!=='Multiplicacao'?`<span class="text-[9px] uppercase font-bold ${tC}">[${p.type||'Geral'}]</span>`:''}</div><span class="font-medium text-slate-600">${p.dose} ${p.unit||''}</span></div>`;
+                    return `<div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1 last:border-0"><div class="flex items-center gap-1"><span class="font-bold text-slate-700">• ${p.name}</span>${rT!=='Multiplicacao'?`<span class="text-[9px] uppercase font-bold ${tC} border border-current/20 rounded px-1.5 py-0.5 bg-white/70">${p.type||'Geral'}</span>`:''}</div><span class="font-medium text-slate-600">${p.dose} ${p.unit||''}</span></div>`;
                 }).join('')}</div>` : '';
 
                 const bgs = { Multiplicacao: 'bg-emerald-50/30', Adubacao: 'bg-amber-50/20', Fito: '' }[rT], lbls = { Multiplicacao: 'Produtos Base', Adubacao: 'Adubos & Dosagens', Fito: 'Produtos & Dosagens' }[rT];
-                let midH = rT === 'Multiplicacao' ? `<div class="mt-2 flex justify-end items-center gap-3"><span class="text-[11px] font-extrabold text-emerald-600">Produzido: ${i.multiLiters} Litros</span></div>` : (rT === 'Adubacao' ? (i.adubacaoStart ? `<div class="mt-2 flex justify-start items-center gap-3 border-t border-amber-100 pt-2"><span class="text-[10px] font-bold text-amber-700 flex items-center gap-1">Horário: ${i.adubacaoStart} às ${i.adubacaoEnd} (${i.adubacaoDuration})</span></div>` : '') : `<div class="mt-2 flex justify-end items-center gap-3">${i.ph?`<span class="text-[10px] font-bold text-red-600">PH: ${i.ph}</span>`:''}<span class="text-[10px] font-bold text-blue-600">Volume Calda: ${i.volume} L</span></div>`);
-                let tH = rT === 'Multiplicacao' ? `<span class="text-sm font-bold text-emerald-700">${i.finalProduct||'Multiplicação'}</span><div class="text-xs font-bold text-emerald-600">Aeração: ${i.reactorDays} dias</div>` : `<span class="text-sm font-bold text-slate-700">${lC} ${i.block} • ${i.crop}${cS}${pS}</span><div class="text-xs font-bold text-slate-600">${rT==='Adubacao'?`Adubação ${i.adubacaoMethod?`(${i.adubacaoMethod})`:''}`:`<span class="text-orange-600 text-sm font-extrabold">Alvo:</span> ${i.target}`}</div>`;
+                let midH = rT === 'Multiplicacao' ? `<div class="mt-2 flex justify-end items-center gap-3"><span class="text-[11px] font-extrabold text-emerald-600">Produzido: ${i.multiLiters} Litros</span></div>` : (rT === 'Adubacao' ? (i.adubacaoStart ? `<div class="mt-2 flex justify-start items-center gap-3 border-t border-amber-100 pt-2"><span class="text-[10px] font-bold text-amber-700 flex items-center gap-1">Horário: ${i.adubacaoStart} às ${i.adubacaoEnd} (${i.adubacaoDuration})</span></div>` : '') : `<div class="mt-2 flex justify-end items-center gap-2">${i.ph?`<span class="text-[10px] font-bold text-red-600 border border-red-200 bg-red-50 rounded-md px-2 py-0.5">PH: ${i.ph}</span>`:''}<span class="text-[10px] font-bold text-blue-600 border border-blue-200 bg-blue-50 rounded-md px-2 py-0.5">Volume Calda: ${i.volume} L</span></div>`);
+                let tH = rT === 'Multiplicacao' ? `<span class="text-sm font-bold text-emerald-700">${i.finalProduct||'Multiplicação'}</span><div class="text-xs font-bold text-emerald-600">Aeração: ${i.reactorDays} dias</div>` : (rT === 'Adubacao' ? `<span class="text-sm font-bold text-slate-700">${i.crop} • ${lC} ${i.block}${cS}${pS}</span><div class="text-xs font-bold text-slate-600">Adubação ${i.adubacaoMethod?`(${i.adubacaoMethod})`:''}</div>` : `<div><span class="text-sm font-bold text-slate-700 block">${i.crop} • ${lC} ${i.block}${cS}${pS}</span><div class="text-xs font-bold text-slate-600 mt-1 inline-flex items-center gap-1 border border-orange-200 bg-orange-50 rounded-md px-2 py-0.5"><span class="text-orange-600 text-sm font-extrabold">Alvo:</span><span>${i.target}</span></div></div>`);
 
                 cont.innerHTML += `<div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0 ${bgs}"><div class="flex flex-col mb-2"><div class="flex items-start justify-between mt-1"><div class="w-full"><div class="flex justify-between items-center mb-2">${tH}</div><div class="${rT==='Fito'?'bg-slate-50/50':'bg-white shadow-sm'} rounded-lg border ${rT==='Multiplicacao'?'border-emerald-100':(rT==='Adubacao'?'border-amber-100':'border-slate-100')} p-2"><span class="text-[9px] font-bold ${rT==='Multiplicacao'?'text-emerald-600':(rT==='Adubacao'?'text-amber-600':'text-slate-400')} uppercase tracking-wider block mb-1 text-center">${lbls}</span>${pHtml}</div>${midH}</div></div>${i.notes?`<div class="mt-2 text-[10px] text-slate-400 italic border-l-2 ${rT==='Multiplicacao'?'border-emerald-200':(rT==='Adubacao'?'border-amber-100':'border-slate-200')} pl-2">Obs: ${i.notes}</div>`:''}</div></div>`;
             });
@@ -795,16 +1665,150 @@
 
         async function downloadImage() {
             const btnSpan = document.querySelector('button[onclick="showConfirmSendModal()"] span'), orig = btnSpan?.innerText; if (btnSpan) btnSpan.innerText = "Gerando Imagem...";
+            let reportCard = null, reportContent = null, prevCardStyle = null, prevContentStyle = null;
             try {
                 if (!getFilteredData().length) return showMessageModal('Atenção', 'Adicione registros.', 'error');
-                const canvas = await html2canvas(document.getElementById('report-card'), { scale: 5, useCORS: true, backgroundColor: '#ffffff', windowWidth: 480, onclone: (d) => { const e = d.getElementById('report-card'), c = d.getElementById('reportContent'); if(e){e.style.width='450px'; e.style.maxWidth='450px'; e.style.margin='0'; e.style.boxShadow='none'; e.style.borderRadius='0'; e.style.border='none';} if(c){c.style.height='auto'; c.style.overflow='visible'; c.style.maxHeight='none';} } });
-                const a = document.createElement('a'); a.href = canvas.toDataURL('image/png'); a.download = `Resumo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}_${globalInfo.partner||'Geral'}.png`; document.body.appendChild(a); a.click(); a.remove();
-            } catch (err) { showMessageModal('Erro', 'Falha ao gerar imagem: ' + err.message, 'error'); } finally { if (btnSpan) btnSpan.innerText = orig; }
+                reportCard = document.getElementById('report-card');
+                reportContent = document.getElementById('reportContent');
+                prevCardStyle = reportCard ? reportCard.getAttribute('style') : null;
+                prevContentStyle = reportContent ? reportContent.getAttribute('style') : null;
+
+                if (reportCard) {
+                    reportCard.style.width = '560px';
+                    reportCard.style.maxWidth = '560px';
+                    reportCard.style.margin = '0';
+                    reportCard.style.boxShadow = 'none';
+                    reportCard.style.borderRadius = '0';
+                    reportCard.style.border = 'none';
+                }
+                if (reportContent) {
+                    reportContent.style.height = 'auto';
+                    reportContent.style.overflow = 'visible';
+                    reportContent.style.maxHeight = 'none';
+                }
+
+                const dataUrl = await htmlToImage.toPng(reportCard, { pixelRatio: 5, cacheBust: true, backgroundColor: '#ffffff' });
+                const a = document.createElement('a'); a.href = dataUrl; a.download = `Resumo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}_${globalInfo.partner||'Geral'}.png`; document.body.appendChild(a); a.click(); a.remove();
+            } catch (err) { showMessageModal('Erro', 'Falha ao gerar imagem: ' + err.message, 'error'); } finally {
+                if (reportCard) {
+                    if (prevCardStyle === null) reportCard.removeAttribute('style');
+                    else reportCard.setAttribute('style', prevCardStyle);
+                }
+                if (reportContent) {
+                    if (prevContentStyle === null) reportContent.removeAttribute('style');
+                    else reportContent.setAttribute('style', prevContentStyle);
+                }
+                if (btnSpan) btnSpan.innerText = orig;
+            }
         }
 
         async function sendToAppsScript(dataArray) {
             if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'SUA_URL_DO_APPS_SCRIPT_AQUI') return;
             try { await fetch(APPS_SCRIPT_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(dataArray.map(i => ({ ...i, timestamp: new Date().toLocaleString('pt-BR') }))) }); console.log("Enviado com sucesso!"); } catch (err) { console.error("Erro ao enviar:", err); }
+        }
+
+        async function getOfflineSuggestion() {
+            const dashboardTarget = (document.getElementById('dashboardTargetSelect')?.value || '').trim();
+            const formTarget = (document.getElementById('targetPestInput')?.value || '').trim();
+            const target = dashboardTarget || formTarget;
+            const culture = (document.getElementById('assistantCultureSelect')?.value || '').trim();
+            const cycle = (document.getElementById('assistantCycleSelect')?.value || '').trim();
+            const sector = (document.getElementById('assistantSectorSelect')?.value || '').trim();
+            const box = document.getElementById('offlineSuggestionBox');
+            if (!target) return showMessageModal('Atenção', 'Informe um alvo antes de consultar o histórico técnico.', 'error');
+            if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL === 'SUA_URL_DO_APPS_SCRIPT_AQUI') return showMessageModal('Atenção', 'URL do Apps Script não configurada.', 'error');
+
+            box.classList.remove('hidden');
+            box.innerHTML = '<div class="flex items-center gap-2 text-slate-500"><span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span><span>Buscando recomendações no histórico...</span></div>';
+            try {
+                const query = [
+                    'action=suggest',
+                    'target=' + encodeURIComponent(target),
+                    'culture=' + encodeURIComponent(culture),
+                    'cycle=' + encodeURIComponent(cycle),
+                    'sector=' + encodeURIComponent(sector)
+                ].join('&');
+                const res = await fetch(APPS_SCRIPT_URL + '?' + query, { method: 'GET' });
+                if (!res.ok) throw new Error('Falha na consulta (' + res.status + ')');
+                const data = await res.json();
+                if (data.status !== 'success') throw new Error(data.message || 'Resposta inválida');
+                const list = data.suggestions || [];
+                const backendContext = data.context || {};
+                const totalUsos = list.reduce((acc, item) => acc + (item.usos || 0), 0);
+                if (!list.length) {
+                    box.innerHTML = '<div class="rounded-lg border border-amber-200 bg-amber-50 p-2 text-amber-800">Sem histórico para este alvo com os filtros selecionados.</div>';
+                    return;
+                }
+                let context = computeAssistantContextFallback(target, culture, cycle, sector);
+                const hasLocalContext = context && (
+                    Number(context.volumeCaldaMedio || 0) > 0 ||
+                    Number(context.plantasMedias || 0) > 0 ||
+                    Number(context.usosComVolume || 0) > 0 ||
+                    Number(context.usosComPlantas || 0) > 0
+                );
+                if (!hasLocalContext) context = backendContext;
+                const filterTags = [
+                    culture ? `Cultura: ${escapeHtml(culture)}` : '',
+                    cycle ? `Ciclo: ${escapeHtml(cycle)}` : '',
+                    sector ? `Setor: ${escapeHtml(sector)}` : ''
+                ].filter(Boolean);
+                box.innerHTML =
+                    '<div class="rounded-xl border border-sky-200 bg-gradient-to-r from-sky-50 to-white p-3 mb-3">' +
+                        '<div class="text-[10px] uppercase font-bold tracking-wide text-sky-700 mb-1">Resposta do Assistente</div>' +
+                        '<div class="text-sm font-extrabold text-slate-800">Alvo analisado: ' + escapeHtml(target) + '</div>' +
+                        '<div class="text-[11px] text-slate-600 mt-1">Baseado no histórico local: <b>' + totalUsos + ' uso(s)</b> encontrados.</div>' +
+                        '<div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-2">' +
+                            '<div class="rounded-lg border border-slate-200 bg-white p-2">' +
+                                '<div class="text-[10px] text-slate-500 uppercase font-bold">Calda</div>' +
+                                '<div class="text-sm font-extrabold text-slate-800">' + (context.volumeCaldaMedio || 0) + ' L</div>' +
+                                '<div class="text-[10px] text-slate-500">' + (context.usosComVolume || 0) + ' registro(s) com volume</div>' +
+                            '</div>' +
+                            '<div class="rounded-lg border border-slate-200 bg-white p-2">' +
+                                '<div class="text-[10px] text-slate-500 uppercase font-bold">Plantas</div>' +
+                                '<div class="text-sm font-extrabold text-slate-800">' + Number(context.plantasMedias || 0).toLocaleString('pt-BR') + '</div>' +
+                                '<div class="text-[10px] text-slate-500">' + (context.usosComPlantas || 0) + ' registro(s) com plantas</div>' +
+                            '</div>' +
+                            '<div class="rounded-lg border border-slate-200 bg-white p-2">' +
+                                '<div class="text-[10px] text-slate-500 uppercase font-bold">Relação técnica</div>' +
+                                '<div class="text-sm font-extrabold text-slate-800">' + (context.litrosPor100Plantas || 0) + ' L/100 plantas</div>' +
+                                '<div class="text-[10px] text-slate-500">' + (context.usosComVolumeEPlantas || 0) + ' registro(s) combinados</div>' +
+                            '</div>' +
+                        '</div>' +
+                        (filterTags.length ? '<div class="mt-2 flex flex-wrap gap-1">' + filterTags.map(tag => '<span class="px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-[10px] text-slate-600">' + tag + '</span>').join('') + '</div>' : '') +
+                    '</div>' +
+                    '<div class="space-y-2">' +
+                        list.map((s, i) => {
+                            const conf = Math.max(20, Math.min(95, Math.round((s.usos / totalUsos) * 100)));
+                            const hist = getDoseHistoryForProduct(target, culture, cycle, sector, s.produto, s.tipo, s.unidade);
+                            const ultimaDose = hist.length ? `${formatPtBrNumberText(hist[0].dose)} ${hist[0].unidade}` : null;
+                            return '<div class="rounded-lg border border-slate-200 bg-white p-2">' +
+                                '<div class="flex items-start justify-between gap-2">' +
+                                    '<div><div class="text-[11px] font-extrabold text-slate-800">#' + (i + 1) + ' ' + escapeHtml(s.produto) + '</div>' +
+                                    '<div class="text-[10px] text-slate-500">Tipo: ' + escapeHtml(s.tipo) + '</div></div>' +
+                                    '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full border border-blue-200 bg-blue-50 text-blue-700">' + conf + '% aderência</span>' +
+                                '</div>' +
+                                '<div class="mt-2 text-[11px] text-slate-700">Última dose utilizada: <b>' + escapeHtml(ultimaDose || '-') + '</b></div>' +
+                                '<div class="mt-1 text-[10px] text-slate-500">Média histórica: ' + s.doseMedia + ' ' + escapeHtml(s.unidade) + ' • ' + s.usos + ' uso(s)</div>' +
+                                '<details class="mt-2 rounded-md border border-slate-200 bg-slate-50">' +
+                                    '<summary class="cursor-pointer px-2 py-1.5 text-[10px] font-bold text-slate-700">Ver histórico completo de doses (' + hist.length + ')</summary>' +
+                                    '<div class="px-2 pb-2 pt-1 space-y-1 max-h-40 overflow-y-auto">' +
+                                        (hist.length ? hist.map((h, idx) =>
+                                            '<div class="text-[10px] text-slate-700 border-b border-slate-200 pb-1">' +
+                                                '<b>#' + (idx + 1) + '</b> ' + escapeHtml(formatPtBrNumberText(h.dose)) + ' ' + escapeHtml(h.unidade) +
+                                                ' • Data: ' + escapeHtml(formatHistoryDate(h.data)) +
+                                                ' • Setor: ' + escapeHtml(h.setor) +
+                                                ' • Plantas: ' + escapeHtml(formatPtBrNumberText(h.plantas)) +
+                                                ' • Calda: ' + escapeHtml(formatPtBrNumberText(h.calda)) + ' L' +
+                                            '</div>'
+                                        ).join('') : '<div class="text-[10px] text-slate-500">Sem histórico detalhado disponível.</div>') +
+                                    '</div>' +
+                                '</details>' +
+                            '</div>';
+                        }).join('') +
+                    '</div>';
+            } catch (err) {
+                box.innerHTML = '<span class="text-red-600">Erro ao consultar histórico técnico: ' + escapeHtml(err.message) + '</span>';
+            }
         }
     </script>
 </body>
