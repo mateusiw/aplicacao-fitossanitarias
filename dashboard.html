@@ -154,6 +154,63 @@
 
       </div>
 
+      <div id="laboratorioPanel" class="hidden space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Total Multiplicações</div><div id="labTotalMultiplicacoes" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Litros Produzidos</div><div id="labLitrosProduzidos" class="text-2xl font-extrabold text-slate-800">0 L</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Produtos Produzidos</div><div id="labProdutosProduzidos" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Média Dias Aeração</div><div id="labMediaAreacao" class="text-2xl font-extrabold text-slate-800">0</div></div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-9 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Produção por Produto Final (Litros)</h3>
+            <div class="h-[360px]">
+              <canvas id="labChartProdutoFinalLitros" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-3 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Participação por Produto Final</h3>
+            <div class="h-[360px] flex items-center">
+              <canvas id="labChartProdutoFinalPizza" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-8 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Evolução da Produção (Data x Litros)</h3>
+            <div class="h-[360px]">
+              <canvas id="labChartEvolucaoProducao" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-4 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Consumo de Produtos Base (Doses)</h3>
+            <div class="h-[360px]">
+              <canvas id="labChartConsumoBaseDoses" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+          <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Produto Final com Mais Dias de Aeração</h3>
+          <div class="h-[360px]">
+            <canvas id="labChartAreacaoPorProdutoFinal" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Total Produzido</h3>
+          <p class="chart-desc">Detalha o total produzido por produto final, em litros, no período selecionado.</p>
+          <div class="overflow-auto max-h-[260px]">
+            <table class="w-full text-xs">
+              <thead class="text-slate-500"><tr><th class="text-left py-1">Produto Final</th><th class="text-right py-1">Total</th></tr></thead>
+              <tbody id="labTotalProduzidoBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div id="genericPanel" class="space-y-4">
       <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
         <div class="bg-white border border-slate-200 rounded-lg p-3"><div class="text-[10px] uppercase font-bold text-slate-400">Total Aplicações</div><div id="dashTotalRegistros" class="text-xl font-extrabold">0</div></div>
@@ -566,10 +623,17 @@
       ensureChartDescriptions();
       if (activeType === 'Defensivos') {
         document.getElementById('defensivosPanel').classList.remove('hidden');
+        document.getElementById('laboratorioPanel').classList.add('hidden');
         document.getElementById('genericPanel').classList.add('hidden');
         renderDefensivosPanel(analytics);
+      } else if (activeType === 'Laboratório') {
+        document.getElementById('defensivosPanel').classList.add('hidden');
+        document.getElementById('laboratorioPanel').classList.remove('hidden');
+        document.getElementById('genericPanel').classList.add('hidden');
+        renderLaboratorioPanel(analytics);
       } else {
         document.getElementById('defensivosPanel').classList.add('hidden');
+        document.getElementById('laboratorioPanel').classList.add('hidden');
         document.getElementById('genericPanel').classList.remove('hidden');
         document.getElementById('dashTotalRegistros').innerText = analytics.totals.total || 0;
         document.getElementById('dashTotalFito').innerText = analytics.totals.fito || 0;
@@ -603,7 +667,12 @@
         chartSolicitante: 'Mostra quem mais solicitou aplicações no período.',
         chartAplicador: 'Mostra quem mais executou aplicações no período.',
         chartUnidade: 'Mostra a distribuição das unidades de dose registradas.',
-        chartAlvo: 'Compara os alvos mais frequentes nas aplicações.'
+        chartAlvo: 'Compara os alvos mais frequentes nas aplicações.',
+        labChartProdutoFinalLitros: 'Compara os litros produzidos por produto final.',
+        labChartProdutoFinalPizza: 'Mostra o percentual de participação por produto final.',
+        labChartEvolucaoProducao: 'Mostra a evolução diária dos litros produzidos.',
+        labChartConsumoBaseDoses: 'Mostra o consumo de doses por produto base.',
+        labChartAreacaoPorProdutoFinal: 'Compara a média de dias de aeração por produto final.'
       };
       Object.keys(descByCanvasId).forEach((canvasId) => {
         const canvas = document.getElementById(canvasId);
@@ -663,6 +732,86 @@
       renderLine('defChartPh', def.phSerie.labels, def.phSerie.values, 'pH médio', { fillContainer: true });
       renderConsumoTable(def.consumoProdutos);
       renderRecent(def.recent.slice(0, 10));
+    }
+
+    function renderLaboratorioPanel(analytics) {
+      const lab = buildLaboratorioAnalytics(analytics.records || []);
+      document.getElementById('labTotalMultiplicacoes').innerText = formatNumber(lab.totalMultiplicacoes);
+      document.getElementById('labLitrosProduzidos').innerText = formatNumber(lab.litrosProduzidos) + ' L';
+      document.getElementById('labProdutosProduzidos').innerText = formatNumber(lab.produtosProduzidos);
+      document.getElementById('labMediaAreacao').innerText = formatNumber(lab.mediaDiasAreacao);
+
+      renderBar('labChartProdutoFinalLitros', lab.producaoPorProdutoFinal, 'produto', 'litros', 'Litros', { fillContainer: true });
+      renderDoughnut('labChartProdutoFinalPizza', lab.producaoPorProdutoFinal, 'produto', 'litros');
+      renderLine('labChartEvolucaoProducao', lab.evolucaoProducao.labels, lab.evolucaoProducao.values, 'Litros', { fillContainer: true });
+      renderBar('labChartConsumoBaseDoses', lab.consumoProdutosBase, 'produtoBase', 'doseTotal', 'Doses', { fillContainer: true });
+      renderBar('labChartAreacaoPorProdutoFinal', lab.areacaoPorProdutoFinal, 'produto', 'diasMedios', 'Dias', { fillContainer: true });
+      renderTotalProduzidoTable(lab.producaoPorProdutoFinal);
+    }
+
+    function buildLaboratorioAnalytics(records) {
+      const byProdutoFinal = {};
+      const byDateLitros = {};
+      const byProdutoBase = {};
+      const byProdutoFinalAreacao = {};
+      const produtosFinaisSet = {};
+      let totalLitros = 0;
+      let totalDiasAreacao = 0;
+      let totalRegistrosComAreacao = 0;
+
+      records.forEach(rec => {
+        const produtoFinal = (rec.produtoFinal || '').toString().trim() || 'Não informado';
+        const litros = Number(rec.litrosMultiplicados || 0);
+        const data = rec.data || '-';
+        const diasAreacao = toNumClient(rec?.rawRows?.[0]?.['Dias Aeração']);
+
+        if (!byProdutoFinal[produtoFinal]) byProdutoFinal[produtoFinal] = { produto: produtoFinal, litros: 0, total: 0 };
+        byProdutoFinal[produtoFinal].litros += litros;
+        byProdutoFinal[produtoFinal].total += 1;
+        produtosFinaisSet[produtoFinal] = true;
+        totalLitros += litros;
+
+        byDateLitros[data] = (byDateLitros[data] || 0) + litros;
+
+        if (!Number.isNaN(diasAreacao) && diasAreacao > 0) {
+          totalDiasAreacao += diasAreacao;
+          totalRegistrosComAreacao += 1;
+          if (!byProdutoFinalAreacao[produtoFinal]) byProdutoFinalAreacao[produtoFinal] = { produto: produtoFinal, diasTotal: 0, total: 0 };
+          byProdutoFinalAreacao[produtoFinal].diasTotal += diasAreacao;
+          byProdutoFinalAreacao[produtoFinal].total += 1;
+        }
+
+        (rec.rawRows || []).forEach((row) => {
+          const produtoBase = (row['Produto Base'] || '').toString().trim();
+          const dose = toNumClient(row['Dose']);
+          if (!produtoBase || dose <= 0) return;
+          if (!byProdutoBase[produtoBase]) byProdutoBase[produtoBase] = { produtoBase, doseTotal: 0 };
+          byProdutoBase[produtoBase].doseTotal += dose;
+        });
+      });
+
+      const datePairs = Object.keys(byDateLitros).map((date) => ({ date, litros: byDateLitros[date] }));
+      datePairs.sort((a, b) => parseDateLabel(a.date) - parseDateLabel(b.date));
+
+      return {
+        totalMultiplicacoes: records.length,
+        litrosProduzidos: totalLitros,
+        produtosProduzidos: Object.keys(produtosFinaisSet).length,
+        mediaDiasAreacao: totalRegistrosComAreacao ? (totalDiasAreacao / totalRegistrosComAreacao) : 0,
+        producaoPorProdutoFinal: Object.keys(byProdutoFinal).map((k) => byProdutoFinal[k]).sort((a, b) => b.litros - a.litros).slice(0, 12),
+        evolucaoProducao: {
+          labels: datePairs.map((i) => i.date),
+          values: datePairs.map((i) => i.litros)
+        },
+        consumoProdutosBase: Object.keys(byProdutoBase).map((k) => byProdutoBase[k]).sort((a, b) => b.doseTotal - a.doseTotal).slice(0, 12),
+        areacaoPorProdutoFinal: Object.keys(byProdutoFinalAreacao)
+          .map((k) => ({
+            produto: byProdutoFinalAreacao[k].produto,
+            diasMedios: byProdutoFinalAreacao[k].total ? (byProdutoFinalAreacao[k].diasTotal / byProdutoFinalAreacao[k].total) : 0
+          }))
+          .sort((a, b) => b.diasMedios - a.diasMedios)
+          .slice(0, 12)
+      };
     }
 
     function buildAnalyticsFromRecords(records) {
@@ -931,6 +1080,18 @@
       '</tr>').join('');
     }
 
+    function renderTotalProduzidoTable(rows) {
+      const body = document.getElementById('labTotalProduzidoBody');
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="2" class="py-2 text-slate-400">Sem produção</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map(r => '<tr class="border-t border-slate-100">' +
+        '<td class="py-1">' + escapeHtml(r.produto) + '</td>' +
+        '<td class="py-1 text-right font-semibold">' + formatNumber(r.litros) + ' L</td>' +
+      '</tr>').join('');
+    }
+
     function formatDuration(min) {
       const m = Math.max(0, Number(min || 0));
       const h = Math.floor(m / 60);
@@ -939,7 +1100,15 @@
     }
 
     function toNumClient(v) {
-      const n = Number(String(v || '').replace(/\./g, '').replace(',', '.'));
+      const raw = String(v || '').trim();
+      if (!raw) return 0;
+      let normalized = raw;
+      if (raw.includes(',') && raw.includes('.')) {
+        normalized = raw.replace(/\./g, '').replace(',', '.');
+      } else if (raw.includes(',')) {
+        normalized = raw.replace(',', '.');
+      }
+      const n = Number(normalized);
       return Number.isNaN(n) ? 0 : n;
     }
 
