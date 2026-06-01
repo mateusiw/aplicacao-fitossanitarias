@@ -1,0 +1,1308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Analítico - SPG</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .ms-menu { display: none; }
+    .ms.open .ms-menu { display: block; }
+    .ms-option-only { opacity: 0; pointer-events: none; transition: opacity 0.15s ease; }
+    .ms-option:hover .ms-option-only { opacity: 1; pointer-events: auto; }
+    .def-header { background: linear-gradient(90deg, #0f3b22 0%, #0f6a39 45%, #174d2e 100%); }
+    .dash-label { color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .cal-dia { height: 36px; border-radius: 999px; font-size: 14px; color: #334155; transition: background-color .15s ease, color .15s ease; }
+    .cal-dia:hover { background: #f1f5f9; }
+    .dash-control { width: 100%; height: 38px; border: 1px solid #dbe3ee; border-radius: 12px; background-color: #ffffff; color: #1e293b; font-size: 14px; font-weight: 700; }
+    .chart-desc { margin-top: -4px; margin-bottom: 8px; color: #64748b; font-size: 11px; font-weight: 500; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+  <div class="w-full p-0 space-y-4">
+    <div id="dashboardTopControls" class="hidden bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap items-center justify-end gap-2">
+      <div class="flex items-center gap-2">
+        <div class="relative w-60">
+          <span id="dashPeriodLabel" class="hidden">-</span>
+          <label class="dash-label block mb-1">Período</label>
+          <button id="btnFiltroPeriodo" type="button" class="dash-control px-3 text-left flex items-center justify-between">
+            <span id="textoFiltroPeriodo" class="truncate">Período automático</span>
+            <span class="text-slate-400">⌄</span>
+          </button>
+        </div>
+        <button onclick="clearAllFilters()" class="px-3 py-2 bg-slate-100 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-200">Limpar Filtros</button>
+        <button onclick="loadDashboardData()" class="px-3 py-2 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-900">Atualizar</button>
+      </div>
+    </div>
+    <div id="calendarioPeriodo" class="hidden absolute left-4 top-4 z-[100] w-[min(820px,calc(100vw-2rem))] overflow-hidden rounded-[18px] border border-slate-200 bg-white shadow-2xl">
+      <div class="grid md:grid-cols-[1fr] xl:grid-cols-[180px_1fr]">
+            <div class="bg-slate-50 border-r border-slate-200 p-3 space-y-1">
+              <button type="button" data-periodo-atalho="hoje" class="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-white">Hoje <span class="text-slate-400">›</span></button>
+              <button type="button" data-periodo-atalho="ontem" class="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-white">Ontem <span class="text-slate-400">›</span></button>
+              <button type="button" data-periodo-atalho="7dias" class="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-white">Últimos 7 dias <span class="text-slate-400">›</span></button>
+              <button type="button" data-periodo-atalho="30dias" class="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-white">Últimos 30 dias <span class="text-slate-400">›</span></button>
+              <button type="button" data-periodo-atalho="mes" class="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-white">Este mês <span class="text-slate-400">›</span></button>
+              <button type="button" data-periodo-atalho="mespassado" class="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-white">Mês passado <span class="text-slate-400">›</span></button>
+              <button type="button" data-periodo-atalho="limpar" class="w-full flex justify-between items-center px-3 py-2 rounded-lg text-sm text-slate-700 hover:bg-white">Limpar <span class="text-slate-400">›</span></button>
+            </div>
+            <div class="p-4">
+              <div class="flex justify-between items-center mb-3">
+                <button id="btnMesAnterior" type="button" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600">‹</button>
+                <div class="text-xs uppercase font-bold text-slate-400">Selecione o período</div>
+                <button id="btnMesProximo" type="button" class="p-2 rounded-lg hover:bg-slate-100 text-slate-600">›</button>
+              </div>
+              <div id="calendarioMeses" class="grid md:grid-cols-2 gap-5"></div>
+              <div class="flex justify-end gap-2 border-t border-slate-200 mt-4 pt-3">
+                <button id="btnCancelarPeriodo" type="button" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:text-slate-900">Cancelar</button>
+                <button id="btnAplicarPeriodo" type="button" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-slate-950">Aplicar</button>
+              </div>
+            </div>
+      </div>
+    </div>
+
+    <div id="filtersCard" class="hidden bg-white border border-slate-200 rounded-xl p-4">
+      <h2 class="text-xs font-bold uppercase text-slate-500 mb-3">Filtros da Aba</h2>
+      <div id="dynamicFilters" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2"></div>
+    </div>
+
+    <div id="dashboardLoading" class="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-500">Carregando dados...</div>
+    <div id="dashboardError" class="hidden bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-700"></div>
+
+    <div id="dashboardContent" class="hidden space-y-4">
+      <div id="defensivosPanel" class="hidden space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Total de Aplicações</div><div id="defTotalAplicacoes" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Plantas Tratadas</div><div id="defPlantasTratadas" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Volume de Calda</div><div id="defVolumeAplicado" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Nº de Produtos</div><div id="defProdutosUtilizados" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Blocos Atendidos</div><div id="defBlocosAtendidos" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Tempo Total</div><div id="defTempoTotal" class="text-2xl font-extrabold text-slate-800">0h</div></div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-9 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Aplicações por Data</h3>
+            <div class="h-[360px]">
+              <canvas id="defChartData" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-3 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Aplicações por Semana</h3>
+            <div class="h-[360px] flex items-center">
+              <canvas id="defChartSemanaPizza" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-9 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Aplicações por Bloco/Setor</h3>
+            <div class="h-[360px]">
+              <canvas id="defChartBloco" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-3 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Alvos Tratados</h3>
+            <div class="h-[360px] flex items-center">
+              <canvas id="defChartAlvoPizza" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-9 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Produtos Mais Utilizados</h3>
+            <div class="h-[360px]">
+              <canvas id="defChartProdutosTop" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-3 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Distribuição Tipo Produto</h3>
+            <div class="h-[360px] flex items-center">
+              <canvas id="defChartTipoProduto" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-6 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start overflow-hidden">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Volume de Calda por Aplicação</h3>
+            <div class="h-[360px]">
+              <canvas id="defChartVolumeCalda" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-6 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start overflow-hidden">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">pH das Aplicações</h3>
+            <div class="h-[360px]">
+              <canvas id="defChartPh" class="w-full h-full"></canvas>
+            </div>
+            <span id="defPeriodoCard" class="hidden">-</span>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Consumo de Produtos</h3>
+          <p class="chart-desc">Detalha o total consumido por produto e tipo, incluindo unidade de medida registrada.</p>
+          <div class="overflow-auto max-h-[260px]">
+            <table class="w-full text-xs">
+              <thead class="text-slate-500"><tr><th class="text-left py-1">Produto</th><th class="text-left py-1">Tipo</th><th class="text-right py-1">Total</th></tr></thead>
+              <tbody id="defConsumoBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="genericPanel" class="space-y-4">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="bg-white border border-slate-200 rounded-lg p-3"><div class="text-[10px] uppercase font-bold text-slate-400">Total Aplicações</div><div id="dashTotalRegistros" class="text-xl font-extrabold">0</div></div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3"><div class="text-[10px] uppercase font-bold text-blue-500">Defensivos</div><div id="dashTotalFito" class="text-xl font-extrabold text-blue-700">0</div></div>
+        <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3"><div class="text-[10px] uppercase font-bold text-emerald-500">Laboratório</div><div id="dashTotalLaboratorio" class="text-xl font-extrabold text-emerald-700">0</div></div>
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-3"><div class="text-[10px] uppercase font-bold text-amber-500">Adubação</div><div id="dashTotalAdubacao" class="text-xl font-extrabold text-amber-700">0</div></div>
+        <div class="bg-violet-50 border border-violet-200 rounded-lg p-3"><div class="text-[10px] uppercase font-bold text-violet-500">Total ML</div><div id="dashTotalMl" class="text-xl font-extrabold text-violet-700">0</div></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-3"><h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Aplicações por Bloco/Setor</h3><canvas id="chartSetor" height="120"></canvas></div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3"><h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Aplicações por Ciclo</h3><canvas id="chartCiclo" height="120"></canvas></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-3"><h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Quem Solicitou</h3><canvas id="chartSolicitante" height="120"></canvas></div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3"><h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Quem Aplicou / Responsável</h3><canvas id="chartAplicador" height="120"></canvas></div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-3"><h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Unidade de Dosagem (kg/ml/L/outros)</h3><canvas id="chartUnidade" height="120"></canvas></div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3"><h3 class="text-xs font-bold uppercase text-slate-500 mb-2">Alvos Mais Tratados</h3><canvas id="chartAlvo" height="120"></canvas></div>
+      </div>
+
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div class="px-3 py-2 border-b border-slate-200 text-xs font-bold text-slate-600 uppercase">Últimas aplicações registradas</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead class="bg-slate-50 text-slate-600"><tr><th class="text-left p-2">Data</th><th class="text-left p-2">Tipo</th><th class="text-left p-2">Local</th><th class="text-left p-2">Setor</th><th class="text-left p-2">Responsável</th></tr></thead>
+            <tbody id="dashRecentRows"></tbody>
+          </table>
+        </div>
+      </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzRFds75AyGIDIgFd3N0TO-uFOowhhVoYA-VXg0hmWDODeT1c_FJroKPK526G7xIDGG/exec';
+    const chartStore = {};
+    const donutCenterTextPlugin = {
+      id: 'donutCenterText',
+      afterDraw(chart) {
+        if (chart.config.type !== 'doughnut') return;
+        const cfg = chart.config.options?.plugins?.donutCenterText || {};
+        if (!cfg || !cfg.enabled) return;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || !meta.data || !meta.data.length) return;
+
+        const cx = meta.data[0].x;
+        const cy = meta.data[0].y;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        ctx.fillStyle = '#64748b';
+        ctx.font = '600 11px Segoe UI';
+        ctx.fillText(cfg.label || 'Total', cx, cy - 10);
+
+        ctx.fillStyle = '#0f172a';
+        ctx.font = '800 18px Segoe UI';
+        ctx.fillText(String(cfg.value || 0), cx, cy + 10);
+        ctx.restore();
+      }
+    };
+    Chart.register(donutCenterTextPlugin);
+    let analyticsBase = null;
+    let currentDays = 90;
+    let activeFilters = {};
+    let activeType = 'Defensivos';
+    let selectedStart = '';
+    let selectedEnd = '';
+    let periodoDashboard = { inicio: "", fim: "" };
+    let periodoCalendarioTemp = { inicio: "", fim: "" };
+    let mesCalendarioDashboard = new Date();
+
+    const FILTER_CONFIG = {
+      Defensivos: [
+        { key: 'local', label: 'Local' },
+        { key: 'solicitante', label: 'Solicitante' },
+        { key: 'aplicador', label: 'Aplicador' },
+        { key: 'setor', label: 'Bloco/Setor' },
+        { key: 'ciclo', label: 'Ciclo' },
+        { key: 'alvos', label: 'Alvo' },
+        { key: 'produtos', label: 'Produtos' },
+        { key: 'tipos', label: 'Tipo de Produto' }
+      ],
+      'Adubação': [
+        { key: 'local', label: 'Local' },
+        { key: 'solicitante', label: 'Solicitante' },
+        { key: 'aplicador', label: 'Aplicador' },
+        { key: 'setor', label: 'Bloco/Setor' },
+        { key: 'ciclo', label: 'Ciclo' },
+        { key: 'alvos', label: 'Alvo' },
+        { key: 'produtos', label: 'Adubos' },
+        { key: 'tipos', label: 'Tipo de Adubo' },
+        { key: 'metodo', label: 'Método' }
+      ],
+      'Laboratório': [
+        { key: 'local', label: 'Local' },
+        { key: 'solicitante', label: 'Solicitante' },
+        { key: 'aplicador', label: 'Responsável' },
+        { key: 'produtoFinal', label: 'Produto Final' },
+        { key: 'produtoBase', label: 'Produto Base' }
+      ]
+    };
+
+    atualizarTextoPeriodoDashboard();
+
+    async function loadDashboardData() {
+      document.getElementById('dashboardLoading').classList.remove('hidden');
+      document.getElementById('dashboardContent').classList.add('hidden');
+      document.getElementById('dashboardError').classList.add('hidden');
+      try {
+        const q = '?start=' + encodeURIComponent(selectedStart) + '&end=' + encodeURIComponent(selectedEnd);
+        const res = await fetch(APPS_SCRIPT_URL + q, { method: 'GET' });
+        if (!res.ok) throw new Error('Falha ao buscar dados (' + res.status + ')');
+        const data = await res.json();
+        if (data.status !== 'success') throw new Error(data.message || 'Resposta inválida do Apps Script');
+        analyticsBase = data.analytics || {};
+        currentDays = data.days || 90;
+        document.getElementById('dashPeriodLabel').innerText = (data.periodStart || selectedStart) + ' a ' + (data.periodEnd || selectedEnd);
+        activeFilters = {};
+        onTypeChange();
+      } catch (err) {
+        document.getElementById('dashboardLoading').classList.add('hidden');
+        const el = document.getElementById('dashboardError');
+        el.textContent = 'Não foi possível carregar o dashboard. ' + err.message;
+        el.classList.remove('hidden');
+      }
+    }
+
+    function onTypeChange() {
+      sanitizeActiveFilters();
+      renderDynamicFilters();
+      applyAllFilters();
+    }
+
+    function setActiveType(type) {
+      activeType = type;
+      activeFilters = {};
+      updateTypeTabs();
+      onTypeChange();
+      notifyParentActiveType();
+    }
+    window.addEventListener('message', (event) => {
+      if (!event?.data) return;
+      if (event.data.type === 'dashboardAction') {
+        const action = String(event.data.action || '');
+        if (action === 'openPeriod') {
+          if (event.data.anchor) posicionarCalendarioNoAnchor(event.data.anchor);
+          alternarCalendarioPeriodo(true);
+        }
+        if (action === 'setPeriod') {
+          const inicio = String(event.data.inicio || '');
+          const fim = String(event.data.fim || '');
+          periodoDashboard = { inicio, fim };
+          selectedStart = inicio;
+          selectedEnd = fim;
+          atualizarTextoPeriodoDashboard();
+          loadDashboardData();
+        }
+        if (action === 'clearFilters') clearAllFilters();
+        if (action === 'refreshData') loadDashboardData();
+        return;
+      }
+      if (event.data.type !== 'setDashboardActiveType') return;
+      const type = String(event.data.activeType || '');
+      if (!type || !['Defensivos', 'Laboratório', 'Adubação'].includes(type)) return;
+      if (type === activeType) return;
+      setActiveType(type);
+    });
+    function notifyParentActiveType() {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'dashboardActiveType', activeType: activeType }, '*');
+      }
+    }
+
+    function updateTypeTabs() {
+      ['Defensivos', 'Laboratório', 'Adubação'].forEach(type => {
+        const btn = document.getElementById('tab-' + type);
+        if (!btn) return;
+        if (type === activeType) {
+          btn.className = 'px-3 py-2 text-xs font-bold rounded-lg bg-slate-800 text-white';
+        } else {
+          btn.className = 'px-3 py-2 text-xs font-bold rounded-lg text-slate-600 hover:bg-white';
+        }
+      });
+    }
+
+    function clearAllFilters() {
+      activeFilters = {};
+      renderDynamicFilters();
+      applyAllFilters();
+    }
+
+    function renderDynamicFilters() {
+      const type = activeType;
+      const card = document.getElementById('filtersCard');
+      const container = document.getElementById('dynamicFilters');
+      const rows = (analyticsBase?.allRecords || []).filter(r => (r.tipo || '') === type);
+      const config = FILTER_CONFIG[type] || [];
+      if (!config.length) {
+        card.classList.add('hidden');
+        container.innerHTML = '';
+        return;
+      }
+      card.classList.remove('hidden');
+
+      container.innerHTML = config.map(cfg => {
+        const optionsRows = rows.filter(rec => matchesFiltersExceptKey(rec, cfg.key));
+        const options = getOptions(optionsRows, cfg.key);
+        const current = Array.isArray(activeFilters[cfg.key]) ? activeFilters[cfg.key] : [];
+        const selectedLabel = current.length
+          ? (current.length === 1 ? current[0] : (current.length + ' selecionados'))
+          : ('Todos os ' + cfg.label.toLowerCase());
+        return '<div>' +
+          '<label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">' + escapeHtml(cfg.label) + '</label>' +
+          '<div class="ms relative" data-key="' + escapeHtml(cfg.key) + '">' +
+            '<button type="button" onclick="toggleMultiSelect(event)" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white text-left flex items-center justify-between">' +
+              '<span class="truncate">' + escapeHtml(selectedLabel) + '</span>' +
+              '<span class="text-slate-400">▾</span>' +
+            '</button>' +
+            '<div class="ms-menu absolute z-30 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-56 overflow-auto">' +
+              '<label class="flex items-center gap-2 p-2 text-xs font-semibold text-slate-700 border-b border-slate-100">' +
+                '<input type="checkbox" ' + (current.length === 0 ? 'checked' : '') + ' onchange="toggleAllFilterOptions(event, \'' + escapeHtml(cfg.key) + '\')"> Todos os ' + escapeHtml(cfg.label.toLowerCase()) +
+              '</label>' +
+              options.map(op => '<label class="ms-option flex items-center justify-between gap-2 p-2 text-xs text-slate-700 hover:bg-slate-50">' +
+                '<span class="flex items-center gap-2">' +
+                  '<input type="checkbox" value="' + escapeHtml(op) + '" ' + (current.includes(op) ? 'checked' : '') + ' onchange="onMultiFilterChange(event, \'' + escapeHtml(cfg.key) + '\')"> ' + escapeHtml(op) +
+                '</span>' +
+                '<button type="button" onclick="selectOnlyFilterOption(event, \'' + escapeHtml(cfg.key) + '\', \'' + escapeHtml(op) + '\')" class="ms-option-only text-[11px] font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100 hover:bg-blue-100">Somente</button>' +
+              '</label>').join('') +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function matchesFiltersExceptKey(rec, ignoreKey) {
+      for (const key in activeFilters) {
+        if (key === ignoreKey) continue;
+        const vals = Array.isArray(activeFilters[key]) ? activeFilters[key] : [];
+        if (!vals.length) continue;
+        if (key === 'produtoBase') {
+          const bases = getProdutoBaseFromRaw(rec);
+          if (!vals.some(v => bases.includes(v))) return false;
+          continue;
+        }
+        const field = getFilterFieldValue(rec, key);
+        if (Array.isArray(field)) {
+          if (!vals.some(v => field.includes(v))) return false;
+        } else {
+          if (!vals.includes(field || '')) return false;
+        }
+      }
+      return true;
+    }
+
+    function toggleMultiSelect(event) {
+      const root = event.currentTarget.closest('.ms');
+      document.querySelectorAll('.ms.open').forEach(el => { if (el !== root) el.classList.remove('open'); });
+      root.classList.toggle('open');
+    }
+
+    function toggleAllFilterOptions(event, key) {
+      if (event.target.checked) delete activeFilters[key];
+      else activeFilters[key] = [];
+      renderDynamicFilters();
+      applyAllFilters();
+    }
+
+    function onMultiFilterChange(event, key) {
+      const root = event.target.closest('.ms-menu');
+      const checked = Array.from(root.querySelectorAll('input[type="checkbox"][value]:checked')).map(el => el.value);
+      if (!checked.length) delete activeFilters[key];
+      else activeFilters[key] = checked;
+      renderDynamicFilters();
+      applyAllFilters();
+    }
+
+    function selectOnlyFilterOption(event, key, value) {
+      event.preventDefault();
+      event.stopPropagation();
+      activeFilters[key] = [value];
+      renderDynamicFilters();
+      applyAllFilters();
+    }
+
+    function applyAllFilters() {
+      if (!analyticsBase) return;
+      const type = activeType;
+      let records = analyticsBase.allRecords || [];
+      records = records.filter(r => (r.tipo || '') === type);
+      sanitizeActiveFilters(records);
+      records = records.filter(matchesFilters);
+      const analytics = buildAnalyticsFromRecords(records);
+      renderDashboard(analytics, currentDays);
+    }
+    function sanitizeActiveFilters(baseRows) {
+      const rowsType = Array.isArray(baseRows)
+        ? baseRows
+        : ((analyticsBase?.allRecords || []).filter(r => (r.tipo || '') === activeType));
+      const config = FILTER_CONFIG[activeType] || [];
+      let changed = false;
+      config.forEach((cfg) => {
+        const key = cfg.key;
+        const vals = Array.isArray(activeFilters[key]) ? activeFilters[key] : [];
+        if (!vals.length) return;
+        const candidateRows = rowsType.filter(rec => matchesFiltersExceptKey(rec, key));
+        const validSet = new Set(getOptions(candidateRows, key).map(v => String(v)));
+        const kept = vals.filter(v => validSet.has(String(v)));
+        if (!kept.length) {
+          delete activeFilters[key];
+          changed = true;
+        } else if (kept.length !== vals.length) {
+          activeFilters[key] = kept;
+          changed = true;
+        }
+      });
+      return changed;
+    }
+
+    function matchesFilters(rec) {
+      for (const key in activeFilters) {
+        const vals = Array.isArray(activeFilters[key]) ? activeFilters[key] : [];
+        if (!vals.length) continue;
+        if (key === 'produtoBase') {
+          const bases = getProdutoBaseFromRaw(rec);
+          if (!vals.some(v => bases.includes(v))) return false;
+          continue;
+        }
+        const field = getFilterFieldValue(rec, key);
+        if (Array.isArray(field)) {
+          if (!vals.some(v => field.includes(v))) return false;
+        } else {
+          if (!vals.includes(field || '')) return false;
+        }
+      }
+      return true;
+    }
+
+    function getOptions(rows, key) {
+      const set = new Set();
+      rows.forEach(rec => {
+        if (key === 'produtoBase') {
+          getProdutoBaseFromRaw(rec).forEach(v => set.add(v));
+          return;
+        }
+        const value = getFilterFieldValue(rec, key);
+        if (Array.isArray(value)) value.forEach(v => { if (v) set.add(v); });
+        else if (value) set.add(value);
+      });
+      const arr = Array.from(set);
+      if (key === 'setor') return arr.sort(compareSetor);
+      return arr.sort((a, b) => String(a).localeCompare(String(b), 'pt-BR'));
+    }
+    function getFilterFieldValue(rec, key) {
+      if (key !== 'aplicador') return rec[key];
+      const nomes = getAplicadoresDoRegistro(rec);
+      if (!nomes.length) return '';
+      return nomes.length === 1 ? nomes[0] : nomes;
+    }
+    function getAplicadoresDoRegistro(rec) {
+      const set = new Set();
+      const pushVal = (v) => {
+        const txt = String(v || '').trim();
+        if (!txt) return;
+        set.add(txt);
+      };
+      pushVal(rec.aplicador);
+      pushVal(rec.responsavel);
+      pushVal(rec['responsável']);
+      pushVal(rec['Aplicador']);
+      pushVal(rec['Responsável']);
+      (rec.rawRows || []).forEach((row) => {
+        pushVal(row['Aplicador']);
+        pushVal(row['Responsável']);
+        pushVal(row['Responsavel']);
+      });
+      return Array.from(set);
+    }
+
+    function compareSetor(a, b) {
+      const va = String(a || '').trim();
+      const vb = String(b || '').trim();
+      const na = Number(va);
+      const nb = Number(vb);
+      const aNum = va !== '' && !Number.isNaN(na);
+      const bNum = vb !== '' && !Number.isNaN(nb);
+      if (aNum && bNum) return na - nb;
+      if (aNum && !bNum) return -1;
+      if (!aNum && bNum) return 1;
+      return va.localeCompare(vb, 'pt-BR');
+    }
+
+    function getProdutoBaseFromRaw(rec) {
+      const set = new Set();
+      (rec.rawRows || []).forEach(row => {
+        const value = (row['Produto Base'] || '').toString().trim();
+        if (value) set.add(value);
+      });
+      return Array.from(set);
+    }
+
+    function renderDashboard(analytics, days) {
+      document.getElementById('dashboardLoading').classList.add('hidden');
+      document.getElementById('dashboardContent').classList.remove('hidden');
+      ensureChartDescriptions();
+      if (activeType === 'Defensivos') {
+        document.getElementById('defensivosPanel').classList.remove('hidden');
+        document.getElementById('genericPanel').classList.add('hidden');
+        renderDefensivosPanel(analytics);
+      } else {
+        document.getElementById('defensivosPanel').classList.add('hidden');
+        document.getElementById('genericPanel').classList.remove('hidden');
+        document.getElementById('dashTotalRegistros').innerText = analytics.totals.total || 0;
+        document.getElementById('dashTotalFito').innerText = analytics.totals.fito || 0;
+        document.getElementById('dashTotalLaboratorio').innerText = analytics.totals.laboratorio || 0;
+        document.getElementById('dashTotalAdubacao').innerText = analytics.totals.adubacao || 0;
+        document.getElementById('dashTotalMl').innerText = formatNumber(analytics.kpis.totalMl || 0) + ' ml';
+        renderBar('chartSetor', analytics.topSetores, 'setor', 'total', 'Setor');
+        renderBar('chartCiclo', analytics.porCiclo, 'ciclo', 'total', 'Ciclo');
+        renderBar('chartSolicitante', analytics.porSolicitante, 'nome', 'total', 'Solicitante');
+        renderBar('chartAplicador', analytics.porAplicador, 'nome', 'total', 'Aplicador');
+        renderDoughnut('chartUnidade', analytics.porUnidade, 'unidade', 'totalLancamentos');
+        renderBar('chartAlvo', analytics.porAlvo, 'alvo', 'total', 'Alvo');
+        renderRecent(analytics.recent);
+      }
+      forceResizeAllCharts();
+      setTimeout(forceResizeAllCharts, 120);
+      setTimeout(forceResizeAllCharts, 360);
+    }
+    function ensureChartDescriptions() {
+      const descByCanvasId = {
+        defChartData: 'Mostra a evolução diária do número de aplicações no período selecionado.',
+        defChartSemanaPizza: 'Mostra a distribuição percentual das aplicações por semana.',
+        defChartBloco: 'Compara quantas aplicações foram feitas em cada bloco/setor.',
+        defChartAlvoPizza: 'Mostra a participação de cada alvo tratado no período.',
+        defChartProdutosTop: 'Exibe os produtos mais utilizados, ordenados por frequência de uso.',
+        defChartTipoProduto: 'Mostra a distribuição das aplicações por tipo de produto.',
+        defChartVolumeCalda: 'Agrupa as aplicações por faixas de volume de calda utilizado.',
+        defChartPh: 'Mostra o comportamento do pH médio das aplicações ao longo do período.',
+        chartSetor: 'Compara a quantidade de aplicações por bloco/setor.',
+        chartCiclo: 'Compara a quantidade de aplicações por ciclo.',
+        chartSolicitante: 'Mostra quem mais solicitou aplicações no período.',
+        chartAplicador: 'Mostra quem mais executou aplicações no período.',
+        chartUnidade: 'Mostra a distribuição das unidades de dose registradas.',
+        chartAlvo: 'Compara os alvos mais frequentes nas aplicações.'
+      };
+      Object.keys(descByCanvasId).forEach((canvasId) => {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        const card = canvas.closest('div.bg-white');
+        if (!card) return;
+        const title = card.querySelector('h3');
+        if (!title) return;
+        if (title.nextElementSibling && title.nextElementSibling.classList.contains('chart-desc')) return;
+        const p = document.createElement('p');
+        p.className = 'chart-desc';
+        p.textContent = descByCanvasId[canvasId];
+        title.insertAdjacentElement('afterend', p);
+      });
+    }
+
+    function renderDefensivosPanel(analytics) {
+      const def = buildDefensivosAnalytics(analytics.records || []);
+      document.getElementById('defTotalAplicacoes').innerText = formatNumber(def.totalAplicacoes);
+      document.getElementById('defPlantasTratadas').innerText = formatNumber(def.plantasTratadas);
+      document.getElementById('defVolumeAplicado').innerText = formatNumber(def.volumeAplicado) + ' L';
+      document.getElementById('defProdutosUtilizados').innerText = formatNumber(def.produtosUnicos);
+      document.getElementById('defBlocosAtendidos').innerText = formatNumber(def.blocosAtendidos);
+      document.getElementById('defTempoTotal').innerText = formatDuration(def.tempoTotalMin);
+      document.getElementById('defPeriodoCard').innerText = def.periodoLabel || '-';
+
+      renderLine('defChartData', def.aplicacoesPorData.labels, def.aplicacoesPorData.values, 'Aplicações', {
+        fillContainer: true,
+        tooltipExtra: (item) => {
+          const data = item?.date || '';
+          const alvos = (def.alvosPorData && def.alvosPorData[data]) ? def.alvosPorData[data] : [];
+          const blocos = (def.blocosPorData && def.blocosPorData[data]) ? def.blocosPorData[data] : [];
+          const linhas = [];
+          linhas.push('Alvos:');
+          if (alvos.length) linhas.push(...alvos.map(a => '• ' + a));
+          else linhas.push('• -');
+          linhas.push('Blocos/Setores:');
+          if (blocos.length) linhas.push(...blocos.map(b => '• ' + b));
+          else linhas.push('• -');
+          return linhas;
+        }
+      });
+      renderBar('defChartBloco', def.aplicacoesPorBloco, 'setor', 'total', 'Bloco', {
+        fillContainer: true,
+        tooltipExtra: (item) => {
+          const setor = item?.setor || '';
+          const alvos = (def.alvosPorBloco && def.alvosPorBloco[setor]) ? def.alvosPorBloco[setor] : [];
+          if (!alvos.length) return ['Alvos tratados: -'];
+          return ['Alvos tratados:', ...alvos.map(a => '• ' + a)];
+        }
+      });
+      renderDoughnut('defChartSemanaPizza', def.semanasTop, 'semana', 'total');
+      renderDoughnut('defChartTipoProduto', def.tiposProduto, 'tipo', 'total');
+      renderDoughnut('defChartAlvoPizza', def.alvosTop, 'alvo', 'total');
+      renderBar('defChartProdutosTop', def.produtosTop, 'produto', 'total', 'Produtos', { fillContainer: true });
+      renderBar('defChartVolumeCalda', def.volumeFaixas, 'faixa', 'total', 'Aplicações', { fillContainer: true });
+      renderLine('defChartPh', def.phSerie.labels, def.phSerie.values, 'pH médio', { fillContainer: true });
+      renderConsumoTable(def.consumoProdutos);
+      renderRecent(def.recent.slice(0, 10));
+    }
+
+    function buildAnalyticsFromRecords(records) {
+      const totals = { total: records.length, fito: 0, laboratorio: 0, adubacao: 0 };
+      const setorMap = {}, cicloMap = {}, solicitanteMap = {}, aplicadorMap = {}, alvoMap = {}, unidadeMap = {};
+      let totalMl = 0;
+
+      records.forEach(rec => {
+        const tipo = rec.tipo || '';
+        if (tipo === 'Defensivos') totals.fito++;
+        if (tipo === 'Laboratório') totals.laboratorio++;
+        if (tipo === 'Adubação') totals.adubacao++;
+        if (rec.setor) addCount(setorMap, rec.setor, 'setor');
+        if (rec.ciclo) addCount(cicloMap, rec.ciclo, 'ciclo');
+        if (rec.solicitante) addCount(solicitanteMap, rec.solicitante, 'nome');
+        if (rec.aplicador) addCount(aplicadorMap, rec.aplicador, 'nome');
+        (rec.alvos || []).forEach(a => { if (a) addCount(alvoMap, a, 'alvo'); });
+        (rec.doses || []).forEach(d => {
+          const unidade = (d.unidade || 'outros').toLowerCase();
+          if (!unidadeMap[unidade]) unidadeMap[unidade] = { unidade, totalLancamentos: 0, quantidadeTotal: 0 };
+          unidadeMap[unidade].totalLancamentos++;
+          unidadeMap[unidade].quantidadeTotal += Number(d.quantidade || 0);
+          if (unidade === 'ml') totalMl += Number(d.quantidade || 0);
+        });
+      });
+
+      return {
+        totals,
+        kpis: { totalMl },
+        topSetores: toSortedList(setorMap, 'total', 12),
+        porCiclo: toSortedList(cicloMap, 'total', 12),
+        porSolicitante: toSortedList(solicitanteMap, 'total', 12),
+        porAplicador: toSortedList(aplicadorMap, 'total', 12),
+        porAlvo: toSortedList(alvoMap, 'total', 12),
+        porUnidade: toSortedList(unidadeMap, 'totalLancamentos', 12),
+        recent: records.slice(0, 12),
+        records
+      };
+    }
+
+    function buildDefensivosAnalytics(records) {
+      const byDate = {};
+      const byDateAlvos = {};
+      const byDateBlocos = {};
+      const byBloco = {};
+      const byBlocoAlvos = {};
+      const byTipo = {};
+      const byAlvo = {};
+      const byProduto = {};
+      const bySemana = {};
+      const byAplicador = {};
+      const byVolumeFaixa = {};
+      const byPlantasBloco = {};
+      const consumoMap = {};
+      const phByDate = {};
+      const plantasSeenBlocoCiclo = {};
+      let tempoTotalMin = 0;
+      let plantas = 0;
+      let volume = 0;
+
+      records.forEach(rec => {
+        const data = rec.data || '-';
+        byDate[data] = (byDate[data] || 0) + 1;
+        if (!byDateAlvos[data]) byDateAlvos[data] = {};
+        if (!byDateBlocos[data]) byDateBlocos[data] = {};
+        (rec.alvos || []).forEach(a => {
+          const alvo = (a || '').toString().trim();
+          if (!alvo) return;
+          byDateAlvos[data][alvo] = true;
+        });
+        const setorData = (rec.setor || '').toString().trim();
+        if (setorData) byDateBlocos[data][setorData] = true;
+        const semanaKey = obterSemanaDeData(data);
+        if (semanaKey) bySemana[semanaKey] = (bySemana[semanaKey] || 0) + 1;
+        if (rec.setor) byBloco[rec.setor] = (byBloco[rec.setor] || 0) + 1;
+        if (rec.setor) {
+          if (!byBlocoAlvos[rec.setor]) byBlocoAlvos[rec.setor] = {};
+          (rec.alvos || []).forEach(a => {
+            const alvo = (a || '').toString().trim();
+            if (!alvo) return;
+            byBlocoAlvos[rec.setor][alvo] = true;
+          });
+        }
+        (rec.tipos || []).forEach(t => { if (t) byTipo[t] = (byTipo[t] || 0) + 1; });
+        (rec.alvos || []).forEach(a => { if (a) byAlvo[a] = (byAlvo[a] || 0) + 1; });
+        (rec.produtos || []).forEach(p => { if (p) byProduto[p] = (byProduto[p] || 0) + 1; });
+
+        const plantasRaw = sumPlantas(rec.rawRows || []);
+        const blocoKey = (rec.setor || '').trim();
+        const cicloKey = (rec.ciclo || '').trim();
+        const dedupeKey = blocoKey + '||' + cicloKey;
+        const isSeen = !!plantasSeenBlocoCiclo[dedupeKey];
+        const plantasItem = isSeen ? 0 : plantasRaw;
+        if (!isSeen && dedupeKey !== '||') plantasSeenBlocoCiclo[dedupeKey] = true;
+
+        if (rec.setor && plantasItem > 0) {
+          byPlantasBloco[rec.setor] = (byPlantasBloco[rec.setor] || 0) + plantasItem;
+        }
+
+        const aplicadorNome = rec.aplicador || 'Não informado';
+        if (!byAplicador[aplicadorNome]) byAplicador[aplicadorNome] = { nome: aplicadorNome, total: 0, plantas: 0, tempo: 0 };
+        byAplicador[aplicadorNome].total += 1;
+        byAplicador[aplicadorNome].plantas += plantasItem;
+        byAplicador[aplicadorNome].tempo += Number(rec.duracaoMin || 0);
+
+        const volumeItem = Number(rec.volumeCalda || 0);
+        volume += volumeItem;
+        plantas += plantasItem;
+        tempoTotalMin += Number(rec.duracaoMin || 0);
+        const faixa = getVolumeFaixa(volumeItem);
+        byVolumeFaixa[faixa] = (byVolumeFaixa[faixa] || 0) + 1;
+
+        (rec.rawRows || []).forEach(row => {
+          const prod = (row['Produto'] || '').toString().trim();
+          const tipo = (row['Tipo do Produto'] || '').toString().trim() || '-';
+          const dose = toNumClient(row['Dose']);
+          const unidade = (row['Unidade'] || '').toString().trim();
+          if (prod) {
+            const key = prod + '||' + tipo + '||' + unidade;
+            if (!consumoMap[key]) consumoMap[key] = { produto: prod, tipo: tipo, unidade: unidade, total: 0 };
+            consumoMap[key].total += dose;
+          }
+          const ph = toNumClient(row['P.H.']);
+          if (!Number.isNaN(ph) && ph > 0) {
+            if (!phByDate[data]) phByDate[data] = { sum: 0, count: 0 };
+            phByDate[data].sum += ph;
+            phByDate[data].count += 1;
+          }
+        });
+      });
+
+      const datePairs = Object.keys(byDate).map(k => ({ date: k, total: byDate[k] }));
+      datePairs.sort((a, b) => parseDateLabel(a.date) - parseDateLabel(b.date));
+
+      return {
+        totalAplicacoes: records.length,
+        plantasTratadas: plantas,
+        volumeAplicado: volume,
+        produtosUnicos: Object.keys(byProduto).length,
+        blocosAtendidos: Object.keys(byBloco).length,
+        tempoTotalMin,
+        periodoLabel: datePairs.length ? (datePairs[0].date + ' a ' + datePairs[datePairs.length - 1].date) : '-',
+        aplicacoesPorData: { labels: datePairs.map(i => i.date), values: datePairs.map(i => i.total) },
+        aplicacoesPorDataRows: datePairs,
+        alvosPorData: Object.keys(byDateAlvos).reduce((acc, data) => {
+          acc[data] = Object.keys(byDateAlvos[data]).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+          return acc;
+        }, {}),
+        blocosPorData: Object.keys(byDateBlocos).reduce((acc, data) => {
+          acc[data] = Object.keys(byDateBlocos[data]).sort((a, b) => compareSetor(a, b));
+          return acc;
+        }, {}),
+        aplicacoesPorBloco: toSortedList(mapToObj(byBloco, 'setor'), 'total', 20),
+        alvosPorBloco: Object.keys(byBlocoAlvos).reduce((acc, setor) => {
+          acc[setor] = Object.keys(byBlocoAlvos[setor]).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+          return acc;
+        }, {}),
+        plantasPorBloco: toSortedList(mapToObj(byPlantasBloco, 'setor'), 'total', 20),
+        tiposProduto: toSortedList(mapToObj(byTipo, 'tipo'), 'total', 10),
+        semanasTop: toSortedList(mapToObj(bySemana, 'semana'), 'total', 12),
+        alvosTop: toSortedList(mapToObj(byAlvo, 'alvo'), 'total', 10),
+        produtosTop: toSortedList(mapToObj(byProduto, 'produto'), 'total', 10),
+        aplicadoresRanking: Object.keys(byAplicador).map(k => byAplicador[k]).sort((a, b) => b.total - a.total).slice(0, 12),
+        consumoProdutos: Object.keys(consumoMap).map(k => consumoMap[k]).sort((a, b) => b.total - a.total).slice(0, 20),
+        phSerie: {
+          labels: Object.keys(phByDate).sort((a, b) => parseDateLabel(a) - parseDateLabel(b)),
+          values: Object.keys(phByDate).sort((a, b) => parseDateLabel(a) - parseDateLabel(b)).map(k => phByDate[k].count ? (phByDate[k].sum / phByDate[k].count) : 0)
+        },
+        volumeFaixas: toSortedList(mapToObj(byVolumeFaixa, 'faixa'), 'total', 20),
+        recent: records.slice(0, 12)
+      };
+    }
+
+    function mapToObj(map, keyName) {
+      const out = {};
+      Object.keys(map).forEach(k => { out[k] = { [keyName]: k, total: map[k] }; });
+      return out;
+    }
+
+    function sumPlantas(rawRows) {
+      let total = 0;
+      rawRows.forEach(row => {
+        const val = Number((row['Plantas'] || '').toString().replace(/\./g, '').replace(',', '.'));
+        if (!Number.isNaN(val)) total += val;
+      });
+      return total;
+    }
+
+    function parseDateLabel(v) {
+      const s = String(v || '');
+      const br = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (br) return new Date(Number(br[3]), Number(br[2]) - 1, Number(br[1]));
+      const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (iso) return new Date(Number(iso[1]), Number(iso[2]) - 1, Number(iso[3]));
+      return new Date(0);
+    }
+    function obterSemanaDeData(dataLabel) {
+      const d = parseDateLabel(dataLabel);
+      if (!(d instanceof Date) || Number.isNaN(d.getTime()) || d.getFullYear() < 2000) return '';
+      const inicioAno = new Date(d.getFullYear(), 0, 1);
+      const dias = Math.floor((d - inicioAno) / 86400000);
+      const semana = Math.ceil((dias + inicioAno.getDay() + 1) / 7);
+      return d.getFullYear() + '-S' + String(semana).padStart(2, '0');
+    }
+
+    function renderLine(canvasId, labels, values, labelTitle, cfg) {
+      const opts = cfg || {};
+      const lineRows = Array.isArray(opts.rows) ? opts.rows : labels.map((lbl, i) => ({ label: lbl, value: values[i], date: lbl }));
+      createOrUpdateChart(canvasId, 'line', {
+        labels,
+        datasets: [{
+          label: labelTitle,
+          data: values,
+          fill: true,
+          borderColor: '#1d4ed8',
+          backgroundColor: 'rgba(29, 78, 216, 0.12)',
+          tension: 0.25,
+          pointRadius: 3
+        }]
+      }, {
+        responsive: true,
+        maintainAspectRatio: opts.fillContainer ? false : true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              afterBody: (items) => {
+                if (!opts.tooltipExtra || !items || !items.length) return [];
+                const idx = items[0].dataIndex;
+                const row = lineRows[idx] || null;
+                const extra = opts.tooltipExtra(row);
+                if (!extra) return [];
+                return Array.isArray(extra) ? extra : [String(extra)];
+              }
+            }
+          }
+        },
+        scales: {
+          x: { offset: opts.fillContainer ? false : true },
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+      });
+    }
+
+    function getVolumeFaixa(v) {
+      const n = Number(v || 0);
+      if (n <= 0) return '0';
+      if (n <= 100) return '0-100';
+      if (n <= 300) return '101-300';
+      if (n <= 600) return '301-600';
+      if (n <= 900) return '601-900';
+      if (n <= 1500) return '901-1500';
+      return '1501+';
+    }
+
+    function renderConsumoTable(rows) {
+      const body = document.getElementById('defConsumoBody');
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="3" class="py-2 text-slate-400">Sem consumo</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map(r => '<tr class="border-t border-slate-100">' +
+        '<td class="py-1">' + escapeHtml(r.produto) + '</td>' +
+        '<td class="py-1">' + escapeHtml(r.tipo) + '</td>' +
+        '<td class="py-1 text-right font-semibold">' + formatNumber(r.total) + ' ' + escapeHtml(r.unidade || '') + '</td>' +
+      '</tr>').join('');
+    }
+
+    function formatDuration(min) {
+      const m = Math.max(0, Number(min || 0));
+      const h = Math.floor(m / 60);
+      const mm = Math.round(m % 60);
+      return h + 'h ' + String(mm).padStart(2, '0') + 'min';
+    }
+
+    function toNumClient(v) {
+      const n = Number(String(v || '').replace(/\./g, '').replace(',', '.'));
+      return Number.isNaN(n) ? 0 : n;
+    }
+
+    function addCount(map, key, labelKey) { if (!map[key]) map[key] = { [labelKey]: key, total: 0 }; map[key].total++; }
+    function toSortedList(map, field, limit) { return Object.keys(map).map(k => map[k]).sort((a, b) => Number(b[field] || 0) - Number(a[field] || 0)).slice(0, limit); }
+
+    function renderBar(canvasId, rows, labelKey, valueKey, labelTitle, cfg) {
+      const opts = cfg || {};
+      const labels = (rows || []).map(r => r[labelKey] || '-');
+      const values = (rows || []).map(r => Number(r[valueKey] || 0));
+      createOrUpdateChart(
+        canvasId,
+        'bar',
+        { labels, datasets: [{ label: labelTitle, data: values, borderRadius: 8, backgroundColor: 'rgba(30, 41, 59, 0.75)', borderColor: 'rgba(15, 23, 42, 1)', borderWidth: 1 }] },
+        {
+          responsive: true,
+          maintainAspectRatio: opts.fillContainer ? false : true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                afterBody: (items) => {
+                  if (!opts.tooltipExtra || !items || !items.length) return [];
+                  const idx = items[0].dataIndex;
+                  const row = (rows || [])[idx] || null;
+                  const extra = opts.tooltipExtra(row);
+                  if (!extra) return [];
+                  return Array.isArray(extra) ? extra : [String(extra)];
+                }
+              }
+            }
+          },
+          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+        }
+      );
+    }
+
+    function renderDoughnut(canvasId, rows, labelKey, valueKey) {
+      const labels = (rows || []).map(r => formatLabelTitleCase(r[labelKey] || '-'));
+      const values = (rows || []).map(r => Number(r[valueKey] || 0));
+      const total = values.reduce((sum, n) => sum + n, 0);
+      createOrUpdateChart(canvasId, 'doughnut', {
+        labels,
+        datasets: [{
+          data: values,
+          radius: 120,
+          backgroundColor: ['#1f8f43','#2b6cb0','#d97706','#7c3aed','#0ea5e9','#16a34a','#be123c','#475569'],
+          hoverOffset: 8,
+          borderWidth: 2,
+          borderColor: '#ffffff',
+          spacing: 2
+        }]
+      }, {
+        responsive: true,
+        cutout: '62%',
+        animation: { duration: 700, easing: 'easeOutQuart' },
+        plugins: {
+          donutCenterText: { enabled: true, label: 'Total', value: formatNumber(total) },
+          legend: {
+            position: 'right',
+            maxWidth: 190,
+            labels: {
+              usePointStyle: true,
+              pointStyle: 'circle',
+              boxWidth: 8,
+              font: { size: 11, weight: '600' },
+              color: '#334155',
+              generateLabels(chart) {
+                const data = chart.data;
+                const dataset = data.datasets[0] || { data: [] };
+                const totalLocal = (dataset.data || []).reduce((sum, n) => sum + Number(n || 0), 0);
+                const bg = dataset.backgroundColor || [];
+                return (data.labels || []).map((label, i) => {
+                  const val = Number(dataset.data[i] || 0);
+                  const pct = totalLocal ? ((val / totalLocal) * 100) : 0;
+                  return {
+                    text: String(label) + ' - ' + formatNumber(pct) + '%',
+                    fillStyle: bg[i] || '#64748b',
+                    strokeStyle: '#ffffff',
+                    lineWidth: 1,
+                    hidden: !chart.getDataVisibility(i),
+                    index: i,
+                    pointStyle: 'circle'
+                  };
+                });
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            titleColor: '#f8fafc',
+            bodyColor: '#e2e8f0',
+            displayColors: true,
+            callbacks: {
+              label(context) {
+                const val = Number(context.raw || 0);
+                const pct = total ? ((val / total) * 100) : 0;
+                return ' ' + context.label + ': ' + formatNumber(val) + ' (' + formatNumber(pct) + '%)';
+              }
+            }
+          }
+        }
+      });
+    }
+    function formatLabelTitleCase(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return '-';
+      return raw
+        .split(/\s+/)
+        .map((word) => {
+          if (!word) return word;
+          if (/\d/.test(word)) return word;
+          const lower = word.toLocaleLowerCase('pt-BR');
+          return lower.charAt(0).toLocaleUpperCase('pt-BR') + lower.slice(1);
+        })
+        .join(' ');
+    }
+
+    function createOrUpdateChart(canvasId, type, data, options) {
+      if (chartStore[canvasId]) chartStore[canvasId].destroy();
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      chartStore[canvasId] = new Chart(ctx, { type, data, options });
+    }
+    function forceResizeAllCharts() {
+      Object.keys(chartStore).forEach((id) => {
+        const chart = chartStore[id];
+        if (!chart) return;
+        try { chart.resize(); } catch (error) {}
+      });
+    }
+
+    function renderRecent(rows) {
+      const tbody = document.getElementById('dashRecentRows');
+      if (!(rows || []).length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="p-3 text-center text-slate-400">Sem registros no período.</td></tr>';
+        return;
+      }
+      tbody.innerHTML = rows.map(row => '<tr class="border-t border-slate-100"><td class="p-2">' + escapeHtml(row.data || '-') + '</td><td class="p-2">' + escapeHtml(row.tipo || '-') + '</td><td class="p-2">' + escapeHtml(row.local || '-') + '</td><td class="p-2">' + escapeHtml(row.setor || '-') + '</td><td class="p-2">' + escapeHtml(row.responsavel || '-') + '</td></tr>').join('');
+    }
+
+    function formatNumber(value) { return Number(value || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 }); }
+    function escapeHtml(value) { return String(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+    function toIsoDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + day;
+    }
+    function formatarDataCurta(iso) {
+      const p = String(iso || '').split('-');
+      if (p.length !== 3) return iso;
+      return p[2] + '/' + p[1] + '/' + p[0];
+    }
+    function parseDataLocal(iso) {
+      if (!iso) return null;
+      const p = String(iso).split('-');
+      if (p.length !== 3) return null;
+      return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+    }
+    function dataAtualSaoPaulo() {
+      const agora = new Date();
+      return new Date(agora.getFullYear(), agora.getMonth(), agora.getDate());
+    }
+    function somarDias(data, dias) {
+      const d = new Date(data);
+      d.setDate(d.getDate() + dias);
+      return d;
+    }
+    function atualizarTextoPeriodoDashboard() {
+      const texto = document.getElementById("textoFiltroPeriodo");
+      if (!texto) return;
+      if (!periodoDashboard.inicio && !periodoDashboard.fim) {
+        texto.textContent = "Período automático";
+        notifyParentPeriodLabel("Período automático");
+        return;
+      }
+      if (periodoDashboard.inicio === periodoDashboard.fim) {
+        const label = formatarDataCurta(periodoDashboard.inicio);
+        texto.textContent = label;
+        notifyParentPeriodLabel(label);
+        return;
+      }
+      const label = `${formatarDataCurta(periodoDashboard.inicio)} - ${formatarDataCurta(periodoDashboard.fim)}`;
+      texto.textContent = label;
+      notifyParentPeriodLabel(label);
+    }
+    function alternarCalendarioPeriodo(aberto) {
+      const painel = document.getElementById("calendarioPeriodo");
+      if (!painel) return;
+      painel.classList.toggle("hidden", !aberto);
+      if (aberto) {
+        periodoCalendarioTemp = { ...periodoDashboard };
+        const base = parseDataLocal(periodoCalendarioTemp.inicio) || new Date();
+        mesCalendarioDashboard = new Date(base.getFullYear(), base.getMonth(), 1);
+        renderCalendarioPeriodo();
+      }
+    }
+    function posicionarCalendarioNoAnchor(anchor) {
+      const painel = document.getElementById("calendarioPeriodo");
+      if (!painel || !anchor) return;
+      const leftBase = Number(anchor.left || 0);
+      const topBase = Number(anchor.top || 0);
+      const maxLeft = Math.max(8, (window.innerWidth || 1200) - 840);
+      const left = Math.max(8, Math.min(leftBase, maxLeft));
+      const top = Math.max(8, topBase);
+      painel.style.left = `${left}px`;
+      painel.style.top = `${top}px`;
+      painel.style.right = "auto";
+    }
+    function aplicarAtalhoPeriodo(tipo) {
+      const hoje = dataAtualSaoPaulo();
+      const inicioMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+      const inicioMesPassado = new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1);
+      const fimMesPassado = new Date(hoje.getFullYear(), hoje.getMonth(), 0);
+      const ranges = {
+        hoje: [hoje, hoje],
+        ontem: [somarDias(hoje, -1), somarDias(hoje, -1)],
+        "7dias": [somarDias(hoje, -6), hoje],
+        "30dias": [somarDias(hoje, -29), hoje],
+        mes: [inicioMes, fimMes],
+        mespassado: [inicioMesPassado, fimMesPassado]
+      };
+      if (tipo === "limpar") {
+        periodoCalendarioTemp = { inicio: "", fim: "" };
+        renderCalendarioPeriodo();
+        return;
+      }
+      const range = ranges[tipo];
+      if (!range) return;
+      periodoCalendarioTemp = { inicio: toIsoDate(range[0]), fim: toIsoDate(range[1]) };
+      mesCalendarioDashboard = new Date(range[0].getFullYear(), range[0].getMonth(), 1);
+      renderCalendarioPeriodo();
+    }
+    function selecionarDiaPeriodo(iso) {
+      const { inicio, fim } = periodoCalendarioTemp;
+      if (!inicio) periodoCalendarioTemp = { inicio: iso, fim: iso };
+      else if (inicio === fim) {
+        if (iso === inicio) periodoCalendarioTemp = { inicio: iso, fim: iso };
+        else if (iso < inicio) periodoCalendarioTemp = { inicio: iso, fim: inicio };
+        else periodoCalendarioTemp = { inicio, fim: iso };
+      } else periodoCalendarioTemp = { inicio: iso, fim: iso };
+      renderCalendarioPeriodo();
+    }
+    function renderMesCalendario(mesData) {
+      const ano = mesData.getFullYear();
+      const mes = mesData.getMonth();
+      const primeiroDia = new Date(ano, mes, 1);
+      const totalDias = new Date(ano, mes + 1, 0).getDate();
+      const inicioSemana = primeiroDia.getDay();
+      const titulo = mesData.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
+      const diasSemana = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"];
+      const blanks = Array.from({ length: inicioSemana }, () => '<span class="h-9"></span>').join("");
+      const dias = Array.from({ length: totalDias }, (_, i) => {
+        const dia = i + 1;
+        const iso = toIsoDate(new Date(ano, mes, dia));
+        const inicio = periodoCalendarioTemp.inicio;
+        const fim = periodoCalendarioTemp.fim;
+        const selecionado = iso === inicio || iso === fim;
+        const noIntervalo = inicio && fim && iso > inicio && iso < fim;
+        const estilo = selecionado ? "background:#0f172a;color:#ffffff;font-weight:700;" : (noIntervalo ? "background:#e0f2fe;color:#0f172a;" : "");
+        return `<button type="button" data-calendario-dia="${iso}" aria-pressed="${selecionado ? "true" : "false"}" class="cal-dia" style="${estilo}">${dia}</button>`;
+      }).join("");
+      return `<div>
+        <div class="text-center mb-3">
+          <p class="text-[11px] uppercase font-bold text-slate-400">Data</p>
+          <h4 class="text-lg font-extrabold text-slate-900 capitalize">${titulo}</h4>
+        </div>
+        <div class="grid grid-cols-7 gap-1 text-center text-xs font-bold text-slate-500 mb-2">${diasSemana.map((d) => `<span>${d}</span>`).join("")}</div>
+        <div class="grid grid-cols-7 gap-1 text-center">${blanks}${dias}</div>
+      </div>`;
+    }
+    function renderCalendarioPeriodo() {
+      const wrap = document.getElementById("calendarioMeses");
+      if (!wrap) return;
+      const meses = [0, 1].map((offset) => new Date(mesCalendarioDashboard.getFullYear(), mesCalendarioDashboard.getMonth() + offset, 1));
+      wrap.innerHTML = meses.map(renderMesCalendario).join("");
+      wrap.querySelectorAll("[data-calendario-dia]").forEach((botaoDia) => {
+        botaoDia.addEventListener("click", (evt) => {
+          evt.preventDefault();
+          evt.stopPropagation();
+          selecionarDiaPeriodo(botaoDia.dataset.calendarioDia);
+        });
+      });
+    }
+    function aplicarPeriodoDashboard() {
+      periodoDashboard = { ...periodoCalendarioTemp };
+      selectedStart = periodoDashboard.inicio || '';
+      selectedEnd = periodoDashboard.fim || '';
+      atualizarTextoPeriodoDashboard();
+      alternarCalendarioPeriodo(false);
+      loadDashboardData();
+    }
+    document.addEventListener('click', function(event) {
+      const painel = document.getElementById("calendarioPeriodo");
+      const btn = document.getElementById("btnFiltroPeriodo");
+      const clickedTrigger = btn ? btn.contains(event.target) : false;
+      if (painel && !painel.classList.contains("hidden") && !painel.contains(event.target) && !clickedTrigger) {
+        alternarCalendarioPeriodo(false);
+      }
+      if (!event.target.closest('.ms')) {
+        document.querySelectorAll('.ms.open').forEach(el => el.classList.remove('open'));
+      }
+    });
+    document.getElementById("btnFiltroPeriodo")?.addEventListener("click", () => {
+      const painel = document.getElementById("calendarioPeriodo");
+      alternarCalendarioPeriodo(painel?.classList.contains("hidden"));
+    });
+    document.getElementById("btnMesAnterior")?.addEventListener("click", () => {
+      mesCalendarioDashboard = new Date(mesCalendarioDashboard.getFullYear(), mesCalendarioDashboard.getMonth() - 1, 1);
+      renderCalendarioPeriodo();
+    });
+    document.getElementById("btnMesProximo")?.addEventListener("click", () => {
+      mesCalendarioDashboard = new Date(mesCalendarioDashboard.getFullYear(), mesCalendarioDashboard.getMonth() + 1, 1);
+      renderCalendarioPeriodo();
+    });
+    document.getElementById("btnCancelarPeriodo")?.addEventListener("click", () => alternarCalendarioPeriodo(false));
+    document.getElementById("btnAplicarPeriodo")?.addEventListener("click", aplicarPeriodoDashboard);
+    document.getElementById("calendarioPeriodo")?.addEventListener("click", (e) => {
+      const atalho = e.target.closest("[data-periodo-atalho]");
+      if (atalho) aplicarAtalhoPeriodo(atalho.dataset.periodoAtalho);
+    });
+    notifyParentActiveType();
+    atualizarTextoPeriodoDashboard();
+    loadDashboardData();
+
+    function notifyParentPeriodLabel(label) {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({
+          type: 'dashboardPeriodLabel',
+          label: label || 'Período automático',
+          inicio: periodoDashboard.inicio || '',
+          fim: periodoDashboard.fim || ''
+        }, '*');
+      }
+    }
+
+    let lastNotifiedHeight = 0;
+    let notifyHeightRaf = null;
+    function notifyParentHeight() {
+      const bodyH = document.body ? document.body.scrollHeight : 0;
+      const docH = document.documentElement ? document.documentElement.scrollHeight : 0;
+      const rawHeight = Math.max(bodyH, docH, 900);
+      const height = Math.min(rawHeight, 12000);
+      if (Math.abs(height - lastNotifiedHeight) < 2) return;
+      lastNotifiedHeight = height;
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'dashboardHeight', height: height }, '*');
+      }
+    }
+    function scheduleNotifyParentHeight() {
+      if (notifyHeightRaf) return;
+      notifyHeightRaf = requestAnimationFrame(() => {
+        notifyHeightRaf = null;
+        notifyParentHeight();
+      });
+    }
+    window.addEventListener('load', notifyParentHeight);
+    window.addEventListener('resize', scheduleNotifyParentHeight);
+    setTimeout(scheduleNotifyParentHeight, 300);
+    setTimeout(scheduleNotifyParentHeight, 1200);
+    const heightObserver = new MutationObserver(() => scheduleNotifyParentHeight());
+    heightObserver.observe(document.body, { childList: true, subtree: true });
+  </script>
+</body>
+</html>
