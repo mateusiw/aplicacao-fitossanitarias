@@ -457,7 +457,7 @@
             </div>
             <div id="offlineSuggestionBox" class="hidden mt-3 p-3 rounded-xl border border-sky-100 bg-white text-[11px]"></div>
         </div>
-        <iframe id="dashboardFrame" src="" scrolling="no" class="w-full min-h-[900px] bg-transparent border-0 rounded-none overflow-hidden"></iframe>
+        <iframe id="dashboardFrame" src="" scrolling="no" class="w-full min-h-[320px] bg-transparent border-0 rounded-none overflow-hidden"></iframe>
     </div>
 
     <div id="dashboardModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300 p-4">
@@ -1319,7 +1319,7 @@
             if (!frame) return;
             const h = Number(event.data.height || 0);
             if (!Number.isFinite(h) || h <= 0) return;
-            const safeHeight = Math.min(Math.max(Math.ceil(h), 900), 12000);
+            const safeHeight = Math.min(Math.max(Math.ceil(h), 320), 12000);
             frame.style.height = `${safeHeight}px`;
         });
         window.addEventListener('message', (event) => {
