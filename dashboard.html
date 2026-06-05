@@ -1233,7 +1233,10 @@
         }, {}),
         metodosTop: toSortedList(mapToObj(byMetodo, 'metodo'), 'total', 10),
         tiposAdubo: toSortedList(mapToObj(byTipo, 'tipo'), 'total', 10),
-        adubosTop: toSortedList(mapToObj(byDoseProduto, 'produto'), 'doseTotal', 12),
+        adubosTop: Object.keys(byDoseProduto)
+          .map((k) => byDoseProduto[k])
+          .sort((a, b) => b.doseTotal - a.doseTotal)
+          .slice(0, 12),
         dosePorData: {
           labels: datePairs.map(i => i.date),
           values: datePairs.map(i => i.dose)
