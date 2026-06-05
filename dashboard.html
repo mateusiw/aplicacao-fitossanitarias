@@ -20,7 +20,7 @@
   </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
-  <div class="w-full p-0 space-y-4">
+  <div id="dashboardRoot" class="w-full p-0 space-y-4">
     <div id="dashboardTopControls" class="hidden bg-white border border-slate-200 rounded-xl p-4 flex flex-wrap items-center justify-end gap-2">
       <div class="flex items-center gap-2">
         <div class="relative w-60">
@@ -148,6 +148,81 @@
             <table class="w-full text-xs">
               <thead class="text-slate-500"><tr><th class="text-left py-1">Produto</th><th class="text-left py-1">Tipo</th><th class="text-right py-1">Total</th></tr></thead>
               <tbody id="defConsumoBody"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="adubacaoPanel" class="hidden space-y-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Total de Adubações</div><div id="aduTotalAplicacoes" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Plantas Tratadas</div><div id="aduPlantasTratadas" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Dose Total</div><div id="aduDoseTotal" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Nº de Adubos</div><div id="aduAdubosUnicos" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Blocos Atendidos</div><div id="aduBlocosAtendidos" class="text-2xl font-extrabold text-slate-800">0</div></div>
+          <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm"><div class="text-[10px] uppercase font-bold text-slate-400">Tempo Total</div><div id="aduTempoTotal" class="text-2xl font-extrabold text-slate-800">0h</div></div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-9 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Adubações por Data</h3>
+            <div class="h-[360px]">
+              <canvas id="aduChartData" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-3 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Adubações por Semana</h3>
+            <div class="h-[360px] flex items-center">
+              <canvas id="aduChartSemanaPizza" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-9 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Adubações por Bloco/Setor</h3>
+            <div class="h-[360px]">
+              <canvas id="aduChartBloco" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-3 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Métodos de Adubação</h3>
+            <div class="h-[360px] flex items-center">
+              <canvas id="aduChartMetodoPizza" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-4 items-start">
+          <div class="xl:col-span-9 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Adubos Mais Utilizados</h3>
+            <div class="h-[360px]">
+              <canvas id="aduChartProdutosTop" class="w-full h-full"></canvas>
+            </div>
+          </div>
+          <div class="xl:col-span-3 bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start">
+            <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Distribuição Tipo Adubo</h3>
+            <div class="h-[360px] flex items-center">
+              <canvas id="aduChartTipoAdubo" class="w-full h-full"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm self-start overflow-hidden">
+          <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Dose Total por Data</h3>
+          <div class="h-[360px]">
+            <canvas id="aduChartDoseData" class="w-full h-full"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+          <h3 class="text-xs font-bold uppercase text-slate-600 mb-2">Consumo de Adubos</h3>
+          <p class="chart-desc">Detalha a dose total registrada por adubo, com o tipo e a unidade informados no período selecionado.</p>
+          <div class="overflow-auto max-h-[260px]">
+            <table class="w-full text-xs">
+              <thead class="text-slate-500"><tr><th class="text-left py-1">Adubo</th><th class="text-left py-1">Tipo</th><th class="text-left py-1">Unidade</th><th class="text-right py-1">Total</th></tr></thead>
+              <tbody id="aduConsumoBody"></tbody>
             </table>
           </div>
         </div>
@@ -305,7 +380,6 @@
         { key: 'aplicador', label: 'Aplicador' },
         { key: 'setor', label: 'Bloco/Setor' },
         { key: 'ciclo', label: 'Ciclo' },
-        { key: 'alvos', label: 'Alvo' },
         { key: 'produtos', label: 'Adubos' },
         { key: 'tipos', label: 'Tipo de Adubo' },
         { key: 'metodo', label: 'Método' }
@@ -623,16 +697,25 @@
       ensureChartDescriptions();
       if (activeType === 'Defensivos') {
         document.getElementById('defensivosPanel').classList.remove('hidden');
+        document.getElementById('adubacaoPanel').classList.add('hidden');
         document.getElementById('laboratorioPanel').classList.add('hidden');
         document.getElementById('genericPanel').classList.add('hidden');
         renderDefensivosPanel(analytics);
+      } else if (activeType === 'Adubação') {
+        document.getElementById('defensivosPanel').classList.add('hidden');
+        document.getElementById('adubacaoPanel').classList.remove('hidden');
+        document.getElementById('laboratorioPanel').classList.add('hidden');
+        document.getElementById('genericPanel').classList.add('hidden');
+        renderAdubacaoPanel(analytics);
       } else if (activeType === 'Laboratório') {
         document.getElementById('defensivosPanel').classList.add('hidden');
+        document.getElementById('adubacaoPanel').classList.add('hidden');
         document.getElementById('laboratorioPanel').classList.remove('hidden');
         document.getElementById('genericPanel').classList.add('hidden');
         renderLaboratorioPanel(analytics);
       } else {
         document.getElementById('defensivosPanel').classList.add('hidden');
+        document.getElementById('adubacaoPanel').classList.add('hidden');
         document.getElementById('laboratorioPanel').classList.add('hidden');
         document.getElementById('genericPanel').classList.remove('hidden');
         document.getElementById('dashTotalRegistros').innerText = analytics.totals.total || 0;
@@ -651,6 +734,9 @@
       forceResizeAllCharts();
       setTimeout(forceResizeAllCharts, 120);
       setTimeout(forceResizeAllCharts, 360);
+      scheduleNotifyParentHeight();
+      setTimeout(scheduleNotifyParentHeight, 120);
+      setTimeout(scheduleNotifyParentHeight, 360);
     }
     function ensureChartDescriptions() {
       const descByCanvasId = {
@@ -662,6 +748,14 @@
         defChartTipoProduto: 'Mostra a distribuição das aplicações por tipo de produto.',
         defChartVolumeCalda: 'Agrupa as aplicações por faixas de volume de calda utilizado.',
         defChartPh: 'Mostra o comportamento do pH médio das aplicações ao longo do período.',
+        aduChartData: 'Mostra a evolução diária do número de adubações no período selecionado.',
+        aduChartSemanaPizza: 'Mostra a distribuição percentual das adubações por semana.',
+        aduChartBloco: 'Compara quantas adubações foram feitas em cada bloco/setor.',
+        aduChartMetodoPizza: 'Mostra a participação de cada método de adubação no período.',
+        aduChartProdutosTop: 'Exibe os adubos mais utilizados, ordenados pela dose total.',
+        aduChartTipoAdubo: 'Mostra a distribuição das adubações por tipo de adubo.',
+        aduChartDoseData: 'Mostra a evolução diária da dose total aplicada.',
+        aduConsumoBody: 'Detalha a dose total por adubo no período selecionado.',
         chartSetor: 'Compara a quantidade de aplicações por bloco/setor.',
         chartCiclo: 'Compara a quantidade de aplicações por ciclo.',
         chartSolicitante: 'Mostra quem mais solicitou aplicações no período.',
@@ -734,6 +828,49 @@
       renderRecent(def.recent.slice(0, 10));
     }
 
+    function renderAdubacaoPanel(analytics) {
+      const adu = buildAdubacaoAnalytics(analytics.records || []);
+      document.getElementById('aduTotalAplicacoes').innerText = formatNumber(adu.totalAdubacoes);
+      document.getElementById('aduPlantasTratadas').innerText = formatNumber(adu.plantasTratadas);
+      document.getElementById('aduDoseTotal').innerText = formatNumber(adu.doseTotal);
+      document.getElementById('aduAdubosUnicos').innerText = formatNumber(adu.adubosUnicos);
+      document.getElementById('aduBlocosAtendidos').innerText = formatNumber(adu.blocosAtendidos);
+      document.getElementById('aduTempoTotal').innerText = formatDuration(adu.tempoTotalMin);
+
+      renderLine('aduChartData', adu.adubacoesPorData.labels, adu.adubacoesPorData.values, 'Adubações', {
+        fillContainer: true,
+        tooltipExtra: (item) => {
+          const data = item?.date || '';
+          const metodos = (adu.metodosPorData && adu.metodosPorData[data]) ? adu.metodosPorData[data] : [];
+          const blocos = (adu.blocosPorData && adu.blocosPorData[data]) ? adu.blocosPorData[data] : [];
+          const linhas = [];
+          linhas.push('Métodos:');
+          if (metodos.length) linhas.push(...metodos.map(a => '• ' + a));
+          else linhas.push('• -');
+          linhas.push('Blocos/Setores:');
+          if (blocos.length) linhas.push(...blocos.map(b => '• ' + b));
+          else linhas.push('• -');
+          return linhas;
+        }
+      });
+      renderBar('aduChartBloco', adu.adubacoesPorBloco, 'setor', 'total', 'Bloco', {
+        fillContainer: true,
+        tooltipExtra: (item) => {
+          const setor = item?.setor || '';
+          const metodos = (adu.metodosPorBloco && adu.metodosPorBloco[setor]) ? adu.metodosPorBloco[setor] : [];
+          if (!metodos.length) return ['Métodos de adubação: -'];
+          return ['Métodos de adubação:', ...metodos.map(a => '• ' + a)];
+        }
+      });
+      renderDoughnut('aduChartSemanaPizza', adu.semanasTop, 'semana', 'total');
+      renderDoughnut('aduChartMetodoPizza', adu.metodosTop, 'metodo', 'total');
+      renderDoughnut('aduChartTipoAdubo', adu.tiposAdubo, 'tipo', 'total');
+      renderBar('aduChartProdutosTop', adu.adubosTop, 'produto', 'doseTotal', 'Dose', { fillContainer: true });
+      renderLine('aduChartDoseData', adu.dosePorData.labels, adu.dosePorData.values, 'Dose total', { fillContainer: true });
+      renderAdubacaoConsumoTable(adu.consumoAdubos);
+      renderRecent(adu.recent.slice(0, 10));
+    }
+
     function renderLaboratorioPanel(analytics) {
       const lab = buildLaboratorioAnalytics(analytics.records || []);
       document.getElementById('labTotalMultiplicacoes').innerText = formatNumber(lab.totalMultiplicacoes);
@@ -747,6 +884,20 @@
       renderBar('labChartConsumoBaseDoses', lab.consumoProdutosBase, 'produtoBase', 'doseTotal', 'Doses', { fillContainer: true });
       renderBar('labChartAreacaoPorProdutoFinal', lab.areacaoPorProdutoFinal, 'produto', 'diasMedios', 'Dias', { fillContainer: true });
       renderTotalProduzidoTable(lab.producaoPorProdutoFinal);
+    }
+
+    function renderAdubacaoConsumoTable(rows) {
+      const body = document.getElementById('aduConsumoBody');
+      if (!rows.length) {
+        body.innerHTML = '<tr><td colspan="4" class="py-2 text-slate-400">Sem consumo</td></tr>';
+        return;
+      }
+      body.innerHTML = rows.map(r => '<tr class="border-t border-slate-100">' +
+        '<td class="py-1">' + escapeHtml(r.produto) + '</td>' +
+        '<td class="py-1">' + escapeHtml(r.tipo) + '</td>' +
+        '<td class="py-1">' + escapeHtml(r.unidade || '') + '</td>' +
+        '<td class="py-1 text-right font-semibold">' + formatNumber(r.totalDose) + '</td>' +
+      '</tr>').join('');
     }
 
     function buildLaboratorioAnalytics(records) {
@@ -982,6 +1133,114 @@
         },
         volumeFaixas: toSortedList(mapToObj(byVolumeFaixa, 'faixa'), 'total', 20),
         recent: records.slice(0, 12)
+      };
+    }
+
+    function buildAdubacaoAnalytics(records) {
+      const byDate = {};
+      const byDateDose = {};
+      const byDateMetodos = {};
+      const byDateBlocos = {};
+      const byBloco = {};
+      const byBlocoMetodos = {};
+      const byMetodo = {};
+      const byTipo = {};
+      const byProduto = {};
+      const byDoseProduto = {};
+      const bySemana = {};
+      const consumoMap = {};
+      const produtosSeen = {};
+      let totalPlantas = 0;
+      let totalDose = 0;
+      let tempoTotalMin = 0;
+
+      records.forEach(rec => {
+        const data = rec.data || '-';
+        const metodo = (rec.metodo || 'Não informado').toString().trim() || 'Não informado';
+        const setor = (rec.setor || 'Não informado').toString().trim() || 'Não informado';
+        const plantasItem = sumPlantas(rec.rawRows || []);
+        const semanaKey = obterSemanaDeData(data);
+
+        byDate[data] = (byDate[data] || 0) + 1;
+        byDateDose[data] = byDateDose[data] || 0;
+        if (!byDateMetodos[data]) byDateMetodos[data] = {};
+        if (!byDateBlocos[data]) byDateBlocos[data] = {};
+        byDateMetodos[data][metodo] = true;
+        byDateBlocos[data][setor] = true;
+        if (semanaKey) bySemana[semanaKey] = (bySemana[semanaKey] || 0) + 1;
+        if (setor !== 'Não informado') {
+          byBloco[setor] = (byBloco[setor] || 0) + 1;
+          if (!byBlocoMetodos[setor]) byBlocoMetodos[setor] = {};
+          byBlocoMetodos[setor][metodo] = true;
+        }
+        byMetodo[metodo] = (byMetodo[metodo] || 0) + 1;
+        tempoTotalMin += Number(rec.duracaoMin || 0);
+        totalPlantas += plantasItem;
+
+        (rec.tipos || []).forEach(tipo => {
+          const tipoTxt = (tipo || '').toString().trim() || 'Não informado';
+          byTipo[tipoTxt] = (byTipo[tipoTxt] || 0) + 1;
+        });
+
+        (rec.rawRows || []).forEach((row) => {
+          const produto = (row['Adubo'] || '').toString().trim();
+          const tipo = (row['Tipo de Adubo'] || '').toString().trim() || 'Não informado';
+          const unidade = (row['Unidade'] || '').toString().trim() || 'outros';
+          const dose = toNumClient(row['Dose']);
+          if (!produto) return;
+
+          totalDose += dose;
+          byDateDose[data] += dose;
+          produtosSeen[produto] = true;
+          if (!byProduto[produto]) byProduto[produto] = { produto: produto, doseTotal: 0 };
+          byProduto[produto].doseTotal += dose;
+          if (!byDoseProduto[produto]) byDoseProduto[produto] = { produto: produto, doseTotal: 0 };
+          byDoseProduto[produto].doseTotal += dose;
+
+          const consumoKey = produto + '||' + tipo + '||' + unidade;
+          if (!consumoMap[consumoKey]) consumoMap[consumoKey] = { produto: produto, tipo: tipo, unidade: unidade, totalDose: 0 };
+          consumoMap[consumoKey].totalDose += dose;
+        });
+      });
+
+      const datePairs = Object.keys(byDate).map((date) => ({ date, total: byDate[date], dose: byDateDose[date] || 0 }));
+      datePairs.sort((a, b) => parseDateLabel(a.date) - parseDateLabel(b.date));
+
+      return {
+        totalAdubacoes: records.length,
+        plantasTratadas: totalPlantas,
+        doseTotal: totalDose,
+        adubosUnicos: Object.keys(produtosSeen).length,
+        blocosAtendidos: Object.keys(byBloco).length,
+        tempoTotalMin,
+        periodoLabel: datePairs.length ? (datePairs[0].date + ' a ' + datePairs[datePairs.length - 1].date) : '-',
+        adubacoesPorData: {
+          labels: datePairs.map(i => i.date),
+          values: datePairs.map(i => i.total)
+        },
+        metodosPorData: Object.keys(byDateMetodos).reduce((acc, data) => {
+          acc[data] = Object.keys(byDateMetodos[data]).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+          return acc;
+        }, {}),
+        blocosPorData: Object.keys(byDateBlocos).reduce((acc, data) => {
+          acc[data] = Object.keys(byDateBlocos[data]).sort((a, b) => compareSetor(a, b));
+          return acc;
+        }, {}),
+        adubacoesPorBloco: toSortedList(mapToObj(byBloco, 'setor'), 'total', 20),
+        metodosPorBloco: Object.keys(byBlocoMetodos).reduce((acc, setor) => {
+          acc[setor] = Object.keys(byBlocoMetodos[setor]).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+          return acc;
+        }, {}),
+        metodosTop: toSortedList(mapToObj(byMetodo, 'metodo'), 'total', 10),
+        tiposAdubo: toSortedList(mapToObj(byTipo, 'tipo'), 'total', 10),
+        adubosTop: toSortedList(mapToObj(byDoseProduto, 'produto'), 'doseTotal', 12),
+        dosePorData: {
+          labels: datePairs.map(i => i.date),
+          values: datePairs.map(i => i.dose)
+        },
+        consumoAdubos: Object.keys(consumoMap).map(k => consumoMap[k]).sort((a, b) => b.totalDose - a.totalDose).slice(0, 20),
+        semanasTop: toSortedList(mapToObj(bySemana, 'semana'), 'total', 12),
+        recent: records.slice(0, 10)
       };
     }
 
@@ -1449,9 +1708,12 @@
     let lastNotifiedHeight = 0;
     let notifyHeightRaf = null;
     function notifyParentHeight() {
+      const root = document.getElementById('dashboardRoot');
       const bodyH = document.body ? document.body.scrollHeight : 0;
       const docH = document.documentElement ? document.documentElement.scrollHeight : 0;
-      const rawHeight = Math.max(bodyH, docH, 900);
+      const rootH = root ? Math.ceil(root.getBoundingClientRect().height) : 0;
+      const measuredHeight = rootH > 0 ? rootH : Math.max(bodyH, docH);
+      const rawHeight = Math.max(measuredHeight, 320);
       const height = Math.min(rawHeight, 12000);
       if (Math.abs(height - lastNotifiedHeight) < 2) return;
       lastNotifiedHeight = height;
@@ -1471,7 +1733,7 @@
     setTimeout(scheduleNotifyParentHeight, 300);
     setTimeout(scheduleNotifyParentHeight, 1200);
     const heightObserver = new MutationObserver(() => scheduleNotifyParentHeight());
-    heightObserver.observe(document.body, { childList: true, subtree: true });
+    heightObserver.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
   </script>
 </body>
 </html>
