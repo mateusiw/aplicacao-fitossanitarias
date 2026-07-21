@@ -370,12 +370,12 @@
 
     <div id="confirmSendModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300">
         <div class="bg-white rounded-3xl shadow-2xl p-6 w-11/12 max-w-sm flex flex-col items-center text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full border-2 border-[#5b7566]/30 bg-[#5b7566]/5 mb-4 text-[#5b7566]"><i data-lucide="help-circle" class="h-6 w-6"></i></div>
-            <h3 class="text-xl font-extrabold text-[#1e293b] mb-2">Conferiu os dados?</h3>
-            <p class="text-[13px] text-[#64748b] mb-6">Você conferiu todas as informações? Se sim, toque para enviar.</p>
+            <div id="confirmSendIconWrap" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full border-2 border-[#5b7566]/30 bg-[#5b7566]/5 mb-4 text-[#5b7566]"><i id="confirmSendIcon" data-lucide="help-circle" class="h-6 w-6"></i></div>
+            <h3 id="confirmSendTitle" class="text-xl font-extrabold text-[#1e293b] mb-2">Conferiu os dados?</h3>
+            <p id="confirmSendText" class="text-[13px] text-[#64748b] mb-6">Você conferiu todas as informações? Se sim, toque para enviar.</p>
             <div class="flex gap-3 w-full">
                 <button onclick="hideConfirmSendModal()" class="flex-1 px-4 py-3 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#475569] font-bold rounded-xl text-xs uppercase tracking-wider">Cancelar</button>
-                <button onclick="confirmAndSend()" class="flex-1 px-4 py-3 bg-[#5b7566] hover:bg-[#4d6356] text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-[#5b7566]/30">Enviar Agora</button>
+                <button id="confirmSendBtn" onclick="confirmAndSend()" class="flex-1 px-4 py-3 bg-[#5b7566] hover:bg-[#4d6356] text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-[#5b7566]/30"><span id="confirmSendBtnText">Enviar Agora</span></button>
             </div>
         </div>
     </div>
@@ -1354,20 +1354,80 @@
             unlockBodyScroll();
         }
 
+        // ==========================================
+        // BLOQUEIO DE ENVIO DUPLICADO
+        // ==========================================
+        // Guarda a "assinatura" (conteúdo) do último relatório enviado com sucesso por
+        // parceiro/local. Se o usuário tentar enviar de novo sem ter alterado nada, mostramos
+        // um aviso em vez de disparar outro envio, porque estava acontecendo muito de a pessoa
+        // clicar em enviar várias vezes e duplicar o registro na planilha.
+        const LAST_SENT_KEY = 'spg_last_sent_reports';
+        let _isSendingReport = false;
+
+        function getLastSentReports() {
+            try { return JSON.parse(localStorage.getItem(LAST_SENT_KEY)) || {}; } catch (e) { return {}; }
+        }
+        function saveLastSentSignature(partner, signature) {
+            if (!partner) return;
+            const all = getLastSentReports();
+            all[partner] = { signature, sentAt: Date.now() };
+            localStorage.setItem(LAST_SENT_KEY, JSON.stringify(all));
+        }
+        function getReportSignature() {
+            return JSON.stringify({ partner: globalInfo.partner, date: globalInfo.date, data: getFilteredData() });
+        }
+        function isDuplicateReport() {
+            const partner = globalInfo.partner;
+            if (!partner) return false;
+            const last = getLastSentReports()[partner];
+            if (!last) return false;
+            const withinWindow = (Date.now() - last.sentAt) < (24 * 60 * 60 * 1000);
+            return withinWindow && last.signature === getReportSignature();
+        }
+        function renderConfirmSendModal(isDuplicate) {
+            const iconWrap = document.getElementById('confirmSendIconWrap');
+            const icon = document.getElementById('confirmSendIcon');
+            const title = document.getElementById('confirmSendTitle');
+            const text = document.getElementById('confirmSendText');
+            const btnText = document.getElementById('confirmSendBtnText');
+
+            if (isDuplicate) {
+                iconWrap.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full border-2 border-amber-300 bg-amber-50 mb-4 text-amber-600";
+                icon.setAttribute('data-lucide', 'alert-triangle');
+                title.innerText = "Este relatório já foi enviado!";
+                text.innerHTML = "Não encontramos nenhuma alteração desde o último envio. Enviar de novo pode <b>duplicar os dados</b> na planilha.<br><br>Tem certeza que deseja enviar mesmo assim?";
+                btnText.innerText = "Enviar Mesmo Assim";
+            } else {
+                iconWrap.className = "mx-auto flex items-center justify-center h-12 w-12 rounded-full border-2 border-[#5b7566]/30 bg-[#5b7566]/5 mb-4 text-[#5b7566]";
+                icon.setAttribute('data-lucide', 'help-circle');
+                title.innerText = "Conferiu os dados?";
+                text.innerText = "Você conferiu todas as informações? Se sim, toque para enviar.";
+                btnText.innerText = "Enviar Agora";
+            }
+        }
+
         function showConfirmSendModal() {
+            if (_isSendingReport) return;
             if (!getFilteredData().length) return showMessageModal('Atenção', 'Adicione registros primeiro para enviar.', 'error');
             if (!validateHeader()) { document.getElementById('generalDataCard').scrollIntoView({ behavior: 'smooth', block: 'center' }); return showMessageModal('Atenção', 'Preencha os Dados Gerais.', 'error'); }
             updateGlobalState(); appData.forEach(i => Object.assign(i, {partner:globalInfo.partner, date:globalInfo.date, requestor:globalInfo.requestor, applicator:globalInfo.applicator, startTime:globalInfo.startTime, endTime:globalInfo.endTime, duration:globalInfo.duration})); saveToStorage();
+            renderConfirmSendModal(isDuplicateReport());
             document.getElementById('confirmSendModal').classList.remove('hidden'); lucide.createIcons();
         }
         function hideConfirmSendModal() { document.getElementById('confirmSendModal').classList.add('hidden'); }
         async function confirmAndSend() {
+            if (_isSendingReport) return;
+            _isSendingReport = true;
             hideConfirmSendModal();
             showLoadingOverlay('Salvando e gerando a imagem, aguarde...');
             try {
+                const signature = getReportSignature();
+                const partner = globalInfo.partner;
                 await sendToAppsScript(getFilteredData());
+                saveLastSentSignature(partner, signature);
                 await downloadImage();
             } finally {
+                _isSendingReport = false;
                 hideLoadingOverlay();
             }
         }
