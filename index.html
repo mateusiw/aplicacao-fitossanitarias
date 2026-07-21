@@ -378,7 +378,29 @@
             </div>
         </div>
     </div>
-    
+
+    <!-- MODAL DE COMPARTILHAMENTO DA IMAGEM GERADA -->
+    <div id="shareImageModal" class="fixed inset-0 bg-black/60 z-[70] hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-3xl shadow-2xl p-6 w-11/12 max-w-sm flex flex-col items-center text-center">
+            <div class="mx-auto flex items-center justify-center h-14 w-14 rounded-full bg-green-50 mb-4">
+                <i data-lucide="image" class="h-8 w-8 text-green-600"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-[#1e293b]">Imagem Gerada!</h3>
+            <p class="text-[13px] text-[#64748b] mt-2 mb-6">Compartilhe direto no WhatsApp ou salve a imagem no aparelho.</p>
+            <div class="grid grid-cols-1 gap-3 w-full">
+                <button id="shareImageBtn" onclick="shareGeneratedImage()" class="px-4 py-3 bg-green-500 hover:bg-green-600 text-white font-bold rounded-xl text-xs uppercase tracking-wider shadow-lg shadow-green-500/30 transition-all active:scale-95 flex justify-center items-center gap-2">
+                    <i data-lucide="share-2" class="w-4 h-4"></i> Compartilhar no WhatsApp
+                </button>
+                <button onclick="downloadGeneratedImage()" class="px-4 py-3 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#475569] font-bold rounded-xl text-xs uppercase tracking-wider transition-colors active:scale-95 flex justify-center items-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> Baixar Imagem
+                </button>
+                <button onclick="closeShareImageModal()" class="px-4 py-2 text-slate-400 hover:text-slate-600 font-bold rounded-xl text-[11px] uppercase tracking-wider transition-colors">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="dashboardView" class="hidden w-full px-4 mt-4">
         <div class="bg-white border border-slate-200 rounded-xl p-3 mb-4 flex items-center justify-between gap-3">
             <div class="flex items-center gap-3">
@@ -565,6 +587,12 @@
             </div>
             <div id="dashboardError" class="hidden p-6 text-sm text-red-600"></div>
         </div>
+    </div>
+
+    <!-- OVERLAY DE CARREGAMENTO: bloqueia e desfoca a tela enquanto envia/gera a imagem, para o usuário não clicar várias vezes -->
+    <div id="loadingOverlay" class="fixed inset-0 z-[90] hidden flex flex-col items-center justify-center gap-4 bg-white/70 backdrop-blur-sm" style="touch-action: none; overscroll-behavior: contain;">
+        <div class="w-12 h-12 border-4 border-[#5b7566] border-t-transparent rounded-full animate-spin"></div>
+        <p id="loadingOverlayText" class="text-sm font-bold text-slate-600 px-6 text-center">Aguarde...</p>
     </div>
 
     <div id="messageModal" class="fixed inset-0 bg-black/50 z-50 hidden flex justify-center items-center backdrop-blur-sm transition-opacity duration-300">
@@ -1288,6 +1316,43 @@
         }
         function hideMessageModal() { document.getElementById('messageModal').classList.add('hidden'); }
 
+        // Congela a página por trás do overlay: bloqueia cliques (overlay em cima de tudo)
+        // e trava o scroll do body. Usa "overflow: hidden" em vez do truque de
+        // "position: fixed", porque esse truque tira o body do fluxo normal do documento e
+        // isso pode atrapalhar o html-to-image ao capturar o report-card (o contexto de
+        // posicionamento muda no meio da captura e a lib pode falhar silenciosamente).
+        let _scrollLockCount = 0;
+        function lockBodyScroll() {
+            if (_scrollLockCount === 0) {
+                document.body.style.overflow = 'hidden';
+                document.body.style.touchAction = 'none';
+                document.body.style.overscrollBehavior = 'contain';
+            }
+            _scrollLockCount++;
+        }
+        function unlockBodyScroll() {
+            if (_scrollLockCount === 0) return;
+            _scrollLockCount--;
+            if (_scrollLockCount === 0) {
+                document.body.style.overflow = '';
+                document.body.style.touchAction = '';
+                document.body.style.overscrollBehavior = '';
+            }
+        }
+
+        function showLoadingOverlay(text) {
+            const overlay = document.getElementById('loadingOverlay');
+            const textEl = document.getElementById('loadingOverlayText');
+            if (textEl) textEl.innerText = text || 'Aguarde...';
+            if (overlay) overlay.classList.remove('hidden');
+            lockBodyScroll();
+        }
+        function hideLoadingOverlay() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.classList.add('hidden');
+            unlockBodyScroll();
+        }
+
         function showConfirmSendModal() {
             if (!getFilteredData().length) return showMessageModal('Atenção', 'Adicione registros primeiro para enviar.', 'error');
             if (!validateHeader()) { document.getElementById('generalDataCard').scrollIntoView({ behavior: 'smooth', block: 'center' }); return showMessageModal('Atenção', 'Preencha os Dados Gerais.', 'error'); }
@@ -1295,7 +1360,16 @@
             document.getElementById('confirmSendModal').classList.remove('hidden'); lucide.createIcons();
         }
         function hideConfirmSendModal() { document.getElementById('confirmSendModal').classList.add('hidden'); }
-        function confirmAndSend() { hideConfirmSendModal(); sendToAppsScript(getFilteredData()); downloadImage(); }
+        async function confirmAndSend() {
+            hideConfirmSendModal();
+            showLoadingOverlay('Salvando e gerando a imagem, aguarde...');
+            try {
+                await sendToAppsScript(getFilteredData());
+                await downloadImage();
+            } finally {
+                hideLoadingOverlay();
+            }
+        }
         function showDashboardInPage() {
             document.getElementById('mainFormView').classList.add('hidden');
             document.getElementById('dashboardView').classList.remove('hidden');
@@ -1679,6 +1753,91 @@
             lucide.createIcons(); renderHeaderAndSummary(); 
         }
 
+        function isIOSDevice() {
+            return /iP(hone|od|ad)/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        }
+
+        // O Safari do iOS não suporta o atributo "download" em links (o clique simplesmente
+        // não faz nada, silenciosamente). Nesses aparelhos abrimos a imagem numa nova aba para
+        // o usuário salvá-la com "Segurar e Salvar Imagem". Em outros navegadores usamos o
+        // fluxo normal de download via blob: URL.
+        async function downloadFile(source, name) {
+            try {
+                const blob = source instanceof Blob ? source : await (await fetch(source)).blob();
+                const blobUrl = URL.createObjectURL(blob);
+
+                if (isIOSDevice()) {
+                    const win = window.open(blobUrl, '_blank');
+                    if (!win) {
+                        showMessageModal('Atenção', 'O navegador bloqueou a abertura da imagem. Verifique se o bloqueador de pop-ups está desativado para este site e tente novamente.', 'error');
+                        return;
+                    }
+                    showMessageModal('Salvar imagem', 'A imagem foi aberta em uma nova aba. Toque e segure sobre ela e escolha "Salvar Imagem" para baixá-la.', 'success');
+                    setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+                    return;
+                }
+
+                const link = document.createElement('a');
+                link.href = blobUrl; link.download = name;
+                document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                setTimeout(() => URL.revokeObjectURL(blobUrl), 10000);
+            } catch (err) {
+                console.error('Erro ao baixar imagem:', err);
+                window.open(source, '_blank');
+            }
+        }
+
+        function canShareFiles(file) {
+            return typeof navigator.share === 'function' &&
+                typeof navigator.canShare === 'function' &&
+                navigator.canShare({ files: [file] });
+        }
+
+        let _pendingShareData = null;
+
+        // Depois de gerar a imagem, mostra um popup com a opção de compartilhar direto
+        // (WhatsApp e outros apps, via Web Share API) ou baixar o arquivo. Como as ações só
+        // disparam quando o usuário toca em um botão do popup, o clique sempre conta como um
+        // gesto novo do usuário — necessário para o navegador permitir o compartilhamento ou
+        // a abertura de janela no Safari do iOS.
+        function openShareImageModal({ file, blob, filename, shareText }) {
+            _pendingShareData = { file, blob, filename, shareText };
+            const shareBtn = document.getElementById('shareImageBtn');
+            if (shareBtn) shareBtn.classList.toggle('hidden', !canShareFiles(file));
+            document.getElementById('shareImageModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeShareImageModal() {
+            document.getElementById('shareImageModal').classList.add('hidden');
+            _pendingShareData = null;
+        }
+
+        async function shareGeneratedImage() {
+            if (!_pendingShareData) return;
+            const { file, shareText } = _pendingShareData;
+            document.getElementById('shareImageModal').classList.add('hidden');
+            try {
+                await navigator.share({ files: [file], title: document.title, text: shareText || '' });
+            } catch (err) {
+                if (err && err.name !== 'AbortError') {
+                    console.error('Erro ao compartilhar imagem:', err);
+                    showMessageModal('Erro', 'Não foi possível compartilhar a imagem. Tente baixá-la e enviar manualmente.', 'error');
+                }
+            } finally {
+                _pendingShareData = null;
+            }
+        }
+
+        async function downloadGeneratedImage() {
+            if (!_pendingShareData) return;
+            const { blob, filename } = _pendingShareData;
+            document.getElementById('shareImageModal').classList.add('hidden');
+            await downloadFile(blob, filename);
+            _pendingShareData = null;
+        }
+
         async function downloadImage() {
             const btnSpan = document.querySelector('button[onclick="showConfirmSendModal()"] span'), orig = btnSpan?.innerText; if (btnSpan) btnSpan.innerText = "Gerando Imagem...";
             let reportCard = null, reportContent = null, prevCardStyle = null, prevContentStyle = null;
@@ -1704,8 +1863,14 @@
                 }
 
                 const dataUrl = await htmlToImage.toPng(reportCard, { pixelRatio: 5, cacheBust: true, backgroundColor: '#ffffff' });
-                const a = document.createElement('a'); a.href = dataUrl; a.download = `Resumo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}_${globalInfo.partner||'Geral'}.png`; document.body.appendChild(a); a.click(); a.remove();
-            } catch (err) { showMessageModal('Erro', 'Falha ao gerar imagem: ' + err.message, 'error'); } finally {
+                const filename = `Resumo_${new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')}_${globalInfo.partner||'Geral'}.png`;
+                const blob = await (await fetch(dataUrl)).blob();
+                const file = new File([blob], filename, { type: 'image/png' });
+                openShareImageModal({ file, blob, filename, shareText: `Resumo - ${globalInfo.partner || 'Geral'}` });
+            } catch (err) {
+                console.error('Falha ao gerar imagem:', err);
+                showMessageModal('Erro', 'Falha ao gerar imagem: ' + (err?.message || err?.type || 'erro desconhecido. Tente novamente.'), 'error');
+            } finally {
                 if (reportCard) {
                     if (prevCardStyle === null) reportCard.removeAttribute('style');
                     else reportCard.setAttribute('style', prevCardStyle);
