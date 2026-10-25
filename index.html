@@ -23,6 +23,49 @@
         input, select { line-height: 1.5; }
         .fade-in { animation: fadeIn 0.2s ease-in-out; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* Filtros modernos (mesmo padrão dos filtros do dashboard) */
+        .filter-label { font-size: 11px; font-weight: 600; color: #475569; display: block; margin-bottom: 6px; }
+        .msel { position: relative; --msel-accent: #15803d; --msel-ring: rgba(21, 128, 61, .18); --msel-sel-bg: #f0fdf4; --msel-sel-ink: #14532d; }
+        .msel-native { display: none !important; }
+        /* Campos do formulário: foco azul (padrão do form) e sem destaque de "filtro ativo" */
+        .msel.msel-field { --msel-accent: #2563eb; --msel-ring: rgba(37, 99, 235, .18); --msel-sel-bg: #eff6ff; --msel-sel-ink: #1e3a8a; }
+        .msel.msel-tone-emerald { --msel-accent: #059669; --msel-ring: rgba(5, 150, 105, .18); --msel-sel-bg: #ecfdf5; --msel-sel-ink: #065f46; }
+        .msel.msel-tone-amber { --msel-accent: #d97706; --msel-ring: rgba(217, 119, 6, .18); --msel-sel-bg: #fffbeb; --msel-sel-ink: #92400e; }
+        .msel-trigger { width: 100%; height: 38px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; gap: 8px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; font-size: 13px; font-weight: 500; color: #0f172a; text-align: left; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
+        .msel-trigger:hover { border-color: #cbd5e1; }
+        .msel-trigger:disabled { opacity: .6; cursor: not-allowed; }
+        .msel.is-empty .msel-trigger { color: #64748b; }
+        .msel.open .msel-trigger, .msel-trigger:focus-visible { outline: none; border-color: var(--msel-accent); box-shadow: 0 0 0 3px var(--msel-ring); }
+        .msel.is-active:not(.msel-field) .msel-trigger { background: #ecfdf3; border-color: #bbf7d0; color: #14532d; font-weight: 600; }
+        .msel.msel-field .msel-trigger { font-size: 14px; }
+        .msel.msel-tone-emerald .msel-trigger { background: #ecfdf5; border-color: #a7f3d0; color: #065f46; font-weight: 700; }
+        .msel.msel-tone-amber .msel-trigger { border-color: #fde68a; }
+        .msel.msel-tone-blue .msel-trigger { border-color: #bfdbfe; }
+        .msel.msel-action .msel-trigger { background: #f8fafc; color: #2563eb; font-weight: 600; }
+        .msel.is-error .msel-trigger { border-color: #ef4444; box-shadow: 0 0 0 1px #ef4444; }
+        .msel-chevron { flex: none; width: 16px; height: 16px; color: #94a3b8; transition: transform .15s ease; }
+        .msel.open .msel-chevron { transform: rotate(180deg); }
+        .msel-menu { display: none; position: absolute; z-index: 45; left: 0; top: calc(100% + 6px); min-width: 100%; width: max-content; max-width: min(340px, 90vw); background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 12px 28px -8px rgba(16, 24, 40, .18), 0 4px 8px -4px rgba(16, 24, 40, .08); overflow: hidden; }
+        .msel.open .msel-menu { display: block; animation: mselPop .14s ease-out; }
+        @keyframes mselPop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+        .msel-search { width: 100%; height: 34px; padding: 0 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; outline: none; }
+        .msel-search:focus { border-color: var(--msel-accent); box-shadow: 0 0 0 3px var(--msel-ring); }
+        .msel-list { max-height: 240px; overflow: auto; padding: 4px 0; }
+        .msel-option { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; font-size: 12px; color: #334155; text-align: left; cursor: pointer; }
+        .msel-option:hover, .msel-option.is-focus { background: #f8fafc; }
+        .msel-option.is-selected { color: var(--msel-sel-ink); font-weight: 600; background: var(--msel-sel-bg); }
+        .msel-option.is-placeholder { color: #64748b; border-bottom: 1px solid #f1f5f9; }
+        .msel-check { flex: none; width: 14px; height: 14px; color: var(--msel-accent); visibility: hidden; }
+        .msel-option.is-selected .msel-check { visibility: visible; }
+        .msel-empty { padding: 12px; font-size: 12px; color: #94a3b8; text-align: center; }
+        .msel-list::-webkit-scrollbar { width: 8px; }
+        .msel-list::-webkit-scrollbar-thumb { background: #d6dde5; border-radius: 8px; }
+        .date-modern { width: 100%; height: 38px; padding: 0 10px; border: 1px solid #e2e8f0; border-radius: 10px; background: #fff; font-size: 12px; font-weight: 500; color: #0f172a; outline: none; transition: border-color .15s ease, box-shadow .15s ease; }
+        .date-modern:focus { border-color: #15803d; box-shadow: 0 0 0 3px rgba(21, 128, 61, .18); }
+        .chip-modern { padding: 7px 10px; font-size: 11px; font-weight: 600; color: #334155; background: #fff; border: 1px solid #e2e8f0; border-radius: 999px; transition: all .15s ease; }
+        .chip-modern:hover { border-color: #bbf7d0; background: #ecfdf3; color: #14532d; }
+        @media (prefers-reduced-motion: reduce) { .msel-menu, .msel-chevron, .msel-trigger { animation: none !important; transition: none !important; } }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-20 select-none">
@@ -403,53 +446,62 @@
     </div>
 
     <div id="dashboardView" class="hidden w-full px-4 mt-4">
-        <div class="bg-white border border-slate-200 rounded-xl p-3 mb-4 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-                <h2 class="text-sm font-bold text-slate-800">Dashboard Analítico</h2>
-                <div id="topDashboardTypeTabs" class="bg-slate-100 border border-slate-200 rounded-xl p-1 flex gap-1">
-                    <button type="button" data-type="Defensivos" onclick="setTopDashboardType('Defensivos')" class="px-3 py-2 text-xs font-bold rounded-lg bg-slate-800 text-white">Defensivos</button>
-                    <button type="button" data-type="Laboratório" onclick="setTopDashboardType('Laboratório')" class="px-3 py-2 text-xs font-bold rounded-lg text-slate-600 hover:bg-white">Laboratório</button>
-                    <button type="button" data-type="Adubação" onclick="setTopDashboardType('Adubação')" class="px-3 py-2 text-xs font-bold rounded-lg text-slate-600 hover:bg-white">Adubação</button>
+        <div class="bg-white border border-slate-200/80 rounded-2xl px-4 py-3 mb-4 flex flex-wrap items-center justify-between gap-3 shadow-sm">
+            <div class="flex flex-wrap items-center gap-3">
+                <div class="flex items-center gap-2.5">
+                    <span class="w-9 h-9 rounded-xl bg-green-50 text-green-700 grid place-items-center"><i data-lucide="chart-column" class="w-[18px] h-[18px]"></i></span>
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-900 leading-tight">Dashboard Analítico</h2>
+                        <p class="text-[11px] text-slate-500 leading-tight">Indicadores operacionais do período</p>
+                    </div>
+                </div>
+                <div id="topDashboardTypeTabs" class="bg-slate-100 rounded-xl p-1 flex gap-1">
+                    <button type="button" data-type="Defensivos" onclick="setTopDashboardType('Defensivos')" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-sm ring-1 ring-slate-200">Defensivos</button>
+                    <button type="button" data-type="Laboratório" onclick="setTopDashboardType('Laboratório')" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-slate-900">Laboratório</button>
+                    <button type="button" data-type="Adubação" onclick="setTopDashboardType('Adubação')" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-slate-900">Adubação</button>
                 </div>
             </div>
-            <div class="flex items-center gap-2 ml-auto">
+            <div class="flex flex-wrap items-center gap-2 ml-auto">
                 <div class="relative">
-                    <button id="topPeriodButton" type="button" onclick="toggleTopPeriodPopover()" class="px-3 py-2 min-w-[220px] bg-white border border-slate-300 text-slate-800 text-xs font-bold rounded-lg hover:bg-slate-50 text-left">
+                    <button id="topPeriodButton" type="button" onclick="toggleTopPeriodPopover()" class="px-3 py-2 min-w-[220px] bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg hover:border-slate-300 hover:bg-slate-50 text-left transition-colors">
                         01/05/2026 - 31/05/2026
                     </button>
-                    <div id="topPeriodPopover" class="hidden absolute right-0 top-full mt-2 w-[320px] bg-white border border-slate-200 rounded-xl shadow-2xl p-3 z-50">
-                        <div class="text-[10px] font-bold uppercase text-slate-500 mb-2">Período</div>
-                        <div class="grid grid-cols-2 gap-2 mb-2">
-                            <button type="button" onclick="setTopPeriodShortcut('7dias')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">7 dias</button>
-                            <button type="button" onclick="setTopPeriodShortcut('30dias')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">30 dias</button>
-                            <button type="button" onclick="setTopPeriodShortcut('mes')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">Este mês</button>
-                            <button type="button" onclick="setTopPeriodShortcut('mespassado')" class="px-2 py-1.5 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 rounded-lg">Mês passado</button>
+                    <div id="topPeriodPopover" class="hidden absolute right-0 top-full mt-2 w-[340px] max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 z-50">
+                        <div class="flex items-center gap-2 mb-3">
+                            <i data-lucide="calendar-range" class="w-4 h-4 text-slate-500"></i>
+                            <span class="text-sm font-semibold text-slate-900">Período</span>
                         </div>
-                        <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div class="flex flex-wrap gap-1.5 mb-3">
+                            <button type="button" onclick="setTopPeriodShortcut('7dias')" class="chip-modern">7 dias</button>
+                            <button type="button" onclick="setTopPeriodShortcut('30dias')" class="chip-modern">30 dias</button>
+                            <button type="button" onclick="setTopPeriodShortcut('mes')" class="chip-modern">Este mês</button>
+                            <button type="button" onclick="setTopPeriodShortcut('mespassado')" class="chip-modern">Mês passado</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3 mb-4">
                             <div>
-                                <label class="text-[10px] font-bold text-slate-500 block mb-1">Início</label>
-                                <input id="topPeriodStart" type="date" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white">
+                                <label class="filter-label" for="topPeriodStart">Início</label>
+                                <input id="topPeriodStart" type="date" class="date-modern">
                             </div>
                             <div>
-                                <label class="text-[10px] font-bold text-slate-500 block mb-1">Fim</label>
-                                <input id="topPeriodEnd" type="date" class="w-full p-2 border border-slate-300 rounded-lg text-xs bg-white">
+                                <label class="filter-label" for="topPeriodEnd">Fim</label>
+                                <input id="topPeriodEnd" type="date" class="date-modern">
                             </div>
                         </div>
-                        <div class="flex justify-between items-center">
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="clearTopPeriodInputs()" class="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Limpar</button>
-                                <button type="button" onclick="clearTopPeriod()" class="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Automático</button>
+                        <div class="flex justify-between items-center border-t border-slate-100 pt-3">
+                            <div class="flex items-center gap-1">
+                                <button type="button" onclick="clearTopPeriodInputs()" class="px-2.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg">Limpar</button>
+                                <button type="button" onclick="clearTopPeriod()" class="px-2.5 py-2 text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg">Automático</button>
                             </div>
-                            <div class="flex items-center gap-2">
-                                <button type="button" onclick="closeTopPeriodPopover()" class="px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
-                                <button type="button" onclick="applyTopPeriod()" class="px-3 py-2 text-xs font-bold bg-slate-800 text-white rounded-lg hover:bg-slate-900">Aplicar</button>
+                            <div class="flex items-center gap-1.5">
+                                <button type="button" onclick="closeTopPeriodPopover()" class="px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg">Cancelar</button>
+                                <button type="button" onclick="applyTopPeriod()" class="px-3.5 py-2 text-xs font-semibold bg-green-700 text-white rounded-lg hover:bg-green-800 shadow-sm">Aplicar</button>
                             </div>
                         </div>
                     </div>
                 </div>
-                <button type="button" onclick="clearDashboardFiltersTop()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Limpar Filtros</button>
-                <button type="button" onclick="refreshDashboardTop()" class="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-lg text-xs">Atualizar</button>
-                <button onclick="hideDashboardInPage()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs">Voltar ao Formulário</button>
+                <button type="button" onclick="clearDashboardFiltersTop()" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs transition-colors"><i data-lucide="filter-x" class="w-3.5 h-3.5"></i>Limpar Filtros</button>
+                <button type="button" onclick="refreshDashboardTop()" class="flex items-center gap-1.5 px-3 py-2 bg-green-700 hover:bg-green-800 text-white font-semibold rounded-lg text-xs shadow-sm transition-colors"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>Atualizar</button>
+                <button onclick="hideDashboardInPage()" class="flex items-center gap-1.5 px-3 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold rounded-lg text-xs transition-colors"><i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>Voltar ao Formulário</button>
             </div>
         </div>
         <div id="assistantAgronomicoCard" class="bg-gradient-to-br from-white via-sky-50/60 to-emerald-50/50 border border-sky-100 rounded-2xl p-4 mb-4 shadow-sm">
@@ -459,23 +511,35 @@
                     <p class="text-[11px] text-slate-500">Consulta baseada no histórico real da planilha</p>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
-                <select id="dashboardTargetSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="">Carregando alvos...</option>
-                </select>
-                <select id="assistantCultureSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="">Cultura (opcional)</option>
-                </select>
-                <select id="assistantSectorSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="">Bloco/Setor (opcional)</option>
-                </select>
-                <select id="assistantCycleSelect" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="">Ciclo (opcional)</option>
-                </select>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                    <label class="filter-label" for="dashboardTargetSelect">Alvo <span class="text-red-500">*</span></label>
+                    <select id="dashboardTargetSelect" data-modern-select data-searchable="true" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Carregando alvos...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="filter-label" for="assistantCultureSelect">Cultura</label>
+                    <select id="assistantCultureSelect" data-modern-select data-placeholder="Todas as culturas" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Cultura (opcional)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="filter-label" for="assistantSectorSelect">Bloco/Setor</label>
+                    <select id="assistantSectorSelect" data-modern-select data-placeholder="Todos os blocos" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Bloco/Setor (opcional)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="filter-label" for="assistantCycleSelect">Ciclo</label>
+                    <select id="assistantCycleSelect" data-modern-select data-placeholder="Todos os ciclos" class="w-full p-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="">Ciclo (opcional)</option>
+                    </select>
+                </div>
             </div>
             <div class="flex flex-wrap items-center gap-2 mt-3">
-                <button type="button" onclick="getOfflineSuggestion()" class="px-3 py-2 text-xs font-bold bg-blue-600 text-white border border-blue-700 rounded-lg hover:bg-blue-700 whitespace-nowrap">Consultar Assistente</button>
-                <button type="button" onclick="resetAssistantFilters()" class="px-3 py-2 text-xs font-bold bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 whitespace-nowrap">Limpar Filtros</button>
+                <button type="button" onclick="getOfflineSuggestion()" class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-green-700 text-white rounded-lg hover:bg-green-800 shadow-sm whitespace-nowrap transition-colors"><i data-lucide="sparkles" class="w-3.5 h-3.5"></i>Consultar Assistente</button>
+                <button type="button" onclick="resetAssistantFilters()" class="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-white text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50 whitespace-nowrap transition-colors"><i data-lucide="filter-x" class="w-3.5 h-3.5"></i>Limpar Filtros</button>
                 <span class="text-[10px] text-slate-500">Alvo é obrigatório. Filtros refinam a recomendação técnica.</span>
             </div>
             <div id="offlineSuggestionBox" class="hidden mt-3 p-3 rounded-xl border border-sky-100 bg-white text-[11px]"></div>
@@ -637,6 +701,177 @@
         calcDuration('startTime','endTime','totalDuration', true);
         updateGlobalState();
         handleCropChange();
+        document.querySelectorAll('select[data-modern-select], #mainFormView select').forEach(enhanceSelect);
+        // Linhas de produto são criadas dinamicamente: moderniza os selects novos assim que entram na tela
+        new MutationObserver((mutations) => {
+            mutations.forEach(m => m.addedNodes.forEach(node => {
+                if (node.nodeType !== 1) return;
+                if (node.matches('select')) enhanceSelect(node);
+                node.querySelectorAll?.('select').forEach(enhanceSelect);
+            }));
+        }).observe(document.getElementById('mainFormView'), { childList: true, subtree: true });
+
+        // Select moderno: o <select> nativo continua sendo a fonte da verdade (value/innerHTML/change),
+        // o componente visual só espelha as opções e dispara 'change' ao escolher.
+        function enhanceSelect(select) {
+            if (!select || select.dataset.enhanced) return;
+            select.dataset.enhanced = '1';
+
+            const wrap = document.createElement('div');
+            wrap.className = 'msel';
+            // Largura/posição definidas no select passam para o wrapper (ex.: w-full sm:w-1/3)
+            select.className.split(/\s+/)
+                .filter(c => /^((sm|md|lg|xl):)?(w-|min-w-|max-w-|flex-|grow|shrink|basis-|col-span-)/.test(c))
+                .forEach(c => wrap.classList.add(c));
+            if (select.closest('#mainFormView')) wrap.classList.add('msel-field');
+            const cls = select.className;
+            if (cls.includes('emerald')) wrap.classList.add('msel-tone-emerald');
+            else if (cls.includes('amber')) wrap.classList.add('msel-tone-amber');
+            else if (cls.includes('text-blue-600')) wrap.classList.add('msel-action');
+            else if (cls.includes('border-blue-200')) wrap.classList.add('msel-tone-blue');
+            select.parentNode.insertBefore(wrap, select);
+            wrap.appendChild(select);
+            select.classList.add('msel-native');
+
+            const trigger = document.createElement('button');
+            trigger.type = 'button';
+            trigger.className = 'msel-trigger';
+            trigger.setAttribute('aria-haspopup', 'listbox');
+            trigger.setAttribute('aria-expanded', 'false');
+            const labelSpan = document.createElement('span');
+            labelSpan.className = 'truncate';
+            trigger.appendChild(labelSpan);
+            trigger.insertAdjacentHTML('beforeend', '<svg class="msel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>');
+
+            const menu = document.createElement('div');
+            menu.className = 'msel-menu';
+            menu.setAttribute('role', 'listbox');
+            const searchBox = document.createElement('div');
+            searchBox.className = 'p-2 border-b border-slate-100';
+            const search = document.createElement('input');
+            search.type = 'search';
+            search.className = 'msel-search';
+            search.placeholder = 'Buscar...';
+            searchBox.appendChild(search);
+            const list = document.createElement('div');
+            list.className = 'msel-list';
+            menu.appendChild(searchBox);
+            menu.appendChild(list);
+            wrap.appendChild(trigger);
+            wrap.appendChild(menu);
+
+            const checkSvg = '<svg class="msel-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+            function sync() {
+                const opt = select.options[select.selectedIndex];
+                const isEmpty = !select.value;
+                const placeholder = select.dataset.placeholder;
+                labelSpan.textContent = isEmpty && placeholder && select.options.length > 1
+                    ? placeholder
+                    : (opt ? opt.textContent : (placeholder || 'Selecione...'));
+                wrap.classList.toggle('is-empty', isEmpty);
+                wrap.classList.toggle('is-active', !isEmpty);
+                // Espelha estados que o código aplica no select (campo "Outro" escondido, borda de erro)
+                wrap.classList.toggle('hidden', select.classList.contains('hidden'));
+                wrap.classList.toggle('is-error', select.classList.contains('border-red-500'));
+                trigger.disabled = select.disabled;
+                if (wrap.classList.contains('open')) renderList();
+            }
+
+            function renderList() {
+                const term = search.value.trim().toLocaleLowerCase('pt-BR');
+                const options = Array.from(select.options);
+                const searchable = select.dataset.searchable === 'true' || options.length > 8;
+                searchBox.classList.toggle('hidden', !searchable);
+                list.innerHTML = '';
+                let shown = 0;
+                options.forEach((opt, idx) => {
+                    if (opt.disabled) return;
+                    const text = opt.textContent;
+                    const isPlaceholder = opt.value === '';
+                    if (term && (isPlaceholder || !text.toLocaleLowerCase('pt-BR').includes(term))) return;
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.setAttribute('role', 'option');
+                    btn.className = 'msel-option' + (idx === select.selectedIndex ? ' is-selected' : '') + (isPlaceholder ? ' is-placeholder' : '');
+                    btn.dataset.index = String(idx);
+                    const span = document.createElement('span');
+                    span.className = 'truncate';
+                    span.textContent = isPlaceholder && select.dataset.placeholder ? select.dataset.placeholder : text;
+                    btn.appendChild(span);
+                    btn.insertAdjacentHTML('beforeend', checkSvg);
+                    btn.addEventListener('click', () => choose(idx));
+                    list.appendChild(btn);
+                    shown++;
+                });
+                if (!shown) list.innerHTML = '<div class="msel-empty">Nenhum resultado</div>';
+            }
+
+            function choose(idx) {
+                const changed = select.selectedIndex !== idx;
+                select.selectedIndex = idx;
+                close();
+                if (changed) select.dispatchEvent(new Event('change', { bubbles: true }));
+                trigger.focus();
+            }
+
+            function open() {
+                document.querySelectorAll('.msel.open').forEach(el => { if (el !== wrap) el.classList.remove('open'); });
+                search.value = '';
+                wrap.classList.add('open');
+                trigger.setAttribute('aria-expanded', 'true');
+                renderList();
+                const selected = list.querySelector('.is-selected');
+                if (selected) selected.scrollIntoView({ block: 'nearest' });
+                if (!searchBox.classList.contains('hidden')) search.focus();
+            }
+
+            function close() {
+                wrap.classList.remove('open');
+                trigger.setAttribute('aria-expanded', 'false');
+            }
+
+            function moveFocus(step) {
+                const items = Array.from(list.querySelectorAll('.msel-option'));
+                if (!items.length) return;
+                const current = items.findIndex(el => el.classList.contains('is-focus'));
+                items.forEach(el => el.classList.remove('is-focus'));
+                const next = items[(current + step + items.length) % items.length];
+                next.classList.add('is-focus');
+                next.scrollIntoView({ block: 'nearest' });
+            }
+
+            trigger.addEventListener('click', () => (wrap.classList.contains('open') ? close() : open()));
+            search.addEventListener('input', renderList);
+            wrap.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') { close(); trigger.focus(); }
+                else if (e.key === 'ArrowDown') { e.preventDefault(); if (!wrap.classList.contains('open')) open(); moveFocus(1); }
+                else if (e.key === 'ArrowUp') { e.preventDefault(); moveFocus(-1); }
+                else if (e.key === 'Enter' && wrap.classList.contains('open')) {
+                    const target = list.querySelector('.msel-option.is-focus') || (search.value ? list.querySelector('.msel-option') : null);
+                    if (target) { e.preventDefault(); choose(Number(target.dataset.index)); }
+                }
+            });
+            document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) close(); });
+            document.querySelectorAll('label[for="' + select.id + '"]').forEach(lbl => {
+                lbl.addEventListener('click', (e) => { e.preventDefault(); trigger.click(); });
+            });
+
+            // Mantém o visual em dia quando o código altera opções ou valor do select nativo
+            new MutationObserver(sync).observe(select, { childList: true, subtree: true, attributes: true, attributeFilter: ['disabled', 'class'] });
+            select.addEventListener('change', sync);
+            const proto = HTMLSelectElement.prototype;
+            ['value', 'selectedIndex'].forEach(prop => {
+                const desc = Object.getOwnPropertyDescriptor(proto, prop);
+                Object.defineProperty(select, prop, {
+                    configurable: true,
+                    get() { return desc.get.call(this); },
+                    set(v) { desc.set.call(this, v); sync(); }
+                });
+            });
+
+            sync();
+        }
 
         // Helpers de Custom Fields e Validações
         function getRecordType() { return document.querySelector('input[name="recordTypeRadio"]:checked')?.value || 'Fito'; }
@@ -1181,7 +1416,7 @@
                 if (box) box.classList.add('hidden');
             }, 120);
         }
-        function toggleRowCustomType(sel) { if(sel.value==='Outros'){ sel.classList.add('hidden'); sel.required=false; const d=sel.parentElement.querySelector('.prod-type-custom-div'); d.classList.remove('hidden'); d.querySelector('input').required=true; d.querySelector('input').focus(); } }
+        function toggleRowCustomType(sel) { if(sel.value==='Outros'){ sel.classList.add('hidden'); sel.required=false; const d=(sel.closest('.msel')||sel).parentElement.querySelector('.prod-type-custom-div'); d.classList.remove('hidden'); d.querySelector('input').required=true; d.querySelector('input').focus(); } }
         function resetRowType(btn) { const d=btn.parentElement, s=d.parentElement.querySelector('.prod-type-select'), i=d.querySelector('input'); i.value=''; i.required=false; s.value=''; s.selectedIndex=0; s.classList.remove('hidden'); s.classList.add('text-slate-400'); s.required=true; d.classList.add('hidden'); }
 
         function removeProductRow(id) {
@@ -1481,8 +1716,8 @@
             root.querySelectorAll('button[data-type]').forEach(btn => {
                 const isActive = btn.getAttribute('data-type') === activeType;
                 btn.className = isActive
-                    ? 'px-3 py-2 text-xs font-bold rounded-lg bg-slate-800 text-white'
-                    : 'px-3 py-2 text-xs font-bold rounded-lg text-slate-600 hover:bg-white';
+                    ? 'px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all bg-white text-slate-900 shadow-sm ring-1 ring-slate-200'
+                    : 'px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all text-slate-500 hover:text-slate-900';
             });
         }
         function setTopDashboardType(type) {
@@ -1800,11 +2035,11 @@
                 const rT = i.recordType || 'Fito', lC = i.crop?.toLowerCase().includes('pepino') ? 'Setor' : 'Bloco', cS = i.cycle ? ` (Ciclo ${i.cycle})` : '', pS = i.plants ? ` <span class="text-xs font-normal text-slate-500">(${i.plants} Plantas)</span>` : '';
                 let pHtml = i.products?.length ? `<div class="mt-2 space-y-1">${i.products.map(p => {
                     let tC = "text-slate-400"; if(rT==='Adubacao') tC = p.type==='Orgânico'||p.type==='Esterco'?'text-emerald-700':(p.type==='Mineral'?'text-amber-600':'text-blue-600'); else if(rT==='Fito') tC = ['Inseticidas','Fungicidas','Herbicidas','Acaricidas','Nematicidas','Bactericidas','Rodenticidas','Desfolhantes','Químico'].includes(p.type)?'text-red-600':(p.type==='Biológico'||p.type==='Natural'||p.type==='Repelente'?'text-green-600':(p.type==='Nutricional'?'text-blue-600':'text-amber-600'));
-                    return `<div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1 last:border-0"><div class="flex items-center gap-1"><span class="font-bold text-slate-700">• ${p.name}</span>${rT!=='Multiplicacao'?`<span class="text-[9px] uppercase font-bold ${tC} border border-current/20 rounded px-1.5 py-0.5 bg-white/70">${p.type||'Geral'}</span>`:''}</div><span class="font-medium text-slate-600">${p.dose} ${p.unit||''}</span></div>`;
+                    return `<div class="flex justify-between items-center text-xs border-b border-slate-50 pb-1 last:border-0"><div class="flex items-center gap-1"><span class="font-bold text-slate-700">• ${p.name}</span>${rT!=='Multiplicacao'?`<span class="inline-block shrink-0 whitespace-nowrap text-[9px] uppercase font-bold ${tC} border border-current/20 rounded px-1.5 py-0.5 bg-white/70">${p.type||'Geral'}</span>`:''}</div><span class="shrink-0 whitespace-nowrap pl-2 font-medium text-slate-600">${p.dose} ${p.unit||''}</span></div>`;
                 }).join('')}</div>` : '';
 
                 const bgs = { Multiplicacao: 'bg-emerald-50/30', Adubacao: 'bg-amber-50/20', Fito: '' }[rT], lbls = { Multiplicacao: 'Produtos Base', Adubacao: 'Adubos & Dosagens', Fito: 'Produtos & Dosagens' }[rT];
-                let midH = rT === 'Multiplicacao' ? `<div class="mt-2 flex justify-end items-center gap-3"><span class="text-[11px] font-extrabold text-emerald-600">Produzido: ${i.multiLiters} Litros</span></div>` : (rT === 'Adubacao' ? (i.adubacaoStart ? `<div class="mt-2 flex justify-start items-center gap-3 border-t border-amber-100 pt-2"><span class="text-[10px] font-bold text-amber-700 flex items-center gap-1">Horário: ${i.adubacaoStart} às ${i.adubacaoEnd} (${i.adubacaoDuration})</span></div>` : '') : `<div class="mt-2 flex justify-end items-center gap-2">${i.ph?`<span class="text-[10px] font-bold text-red-600 border border-red-200 bg-red-50 rounded-md px-2 py-0.5">PH: ${i.ph}</span>`:''}<span class="text-[10px] font-bold text-blue-600 border border-blue-200 bg-blue-50 rounded-md px-2 py-0.5">Volume Calda: ${i.volume} L</span></div>`);
+                let midH = rT === 'Multiplicacao' ? `<div class="mt-2 flex justify-end items-center gap-3"><span class="whitespace-nowrap text-[11px] font-extrabold text-emerald-600">Produzido: ${i.multiLiters} Litros</span></div>` : (rT === 'Adubacao' ? (i.adubacaoStart ? `<div class="mt-2 flex justify-start items-center gap-3 border-t border-amber-100 pt-2"><span class="text-[10px] font-bold text-amber-700 flex items-center gap-1">Horário: ${i.adubacaoStart} às ${i.adubacaoEnd} (${i.adubacaoDuration})</span></div>` : '') : `<div class="mt-2 flex flex-wrap justify-end items-center gap-2">${i.ph?`<span class="inline-block shrink-0 whitespace-nowrap text-[10px] font-bold text-red-600 border border-red-200 bg-red-50 rounded-md px-2 py-0.5">PH: ${i.ph}</span>`:''}<span class="inline-block shrink-0 whitespace-nowrap text-[10px] font-bold text-blue-600 border border-blue-200 bg-blue-50 rounded-md px-2 py-0.5">Volume Calda: ${i.volume} L</span></div>`);
                 let tH = rT === 'Multiplicacao' ? `<span class="text-sm font-bold text-emerald-700">${i.finalProduct||'Multiplicação'}</span><div class="text-xs font-bold text-emerald-600">Aeração: ${i.reactorDays} dias</div>` : (rT === 'Adubacao' ? `<span class="text-sm font-bold text-slate-700">${i.crop} • ${lC} ${i.block}${cS}${pS}</span><div class="text-xs font-bold text-slate-600">Adubação ${i.adubacaoMethod?`(${i.adubacaoMethod})`:''}</div>` : `<div><span class="text-sm font-bold text-slate-700 block">${i.crop} • ${lC} ${i.block}${cS}${pS}</span><div class="text-xs font-bold text-slate-600 mt-1 inline-flex items-center gap-1 border border-orange-200 bg-orange-50 rounded-md px-2 py-0.5"><span class="text-orange-600 text-sm font-extrabold">Alvo:</span><span>${i.target}</span></div></div>`);
 
                 cont.innerHTML += `<div class="p-5 hover:bg-slate-50 transition-colors group border-b border-slate-50 last:border-0 ${bgs}"><div class="flex flex-col mb-2"><div class="flex items-start justify-between mt-1"><div class="w-full"><div class="flex justify-between items-center mb-2">${tH}</div><div class="${rT==='Fito'?'bg-slate-50/50':'bg-white shadow-sm'} rounded-lg border ${rT==='Multiplicacao'?'border-emerald-100':(rT==='Adubacao'?'border-amber-100':'border-slate-100')} p-2"><span class="text-[9px] font-bold ${rT==='Multiplicacao'?'text-emerald-600':(rT==='Adubacao'?'text-amber-600':'text-slate-400')} uppercase tracking-wider block mb-1 text-center">${lbls}</span>${pHtml}</div>${midH}</div></div>${i.notes?`<div class="mt-2 text-[10px] text-slate-400 italic border-l-2 ${rT==='Multiplicacao'?'border-emerald-200':(rT==='Adubacao'?'border-amber-100':'border-slate-200')} pl-2">Obs: ${i.notes}</div>`:''}</div></div>`;
